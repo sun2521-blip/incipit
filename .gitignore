@@ -1,0 +1,41 @@
+cat > .gitignore <<'EOF'
+# Dependencies
+node_modules/
+.venv/
+venv/
+
+# Next.js
+.next/
+out/
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# Python cache and test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Deployment and local tooling
+.vercel/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Local databases
+*.db
+*.sqlite3
+EOF
