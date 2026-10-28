@@ -1,4 +1,4 @@
-cat > .gitignore <<'EOF'
+
 # Dependencies
 node_modules/
 .venv/
@@ -38,4 +38,3 @@ npm-debug.log*
 # Local databases
 *.db
 *.sqlite3
-EOF
