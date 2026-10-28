@@ -1,69 +1,379 @@
-import Image from "next/image";
+
+"use client";
+
+import { useMemo, useState, useEffect } from "react";
+import { checkApiHealth } from "@/lib/api";
+
+type Issue = {
+  id: number;
+  title: string;
+  repo: string;
+  description: string;
+  language: string;
+  type: string;
+  labels: string[];
+  stars: string;
+  updated: string;
+};
+
+const issues: Issue[] = [
+  {
+    id: 1,
+    title: "Add keyboard shortcuts to the command palette",
+    repo: "vercel / next.js",
+    description:
+      "Improve navigation by adding shortcuts for common actions in the command palette.",
+    language: "TypeScript",
+    type: "Feature",
+    labels: ["good first issue", "help wanted"],
+    stars: "128k",
+    updated: "2 days ago",
+  },
+  {
+    id: 2,
+    title: "Improve error messages for invalid configuration",
+    repo: "pallets / flask",
+    description:
+      "Make configuration errors easier to understand, with actionable suggestions.",
+    language: "Python",
+    type: "Bug",
+    labels: ["good first issue", "documentation"],
+    stars: "69k",
+    updated: "1 day ago",
+  },
+  {
+    id: 3,
+    title: "Document examples for the new API",
+    repo: "encode / httpx",
+    description:
+      "Add practical examples showing common request patterns and response handling.",
+    language: "Python",
+    type: "Documentation",
+    labels: ["documentation", "help wanted"],
+    stars: "14k",
+    updated: "4 days ago",
+  },
+  {
+    id: 4,
+    title: "Improve empty states in the dashboard",
+    repo: "shadcn-ui / ui",
+    description:
+      "Create clearer empty states that guide users toward their next action.",
+    language: "TypeScript",
+    type: "UI / UX",
+    labels: ["good first issue", "design"],
+    stars: "95k",
+    updated: "3 days ago",
+  },
+  {
+    id: 5,
+    title: "Add tests for date parsing edge cases",
+    repo: "pandas-dev / pandas",
+    description:
+      "Cover unusual date formats and invalid input to strengthen test coverage.",
+    language: "Python",
+    type: "Testing",
+    labels: ["good first issue", "tests"],
+    stars: "44k",
+    updated: "5 days ago",
+  },
+  {
+    id: 6,
+    title: "Fix focus handling in modal dialogs",
+    repo: "radix-ui / primitives",
+    description:
+      "Ensure keyboard focus returns to the triggering element when a dialog closes.",
+    language: "TypeScript",
+    type: "Bug",
+    labels: ["accessibility", "help wanted"],
+    stars: "16k",
+    updated: "1 day ago",
+  },
+];
+
+const languages = ["All languages", "TypeScript", "Python"];
+const taskTypes = [
+  "All tasks",
+  "Bug",
+  "Feature",
+  "Documentation",
+  "UI / UX",
+  "Testing",
+];
 
 export default function Home() {
+  const [search, setSearch] = useState("");
+  const [language, setLanguage] = useState("All languages");
+  const [task, setTask] = useState("All tasks");
+  const [saved, setSaved] = useState<number[]>([]);
+  const [apiHealthy, setApiHealthy] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    checkApiHealth().then(setApiHealthy);
+  }, []);
+  const filteredIssues = useMemo(() => {
+    const term = search.toLowerCase().trim();
+
+    return issues.filter((issue) => {
+      const matchesSearch =
+        !term ||
+        `${issue.title} ${issue.repo} ${issue.description}`
+          .toLowerCase()
+          .includes(term);
+
+      const matchesLanguage =
+        language === "All languages" || issue.language === language;
+
+      const matchesTask = task === "All tasks" || issue.type === task;
+
+      return matchesSearch && matchesLanguage && matchesTask;
+    });
+  }, [search, language, task]);
+
+  function toggleSaved(id: number) {
+    setSaved((current) =>
+      current.includes(id)
+        ? current.filter((savedId) => savedId !== id)
+        : [...current, id],
+    );
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
+    <main className="min-h-screen bg-[#f8f6f0] text-[#24251f]">
+      <header className="border-b border-[#e5e0d5]">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+          <a href="#" className="text-2xl font-black tracking-[-0.08em]">
+            incipit<span className="text-[#bd593b]">.</span>
+          </a>
+
+          <nav className="flex items-center gap-6 text-sm">
+            <a href="#discover" className="font-semibold">
+              Discover
+            </a>
             <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              href="#saved"
+              className="text-[#77766d] transition hover:text-[#24251f]"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+              Saved ({saved.length})
+            </a>
+            <span className="hidden rounded-full border border-[#e5e0d5] px-3 py-1 text-xs sm:inline">
+              BETA
+            </span>
+          </nav>
+        </div>
+      </header>
+
+      <section className="mx-auto max-w-7xl px-6 pb-12 pt-16 sm:pt-24">
+        <div className="mb-5 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#a14e35]">
+          <span className="h-px w-8 bg-[#a14e35]" />
+          Your open-source story starts here
+        </div>
+
+        <div className="grid gap-10 md:grid-cols-[1fr_260px] md:items-end">
+          <div>
+            <h1 className="max-w-3xl text-5xl font-semibold leading-[1.05] tracking-[-0.06em] sm:text-7xl">
+              Every contribution
+              <br />
+              has a{" "}
+              <span className="font-serif italic text-[#a14e35]">
+                beginning.
+              </span>
+            </h1>
+
+            <p className="mt-6 max-w-xl text-base leading-7 text-[#77766d] sm:text-lg">
+              Find open-source issues that match your skills, not just your
+              ambition. Your first meaningful contribution is closer than you
+              think.
+            </p>
+
+            <p className="mt-4 text-sm text-[#77766d]">
+              API status:{" "}
+              {apiHealthy === null
+                ? "checking..."
+                : apiHealthy
+                ? "connected"
+                : "unavailable"}
+            </p>
+            
+          </div>
+
+          <div className="border-l border-[#e5e0d5] pl-5">
+            <p className="font-serif text-4xl">
+              {String(issues.length).padStart(2, "0")}
+            </p>
+            <p className="mt-1 text-sm text-[#77766d]">
+              sample issues to explore
+            </p>
+            <p className="mt-3 text-xs text-[#a09b90]">
+              Demo data · GitHub integration coming next
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="discover" className="mx-auto max-w-7xl px-6 pb-20">
+        <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#a14e35]">
+              The issue index
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+              Find your starting point.
+            </h2>
+          </div>
+
+          <p className="text-sm text-[#77766d]">
+            {filteredIssues.length}{" "}
+            {filteredIssues.length === 1 ? "issue" : "issues"} found
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+
+        <div className="mb-6 grid gap-3 rounded-2xl border border-[#e5e0d5] bg-white/70 p-4 md:grid-cols-[1fr_190px_190px]">
+          <label className="flex items-center gap-3 rounded-xl border border-[#e5e0d5] bg-white px-4 py-3">
+            <span aria-hidden="true" className="text-lg text-[#77766d]">
+              ⌕
+            </span>
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search issues, repos, or keywords..."
+              className="w-full bg-transparent text-sm outline-none placeholder:text-[#a09b90]"
+              aria-label="Search issues"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          </label>
+
+          <select
+            value={language}
+            onChange={(event) => setLanguage(event.target.value)}
+            aria-label="Filter by language"
+            className="rounded-xl border border-[#e5e0d5] bg-white px-4 py-3 text-sm outline-none focus:border-[#a14e35]"
           >
-            Documentation
-          </a>
+            {languages.map((item) => (
+              <option key={item}>{item}</option>
+            ))}
+          </select>
+
+          <select
+            value={task}
+            onChange={(event) => setTask(event.target.value)}
+            aria-label="Filter by task type"
+            className="rounded-xl border border-[#e5e0d5] bg-white px-4 py-3 text-sm outline-none focus:border-[#a14e35]"
+          >
+            {taskTypes.map((item) => (
+              <option key={item}>{item}</option>
+            ))}
+          </select>
         </div>
-      </main>
-    </div>
+
+        {filteredIssues.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-[#d8d0c2] px-6 py-20 text-center">
+            <p className="font-serif text-2xl">Nothing on this page. Yet.</p>
+            <p className="mt-2 text-sm text-[#77766d]">
+              Try another search or loosen your filters.
+            </p>
+            <button
+              onClick={() => {
+                setSearch("");
+                setLanguage("All languages");
+                setTask("All tasks");
+              }}
+              className="mt-5 text-sm font-semibold text-[#a14e35] underline underline-offset-4"
+            >
+              Clear all filters
+            </button>
+          </div>
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {filteredIssues.map((issue, index) => (
+              <article
+                key={issue.id}
+                className="group rounded-2xl border border-[#e5e0d5] bg-white/70 p-6 transition duration-200 hover:-translate-y-0.5 hover:border-[#c7b8a5] hover:bg-white"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-[#77766d]">
+                    <span className="font-semibold text-[#494940]">
+                      {issue.repo}
+                    </span>
+                    <span>·</span>
+                    <span>{issue.updated}</span>
+                  </div>
+
+                  <button
+                    onClick={() => toggleSaved(issue.id)}
+                    aria-label={
+                      saved.includes(issue.id) ? "Unsave issue" : "Save issue"
+                    }
+                    className={`shrink-0 rounded-full border px-3 py-1.5 text-xs transition ${
+                      saved.includes(issue.id)
+                        ? "border-[#a14e35] bg-[#a14e35] text-white"
+                        : "border-[#e5e0d5] hover:border-[#a14e35]"
+                    }`}
+                  >
+                    {saved.includes(issue.id) ? "Saved ✓" : "+ Save"}
+                  </button>
+                </div>
+
+                <div className="mt-6 flex gap-4">
+                  <span className="font-serif text-sm text-[#b5aa99]">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-lg font-semibold leading-snug tracking-tight group-hover:text-[#a14e35]">
+                      {issue.title}
+                    </h3>
+
+                    <p className="mt-3 text-sm leading-6 text-[#77766d]">
+                      {issue.description}
+                    </p>
+
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      {issue.labels.map((label) => (
+                        <span
+                          key={label}
+                          className="rounded-full bg-[#f0ede5] px-3 py-1 text-xs text-[#666459]"
+                        >
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-[#eee9df] pt-4 text-xs text-[#77766d]">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span>{issue.language}</span>
+                    <span>·</span>
+                    <span>{issue.type}</span>
+                  </div>
+                  <span>{issue.stars} stars</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+
+        <div id="saved" className="mt-12 border-t border-[#e5e0d5] pt-6">
+          <p className="text-sm text-[#77766d]">
+            <span className="font-semibold text-[#24251f]">Your shortlist:</span>{" "}
+            {saved.length === 0
+              ? "Save an issue to keep it in your shortlist during this session."
+              : `${saved.length} ${
+                  saved.length === 1 ? "issue" : "issues"
+                } saved in this session.`}
+          </p>
+        </div>
+      </section>
+
+      <footer className="border-t border-[#e5e0d5]">
+        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-6 py-6 text-xs text-[#77766d] sm:flex-row sm:items-center sm:justify-between">
+          <span className="font-black tracking-[-0.06em] text-[#24251f]">
+            incipit<span className="text-[#bd593b]">.</span>
+          </span>
+          <span>Every contribution has a beginning.</span>
+          <span>Built for the curious, not just the experienced.</span>
+        </div>
+      </footer>
+    </main>
   );
 }
