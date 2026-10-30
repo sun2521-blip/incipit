@@ -3,6 +3,9 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.clients.github import GitHubClient
+from api.normalise import normalise_search_response
+from api.query import build_issue_query
+from api.schemas.issue import IssueSearchResult, TaskType
 from api.settings import settings
 
 app = FastAPI(
@@ -27,18 +30,19 @@ def health_check() -> dict[str, str]:
 
 @app.get("/issues")
 async def get_issues(
-    query: str = Query(default="good first issue", min_length=1, max_length=200),
+    query: str | None = Query(default=None, max_length=200),
+    language: str | None = Query(
+        default=None, max_length=40, pattern=r"^[A-Za-z0-9+#. -]+$"
+    ),
+    task_type: TaskType | None = None,
     per_page: int = Query(default=20, ge=1, le=50),
     page: int = Query(default=1, ge=1),
-) -> dict:
+) -> IssueSearchResult:
+    search = build_issue_query(keywords=query, language=language, task_type=task_type)
     client = GitHubClient(token=settings.github_token)
 
     try:
-        return await client.search_issues(
-            query,
-            per_page=per_page,
-            page=page,
-        )
+        raw = await client.search_issues(search, per_page=per_page, page=page)
     except httpx.HTTPStatusError as exc:
         upstream = exc.response
         remaining = upstream.headers.get("X-RateLimit-Remaining")
@@ -60,3 +64,5 @@ async def get_issues(
             status_code=502,
             detail="Unable to reach the GitHub API.",
         ) from exc
+
+    return normalise_search_response(raw)
