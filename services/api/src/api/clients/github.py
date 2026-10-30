@@ -1,4 +1,3 @@
-
 from typing import Any
 
 import httpx
@@ -9,9 +8,11 @@ GITHUB_API_BASE = "https://api.github.com"
 class GitHubClient:
     """Fetch public issues from GitHub."""
 
-    def __init__( self,
-    timeout: float = 15.0,
-    token: str | None = None,) -> None:
+    def __init__(
+        self,
+        timeout: float = 15.0,
+        token: str | None = None,
+    ) -> None:
         self.timeout = timeout
         self.token = token
 
