@@ -6,7 +6,12 @@ import httpx
 import pytest
 
 from api.clients.github import GitHubClient
-from api.repo_context import attach_repo_contexts, fetch_repo_contexts
+from api.repo_context import (
+    attach_repo_contexts,
+    fetch_repo_contexts,
+    find_contributing_guide,
+)
+from api.schemas.repository import GuideStatus
 
 FIXTURE = Path(__file__).parent / "fixtures" / "repositories.json"
 REAL_REPOS = json.loads(FIXTURE.read_text(encoding="utf-8"))
@@ -127,3 +132,57 @@ def test_attach_fills_in_context_by_repository(make_issue):
     assert attached[0].repo_context == contexts[name]
     assert attached[1].repo_context is None
     assert issues[0].repo_context is None  # the originals are untouched
+
+
+# ---- contributing guide -----------------------------------------------------
+
+COMMUNITY = json.loads(
+    (Path(__file__).parent / "fixtures" / "community_profiles.json").read_text(
+        encoding="utf-8"
+    )
+)
+
+
+def real_community(request: httpx.Request) -> httpx.Response:
+    name = request.url.path.removeprefix("/repos/").removesuffix("/community/profile")
+    raw = COMMUNITY.get(name)
+    if raw is None:
+        return httpx.Response(404, json={"message": "Not Found"})
+    return httpx.Response(200, json=raw)
+
+
+def guide_for(handler, name):
+    return asyncio.run(find_contributing_guide(make_client(handler), name))
+
+
+def test_guide_found():
+    guide = guide_for(real_community, "hivecommons/hive")
+
+    assert guide.status == GuideStatus.FOUND
+    assert guide.url.endswith("/CONTRIBUTING.md")
+
+
+def test_guide_not_found():
+    assert guide_for(real_community, "octocat/Hello-World").status == (
+        GuideStatus.NOT_FOUND
+    )
+
+
+@pytest.mark.parametrize("status", [403, 404, 429, 500])
+def test_guide_unknown_when_github_errors(status):
+    guide = guide_for(lambda request: httpx.Response(status), "hivecommons/hive")
+
+    assert guide.status == GuideStatus.UNKNOWN
+    assert guide.url is None
+
+
+def test_guide_unknown_when_offline_or_malformed():
+    def offline(request):
+        raise httpx.ConnectError("offline", request=request)
+
+    assert guide_for(offline, "a/b").status == GuideStatus.UNKNOWN
+    assert (
+        guide_for(lambda request: httpx.Response(200, json={}), "a/b").status
+        == GuideStatus.UNKNOWN
+    )
+    assert guide_for(real_community, "not a name").status == GuideStatus.UNKNOWN

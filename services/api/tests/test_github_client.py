@@ -287,3 +287,25 @@ def test_repository_and_search_caches_are_separate():
     assert search(client, "example/project") == PAYLOAD
     assert get_repo(client, "example/project") == REPO
     assert len(seen) == 2
+
+
+def test_fetches_a_community_profile_and_caches_it_apart_from_the_repository():
+    seen, handler = recording(repo_ok)
+    client = make_client(handler, repo_cache=TTLCache(ttl_seconds=60))
+
+    asyncio.run(client.get_community_profile("example/project"))
+    asyncio.run(client.get_community_profile("Example/Project"))
+    get_repo(client, "example/project")
+
+    assert [request.url.path for request in seen] == [
+        "/repos/example/project/community/profile",
+        "/repos/example/project",
+    ]
+
+
+def test_community_profile_rejects_bad_names():
+    seen, handler = recording(repo_ok)
+
+    with pytest.raises(ValueError):
+        asyncio.run(make_client(handler).get_community_profile("../x"))
+    assert seen == []

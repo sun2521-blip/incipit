@@ -7,7 +7,8 @@ Run it from services/api, then commit the files it writes:
 
 The search response is captured only when it is missing or --refresh-search is
 given, so refreshing repositories never churns the search fixture. The
-repositories captured are the ones behind the issues in that search fixture.
+repositories captured are the ones behind the issues in that search fixture,
+with their community profiles (which say where the contributing guide is).
 
 Needs network access. If GITHUB_TOKEN is set in your environment it is used
 (only to raise the rate limit); the token is never written to a fixture.
@@ -25,6 +26,9 @@ import httpx
 FIXTURES_DIR = Path(__file__).resolve().parents[1] / "tests" / "fixtures"
 SEARCH_FIXTURE = FIXTURES_DIR / "search_issues.json"
 REPOS_FIXTURE = FIXTURES_DIR / "repositories.json"
+COMMUNITY_FIXTURE = FIXTURES_DIR / "community_profiles.json"
+# A real repository with no contributing guide, for the not-found case.
+NO_GUIDE_REPO = "octocat/Hello-World"
 MAX_BODY_CHARS = 300
 REPO_PREFIX = "https://api.github.com/repos/"
 
@@ -92,6 +96,20 @@ def capture_repositories() -> None:
 
     save(REPOS_FIXTURE, repos)
     print(f"Saved {len(repos)} repositories to {REPOS_FIXTURE}")
+
+    profiles: dict[str, Any] = {}
+    for name in [*names, NO_GUIDE_REPO]:
+        response = httpx.get(
+            f"https://api.github.com/repos/{name}/community/profile",
+            headers=headers(),
+            timeout=20,
+        )
+        profiles[name] = (
+            response.json() if response.is_success else {"status": response.status_code}
+        )
+
+    save(COMMUNITY_FIXTURE, profiles)
+    print(f"Saved {len(profiles)} community profiles to {COMMUNITY_FIXTURE}")
 
 
 def main() -> None:

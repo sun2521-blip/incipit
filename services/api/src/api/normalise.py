@@ -5,7 +5,7 @@ from typing import Any
 from pydantic import ValidationError
 
 from api.schemas.issue import Issue, IssueSearchResult, TaskType
-from api.schemas.repository import RepoContext
+from api.schemas.repository import ContributingGuide, GuideStatus, RepoContext
 
 logger = logging.getLogger(__name__)
 
@@ -115,3 +115,23 @@ def normalise_repository(raw: dict[str, Any]) -> RepoContext:
         )
     except (KeyError, ValidationError) as exc:
         raise ValueError(f"Malformed GitHub repository: {exc}") from exc
+
+
+def contributing_guide(community_profile: dict[str, Any]) -> ContributingGuide:
+    """Read the contributing guide out of a GitHub community profile.
+
+    Raises ValueError when the profile is not shaped as expected, so a
+    malformed answer is never mistaken for "no guide".
+    """
+    files = community_profile.get("files")
+    if not isinstance(files, dict):
+        raise ValueError("Community profile has no files section")
+
+    guide = files.get("contributing")
+    if guide is None:
+        return ContributingGuide(status=GuideStatus.NOT_FOUND)
+
+    url = guide.get("html_url") if isinstance(guide, dict) else None
+    if not isinstance(url, str) or not url.startswith("https://github.com/"):
+        raise ValueError("Contributing guide has no usable GitHub link")
+    return ContributingGuide(status=GuideStatus.FOUND, url=url)

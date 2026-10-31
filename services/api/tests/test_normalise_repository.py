@@ -5,7 +5,8 @@ from typing import Any
 
 import pytest
 
-from api.normalise import normalise_repository
+from api.normalise import contributing_guide, normalise_repository
+from api.schemas.repository import ContributingGuide, GuideStatus
 
 FIXTURE = Path(__file__).parent / "fixtures" / "repositories.json"
 
@@ -92,3 +93,50 @@ def test_handles_real_github_responses():
         assert repo.full_name.casefold() == name.casefold()
         assert repo.url.startswith("https://github.com/")
         assert repo.stars >= 0
+
+
+# ---- contributing guide -----------------------------------------------------
+
+COMMUNITY = json.loads(
+    (Path(__file__).parent / "fixtures" / "community_profiles.json").read_text(
+        encoding="utf-8"
+    )
+)
+
+
+def test_guide_found_in_a_real_profile():
+    guide = contributing_guide(COMMUNITY["hivecommons/hive"])
+
+    assert guide.status == GuideStatus.FOUND
+    assert guide.url == "https://github.com/hivecommons/hive/blob/v5/CONTRIBUTING.md"
+
+
+def test_guide_not_found_in_a_real_profile():
+    guide = contributing_guide(COMMUNITY["octocat/Hello-World"])
+
+    assert guide.status == GuideStatus.NOT_FOUND
+    assert guide.url is None
+
+
+def test_guide_found_when_contributing_lives_outside_the_root():
+    # Flask keeps its guide in docs/contributing.rst; GitHub still reports it.
+    url = "https://github.com/pallets/flask/blob/main/docs/contributing.rst"
+
+    guide = contributing_guide({"files": {"contributing": {"html_url": url}}})
+
+    assert guide == ContributingGuide(status=GuideStatus.FOUND, url=url)
+
+
+@pytest.mark.parametrize(
+    "profile",
+    [
+        {},
+        {"files": None},
+        {"files": {"contributing": {"html_url": "javascript:alert(1)"}}},
+        {"files": {"contributing": {}}},
+        {"files": {"contributing": "CONTRIBUTING.md"}},
+    ],
+)
+def test_malformed_profiles_raise_instead_of_claiming_no_guide(profile):
+    with pytest.raises(ValueError):
+        contributing_guide(profile)

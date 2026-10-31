@@ -75,17 +75,26 @@ class GitHubClient:
 
     async def get_repository(self, full_name: str) -> dict[str, Any]:
         """Fetch one repository's metadata, e.g. full_name="owner/name"."""
+        return await self._get_repo_json(full_name, "")
+
+    async def get_community_profile(self, full_name: str) -> dict[str, Any]:
+        """Fetch a repository's community profile, which lists its contributing
+        guide, code of conduct and similar files wherever GitHub found them."""
+        return await self._get_repo_json(full_name, "/community/profile")
+
+    async def _get_repo_json(self, full_name: str, suffix: str) -> dict[str, Any]:
+        """GET /repos/{full_name}{suffix}, cached in the repository cache."""
         if not _REPO_NAME.match(full_name):
             raise ValueError(f"Not a GitHub repository name: {full_name!r}")
 
         # GitHub names are case-insensitive, so "Owner/Name" shares a cache entry.
-        cache_key = full_name.casefold()
+        cache_key = full_name.casefold() + suffix
         if self.repo_cache is not None:
             cached = self.repo_cache.get(cache_key)
             if cached is not None:
                 return cached
 
-        data = await self._get_json(f"/repos/{full_name}")
+        data = await self._get_json(f"/repos/{full_name}{suffix}")
 
         if self.repo_cache is not None:
             self.repo_cache.set(cache_key, data)

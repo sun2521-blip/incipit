@@ -6,9 +6,9 @@ import logging
 import httpx
 
 from api.clients.github import GitHubClient, GitHubResponseError
-from api.normalise import normalise_repository
+from api.normalise import contributing_guide, normalise_repository
 from api.schemas.issue import Issue
-from api.schemas.repository import RepoContext
+from api.schemas.repository import ContributingGuide, GuideStatus, RepoContext
 
 logger = logging.getLogger(__name__)
 
@@ -61,3 +61,24 @@ def attach_repo_contexts(
         issue.model_copy(update={"repo_context": contexts.get(issue.repository)})
         for issue in issues
     ]
+
+
+async def find_contributing_guide(
+    client: GitHubClient, full_name: str
+) -> ContributingGuide:
+    """Found (with a link), not found, or unknown when GitHub could not say.
+
+    Never guessed: any failure is UNKNOWN, not NOT_FOUND.
+    """
+    try:
+        profile = await client.get_community_profile(full_name)
+        return contributing_guide(profile)
+    except httpx.HTTPStatusError as exc:
+        logger.info(
+            "Contributing guide unknown for %s (HTTP %s)",
+            full_name,
+            exc.response.status_code,
+        )
+    except (httpx.RequestError, GitHubResponseError, ValueError) as exc:
+        logger.warning("Contributing guide unknown for %s: %s", full_name, exc)
+    return ContributingGuide(status=GuideStatus.UNKNOWN)

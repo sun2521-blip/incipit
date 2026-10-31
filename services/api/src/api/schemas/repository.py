@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict
 
@@ -20,3 +21,18 @@ class RepoContext(BaseModel):
     archived: bool
     topics: list[str]
     license: str | None  # SPDX id such as "MIT", when GitHub recognised one
+
+
+class GuideStatus(StrEnum):
+    FOUND = "found"  # GitHub reported a guide; `url` links to it
+    NOT_FOUND = "not_found"  # GitHub answered and reported no guide
+    UNKNOWN = "unknown"  # the lookup failed, so nothing is claimed either way
+
+
+class ContributingGuide(BaseModel):
+    """Where the repository's contributing guide is, as reported by GitHub."""
+
+    model_config = ConfigDict(frozen=True)
+
+    status: GuideStatus
+    url: str | None = None
