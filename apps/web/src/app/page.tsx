@@ -2,7 +2,21 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { checkApiHealth, fetchIssues } from "@/lib/api";
+import { ProfilePanel } from "@/components/profile-panel";
+import { ScoreBreakdown } from "@/components/score-breakdown";
+import {
+  checkApiHealth,
+  fetchIssues,
+  rankIssues,
+  type ApiIssue,
+  type ApiProfile,
+  type RankedIssue,
+  type SignalResult,
+  type TaskType,
+} from "@/lib/api";
+import { isProfileEmpty, toApiProfile } from "@/lib/profile";
+import { useDebouncedValue } from "@/lib/use-debounced-value";
+import { useStoredProfile } from "@/lib/use-stored-profile";
 
 type Issue = {
   id: number;
@@ -16,6 +30,8 @@ type Issue = {
   updated: string;
   url?: string;
   isSample?: boolean;
+  score?: number;
+  breakdown?: SignalResult[];
 };
 
 const issues: Issue[] = [
@@ -99,7 +115,15 @@ const issues: Issue[] = [
   },
 ];
 
-const languages = ["All languages", "TypeScript", "Python"];
+const languages = [
+  "All languages",
+  "TypeScript",
+  "JavaScript",
+  "Python",
+  "Go",
+  "Rust",
+  "Java",
+];
 
 const taskTypes = [
   "All tasks",
@@ -110,15 +134,115 @@ const taskTypes = [
   "Testing",
 ];
 
+const SEARCH_DEBOUNCE_MS = 400;
+const PROFILE_DEBOUNCE_MS = 300;
+
+type SearchState = {
+  key: string;
+  items: ApiIssue[] | null;
+  languageFilter: string | undefined;
+  total: number | null;
+  error: string | null;
+};
+
+type RankState = {
+  resultKey: string; // the search result these scores belong to
+  ranked: RankedIssue[] | null;
+  error: string | null;
+};
+
+function summarise(body: string | null): string {
+  const empty = "No issue description provided.";
+  if (!body) return empty;
+
+  const text = body
+    .slice(0, 5000) // bound the work done on untrusted text
+    .replace(/<!--[\s\S]*?-->/g, " ") // template comments
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ") // images
+    .replace(/^#{1,6}\s.*$/gm, " ") // headings such as "### Describe the bug"
+    .replace(/^>\s?/gm, "") // quote markers
+    .replace(/[`*]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!text) return empty;
+  return text.length > 240 ? `${text.slice(0, 240).trimEnd()}…` : text;
+}
+
+// The API already normalised the issue; this only shapes it for the card UI.
+// "language" is only known when the search was filtered by it.
+function toCard(
+  issue: ApiIssue,
+  languageFilter: string | undefined,
+  ranked?: RankedIssue,
+): Issue {
+  return {
+    id: issue.id,
+    title: issue.title,
+    repo: issue.repository.replace("/", " / "),
+    description: summarise(issue.body),
+    language: languageFilter ?? "Unknown",
+    type: issue.inferred_task_type ?? "Issue",
+    labels: issue.labels,
+    stars: "",
+    updated: new Date(issue.updated_at).toLocaleDateString(),
+    url: issue.url,
+    isSample: false,
+    score: ranked?.score,
+    breakdown: ranked?.breakdown,
+  };
+}
+
 export default function Home() {
   const [search, setSearch] = useState("");
   const [language, setLanguage] = useState("All languages");
   const [task, setTask] = useState("All tasks");
   const [saved, setSaved] = useState<number[]>([]);
   const [apiHealthy, setApiHealthy] = useState<boolean | null>(null);
-  const [liveIssues, setLiveIssues] = useState<Issue[] | null>(null);
-  const [issueError, setIssueError] = useState<string | null>(null);
-  const [loadingIssues, setLoadingIssues] = useState(true);
+  const [result, setResult] = useState<SearchState | null>(null);
+  const [ranking, setRanking] = useState<RankState | null>(null);
+  const [profile, setProfile] = useStoredProfile();
+
+  const debouncedSearch = useDebouncedValue(search.trim(), SEARCH_DEBOUNCE_MS);
+  // Sent as a string so it is cheap to compare and debounce.
+  const profileKey = useDebouncedValue(
+    JSON.stringify(toApiProfile(profile)),
+    PROFILE_DEBOUNCE_MS,
+  );
+  const profileIsEmpty = isProfileEmpty(profile);
+
+  // Identifies the request the current filters describe. Results carry the key
+  // they were fetched for, so "loading" is derived instead of set by hand.
+  const requestKey = `${debouncedSearch}|${language}|${task}`;
+  const issueError = result?.error ?? null;
+  const totalCount = result?.total ?? null;
+  const loadingIssues = result?.key !== requestKey;
+
+  // Scores only count while they belong to the search result on screen.
+  const currentRanking = ranking?.resultKey === result?.key ? ranking : null;
+  const rankError = currentRanking?.error ?? null;
+
+  const liveIssues = useMemo(() => {
+    if (!result?.items) return null;
+
+    const ranked = currentRanking?.ranked;
+
+    if (ranked) {
+      return ranked.map((entry) =>
+        toCard(entry.issue, result.languageFilter, entry),
+      );
+    }
+
+    return result.items.map((item) => toCard(item, result.languageFilter));
+  }, [result, currentRanking]);
+
+  const rankingNote = rankError
+    ? `ranking unavailable (${rankError})`
+    : currentRanking?.ranked
+      ? profileIsEmpty
+        ? "ordered by description clarity"
+        : "ranked for your profile"
+      : "ranking…";
 
   useEffect(() => {
     let cancelled = false;
@@ -135,85 +259,80 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
+    const key = requestKey;
+    const languageFilter =
+      language === "All languages" ? undefined : language;
 
-    fetchIssues()
-      .then((result) => {
-        if (cancelled) return;
-
-        const mapped: Issue[] = result.items
-          .filter((item) => !("pull_request" in item))
-          .map((item) => {
-            const labels = item.labels.map((label) => label.name);
-
-            const repo = item.repository_url
-              .replace("https://api.github.com/repos/", "")
-              .replace(/\/$/, "");
-
-            const lowerLabels = labels.map((label) =>
-              label.toLowerCase(),
-            );
-
-            const type = lowerLabels.some((label) =>
-              label.includes("documentation"),
-            )
-              ? "Documentation"
-              : lowerLabels.some((label) => label.includes("bug"))
-                ? "Bug"
-                : lowerLabels.some((label) =>
-                    label.includes("feature"),
-                  )
-                  ? "Feature"
-                  : "Issue";
-
-            return {
-              id: item.id,
-              title: item.title,
-              repo: repo.replace("/", " / "),
-              description:
-                item.body?.trim().slice(0, 240) ||
-                "No issue description provided.",
-              language: "Unknown",
-              type,
-              labels,
-              stars: "",
-              updated: new Date(
-                item.updated_at,
-              ).toLocaleDateString(),
-              url: item.html_url,
-              isSample: false,
-            };
-          });
-
-        setLiveIssues(mapped);
-        setIssueError(null);
+    fetchIssues({
+      query: debouncedSearch,
+      language: languageFilter,
+      taskType: task === "All tasks" ? undefined : (task as TaskType),
+      signal: controller.signal,
+    })
+      .then((data) => {
+        setResult({
+          key,
+          items: data.items,
+          languageFilter,
+          total: data.total_count,
+          error: null,
+        });
       })
       .catch((error: unknown) => {
-        if (cancelled) return;
+        if (controller.signal.aborted) return;
 
-        setIssueError(
-          error instanceof Error
-            ? error.message
-            : "Could not load GitHub issues.",
-        );
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoadingIssues(false);
-        }
+        setResult({
+          key,
+          items: null,
+          languageFilter,
+          total: null,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Could not load GitHub issues.",
+        });
       });
 
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    return () => controller.abort();
+  }, [requestKey, debouncedSearch, language, task]);
+
+  useEffect(() => {
+    if (!result?.items) return undefined;
+
+    const controller = new AbortController();
+    const resultKey = result.key;
+
+    rankIssues({
+      issues: result.items,
+      profile: JSON.parse(profileKey) as ApiProfile,
+      signal: controller.signal,
+    })
+      .then((ranked) => {
+        setRanking({ resultKey, ranked, error: null });
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) return;
+
+        setRanking({
+          resultKey,
+          ranked: null,
+          error: error instanceof Error ? error.message : "Ranking failed.",
+        });
+      });
+
+    return () => controller.abort();
+  }, [result, profileKey]);
 
   const displayedIssues = liveIssues ?? issues;
 
   const filteredIssues = useMemo(() => {
+    // Live results were already filtered by the API; only samples need it here.
+    if (liveIssues !== null) return liveIssues;
+
     const term = search.toLowerCase().trim();
 
-    return displayedIssues.filter((issue) => {
+    return issues.filter((issue) => {
       const matchesSearch =
         !term ||
         `${issue.title} ${issue.repo} ${issue.description}`
@@ -221,16 +340,13 @@ export default function Home() {
           .includes(term);
 
       const matchesLanguage =
-        language === "All languages" ||
-        (issue.language !== "Unknown" &&
-          issue.language === language);
+        language === "All languages" || issue.language === language;
 
-      const matchesTask =
-        task === "All tasks" || issue.type === task;
+      const matchesTask = task === "All tasks" || issue.type === task;
 
       return matchesSearch && matchesLanguage && matchesTask;
     });
-  }, [search, language, task, displayedIssues]);
+  }, [search, language, task, liveIssues]);
 
   function toggleSaved(id: number) {
     setSaved((current) =>
@@ -316,9 +432,11 @@ export default function Home() {
 
             <p className="mt-3 text-xs text-[#a09b90]">
               {liveIssues !== null
-                ? `${liveIssues.length} live issues loaded from GitHub`
+                ? loadingIssues
+                  ? "Updating results…"
+                  : `${liveIssues.length} live issues loaded from GitHub · ${rankingNote}`
                 : issueError
-                  ? "Showing sample data · GitHub issues could not be loaded"
+                  ? `Showing sample data · ${issueError}`
                   : loadingIssues
                     ? "Loading GitHub issues…"
                     : "Showing sample data"}
@@ -343,10 +461,15 @@ export default function Home() {
           </div>
 
           <p className="text-sm text-[#77766d]">
-            {filteredIssues.length}{" "}
-            {filteredIssues.length === 1 ? "issue" : "issues"} found
+            {liveIssues !== null && totalCount !== null
+              ? `Showing ${filteredIssues.length} of ${totalCount.toLocaleString()} matching issues`
+              : `${filteredIssues.length} ${
+                  filteredIssues.length === 1 ? "issue" : "issues"
+                } found`}
           </p>
         </div>
+
+        <ProfilePanel profile={profile} onChange={setProfile} />
 
         <div className="mb-6 grid gap-3 rounded-2xl border border-[#e5e0d5] bg-white/70 p-4 md:grid-cols-[1fr_190px_190px]">
           <label className="flex items-center gap-3 rounded-xl border border-[#e5e0d5] bg-white px-4 py-3">
@@ -422,6 +545,15 @@ export default function Home() {
 
                     <span>·</span>
                     <span>{issue.updated}</span>
+
+                    {issue.score !== undefined && (
+                      <span
+                        className="rounded-full bg-[#f5efe3] px-2 py-0.5 font-semibold text-[#765c35]"
+                        title="Fit score, 0 to 100"
+                      >
+                        Fit {issue.score}
+                      </span>
+                    )}
                   </div>
 
                   <button
@@ -470,6 +602,10 @@ export default function Home() {
                     <p className="mt-3 text-sm leading-6 text-[#77766d]">
                       {issue.description}
                     </p>
+
+                    {issue.breakdown && (
+                      <ScoreBreakdown breakdown={issue.breakdown} />
+                    )}
 
                     <div className="mt-5 flex flex-wrap gap-2">
                       {issue.labels.map((label) => (
