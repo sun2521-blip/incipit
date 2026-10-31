@@ -1,3 +1,4 @@
+import copy
 import time
 from collections.abc import Callable, Hashable
 from typing import Any
@@ -8,6 +9,9 @@ class TTLCache:
 
     When full, the oldest entry is dropped. This is per-process memory only:
     it is lost on restart and not shared between server instances.
+
+    Values are copied on the way in and out, so a caller that changes what it
+    got back cannot change the cached entry.
     """
 
     def __init__(
@@ -30,14 +34,14 @@ class TTLCache:
         if self._clock() >= expires_at:
             del self._items[key]
             return None
-        return value
+        return copy.deepcopy(value)
 
     def set(self, key: Hashable, value: Any) -> None:
         # Re-inserting moves the key to the end, so order means "oldest first".
         self._items.pop(key, None)
         if len(self._items) >= self.max_entries:
             del self._items[next(iter(self._items))]
-        self._items[key] = (self._clock() + self.ttl_seconds, value)
+        self._items[key] = (self._clock() + self.ttl_seconds, copy.deepcopy(value))
 
     def __len__(self) -> int:
         return len(self._items)

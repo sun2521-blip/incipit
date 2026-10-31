@@ -79,3 +79,22 @@ def test_refreshing_a_key_protects_it_from_eviction():
 
     assert cache.get("a") == 10
     assert cache.get("b") is None
+
+
+def test_changing_a_returned_value_does_not_change_the_cache():
+    cache, _ = make_cache()
+    cache.set("key", {"items": [1]})
+
+    cache.get("key")["items"].append(2)
+
+    assert cache.get("key") == {"items": [1]}
+
+
+def test_changing_the_stored_value_later_does_not_change_the_cache():
+    cache, _ = make_cache()
+    value = {"items": [1]}
+    cache.set("key", value)
+
+    value["items"].append(2)
+
+    assert cache.get("key") == {"items": [1]}
