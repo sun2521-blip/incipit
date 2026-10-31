@@ -8,6 +8,7 @@ real issues (blueprint, Day 9), not facts.
 
 import re
 from dataclasses import dataclass
+from datetime import datetime
 
 from api.schemas.issue import Issue
 from api.schemas.profile import Profile
@@ -143,3 +144,60 @@ def goal_match(issue: Issue, profile: Profile) -> Signal:
 
     score = min(100, 60 * len(strong) + 30 * len(weak))
     return Signal(score, "Your topics appear " + "; ".join(parts) + ".")
+
+
+def skill_match(issue: Issue, profile: Profile) -> Signal:
+    """Is the repository's main language one the user knows?
+
+    GitHub reports only the main language, so a mismatch is a soft penalty:
+    the repository may still use the user's language somewhere.
+    """
+    if not profile.languages:
+        return Signal(None, "No languages set.")
+
+    repo = issue.repo_context
+    if repo is None:
+        return Signal(None, "Repository details are unavailable.")
+    if repo.language is None:
+        return Signal(None, "GitHub reports no main language for this repository.")
+
+    known = {language.casefold() for language in profile.languages}
+    if repo.language.casefold() in known:
+        return Signal(
+            100, f"The repository is written mainly in {repo.language}, which you know."
+        )
+    return Signal(
+        20,
+        f"The repository is written mainly in {repo.language}, "
+        "which is not in your languages.",
+    )
+
+
+# (at most this many days since the last push, points). Activity suggests
+# someone is around; it does not promise a maintainer will respond.
+_PUSH_AGE_POINTS = [(7, 100), (30, 85), (90, 60), (180, 35), (365, 15)]
+_STALE_POINTS = 5
+
+
+def maintenance(issue: Issue, now: datetime) -> Signal:
+    """How recently was code pushed, and is the repository still open to changes?"""
+    repo = issue.repo_context
+    if repo is None:
+        return Signal(None, "Repository details are unavailable.")
+    if repo.archived:
+        return Signal(0, "The repository is archived, so it no longer accepts changes.")
+    if repo.pushed_at is None:
+        return Signal(None, "GitHub did not report when code was last pushed.")
+
+    days = max((now - repo.pushed_at).days, 0)
+    points = next(
+        (points for limit, points in _PUSH_AGE_POINTS if days <= limit),
+        _STALE_POINTS,
+    )
+    if days == 0:
+        when = "today"
+    elif days == 1:
+        when = "yesterday"
+    else:
+        when = f"{days} days ago"
+    return Signal(points, f"Code was last pushed {when}.")

@@ -59,7 +59,7 @@ def test_rank_explains_each_score():
         "goal_match",
     ]
     assert all(signal["reason"] for signal in breakdown)
-    assert breakdown[0]["score"] is None  # repository data not fetched yet
+    assert breakdown[0]["score"] is None  # no repository context was sent
 
 
 def test_rank_works_without_a_profile():
