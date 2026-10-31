@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ProfilePanel } from "@/components/profile-panel";
 import { ScoreBreakdown } from "@/components/score-breakdown";
 import {
@@ -18,6 +18,7 @@ import {
   canLoadMore,
   MAX_LOADED_ISSUES,
   mergeIssues,
+  orderWithinPages,
 } from "@/lib/pagination";
 import { isProfileEmpty, toApiProfile } from "@/lib/profile";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
@@ -156,6 +157,7 @@ type SearchState = {
   total: number | null;
   error: string | null;
   page: number; // the last page loaded
+  pageStarts: number[]; // index in `items` where each loaded page begins
   exhausted: boolean; // a page came back with nothing new
   moreError: string | null; // error from the last "Load more"
 };
@@ -216,7 +218,10 @@ export default function Home() {
   const [apiHealthy, setApiHealthy] = useState<boolean | null>(null);
   const [result, setResult] = useState<SearchState | null>(null);
   const [ranking, setRanking] = useState<RankState | null>(null);
-  const [loadingMore, setLoadingMore] = useState(false);
+  // The result key a "Load more" is running for, so a new search never
+  // inherits a stuck "Loading…" button from the old one.
+  const [loadingMoreFor, setLoadingMoreFor] = useState<string | null>(null);
+  const loadMoreController = useRef<AbortController | null>(null);
   const [profile, setProfile] = useStoredProfile();
 
   const debouncedSearch = useDebouncedValue(search.trim(), SEARCH_DEBOUNCE_MS);
@@ -233,6 +238,7 @@ export default function Home() {
   const issueError = result?.error ?? null;
   const totalCount = result?.total ?? null;
   const loadingIssues = result?.key !== requestKey;
+  const loadingMore = loadingMoreFor !== null && loadingMoreFor === result?.key;
 
   // Scores only count while they belong to the search result on screen.
   const currentRanking = ranking?.resultKey === result?.key ? ranking : null;
@@ -244,18 +250,11 @@ export default function Home() {
     const ranked = currentRanking?.ranked;
 
     if (ranked) {
-      const cards = ranked.map((entry) =>
-        toCard(entry.issue, result.languageFilter, entry),
+      // Issues from a page that was just loaded wait at the end of it,
+      // unscored, until the next ranking arrives.
+      return orderWithinPages(result.items, result.pageStarts, ranked).map(
+        (entry) => toCard(entry.issue, result.languageFilter, entry.ranked),
       );
-
-      // Issues from a page that was just loaded wait here, unscored, until
-      // the next ranking arrives.
-      const rankedIds = new Set(ranked.map((entry) => entry.issue.id));
-      const waiting = result.items
-        .filter((item) => !rankedIds.has(item.id))
-        .map((item) => toCard(item, result.languageFilter));
-
-      return [...cards, ...waiting];
     }
 
     return result.items.map((item) => toCard(item, result.languageFilter));
@@ -294,6 +293,9 @@ export default function Home() {
       taskType: task === "All tasks" ? undefined : (task as TaskType),
     };
 
+    // A "Load more" for the old filters is no longer wanted.
+    loadMoreController.current?.abort();
+
     fetchIssues({ ...params, signal: controller.signal })
       .then((data) => {
         setResult({
@@ -304,6 +306,7 @@ export default function Home() {
           total: data.total_count,
           error: null,
           page: 1,
+          pageStarts: [0],
           exhausted: false,
           moreError: null,
         });
@@ -318,6 +321,7 @@ export default function Home() {
           languageFilter,
           total: null,
           page: 1,
+          pageStarts: [0],
           exhausted: false,
           moreError: null,
           error:
@@ -330,14 +334,19 @@ export default function Home() {
     return () => controller.abort();
   }, [requestKey, debouncedSearch, language, task]);
 
+  // Re-rank only when the issues change, not on every update to `result`
+  // (such as a "Load more" error).
+  const itemsToRank = result?.items ?? null;
+  const itemsKey = result?.key ?? null;
+
   useEffect(() => {
-    if (!result?.items) return undefined;
+    if (!itemsToRank || itemsKey === null) return undefined;
 
     const controller = new AbortController();
-    const resultKey = result.key;
+    const resultKey = itemsKey;
 
     rankIssues({
-      issues: result.items,
+      issues: itemsToRank,
       profile: JSON.parse(profileKey) as ApiProfile,
       signal: controller.signal,
     })
@@ -355,7 +364,7 @@ export default function Home() {
       });
 
     return () => controller.abort();
-  }, [result, profileKey]);
+  }, [itemsToRank, itemsKey, profileKey]);
 
   const displayedIssues = liveIssues ?? issues;
 
@@ -385,12 +394,15 @@ export default function Home() {
     const current = result;
     if (!current?.items || loadingMore) return;
 
-    setLoadingMore(true);
+    const controller = new AbortController();
+    loadMoreController.current = controller;
+    setLoadingMoreFor(current.key);
 
     try {
       const next = await fetchIssues({
         ...current.params,
         page: current.page + 1,
+        signal: controller.signal,
       });
 
       // Ignore the answer if the filters changed while it was loading.
@@ -404,11 +416,17 @@ export default function Home() {
           items: merged,
           total: next.total_count,
           page: latest.page + 1,
+          pageStarts:
+            merged.length > latest.items.length
+              ? [...latest.pageStarts, latest.items.length]
+              : latest.pageStarts,
           exhausted: merged.length === latest.items.length,
           moreError: null,
         };
       });
     } catch (error: unknown) {
+      if (controller.signal.aborted) return;
+
       const message =
         error instanceof Error
           ? error.message
@@ -420,7 +438,7 @@ export default function Home() {
           : latest,
       );
     } finally {
-      setLoadingMore(false);
+      setLoadingMoreFor((key) => (key === current.key ? null : key));
     }
   }
 

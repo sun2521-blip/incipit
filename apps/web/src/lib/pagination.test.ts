@@ -3,8 +3,9 @@ import {
   canLoadMore,
   MAX_LOADED_ISSUES,
   mergeIssues,
+  orderWithinPages,
 } from "@/lib/pagination";
-import type { ApiIssue } from "@/lib/schemas";
+import type { ApiIssue, RankedIssue } from "@/lib/schemas";
 
 function issue(id: number): ApiIssue {
   return {
@@ -78,5 +79,51 @@ describe("canLoadMore", () => {
 
   it("is false once a page came back with nothing new", () => {
     expect(canLoadMore({ loaded: 20, total: 500, exhausted: true })).toBe(false);
+  });
+});
+
+function rankedAs(...ids: number[]): RankedIssue[] {
+  return ids.map((id) => ({ issue: issue(id), score: 50, breakdown: [] }));
+}
+
+function idsOf(entries: { issue: ApiIssue }[]): number[] {
+  return entries.map((entry) => entry.issue.id);
+}
+
+describe("orderWithinPages", () => {
+  const items = [1, 2, 3, 4, 5].map(issue);
+
+  it("sorts a single page by rank", () => {
+    expect(idsOf(orderWithinPages(items, [0], rankedAs(3, 1, 5, 2, 4)))).toEqual(
+      [3, 1, 5, 2, 4],
+    );
+  });
+
+  it("never moves an issue into an earlier page", () => {
+    // 5 and 4 rank best overall, but they arrived with the second page.
+    const ordered = orderWithinPages(items, [0, 3], rankedAs(5, 4, 2, 3, 1));
+
+    expect(idsOf(ordered)).toEqual([2, 3, 1, 5, 4]);
+  });
+
+  it("puts unranked issues last in their page, in load order", () => {
+    const ordered = orderWithinPages(items, [0, 3], rankedAs(2, 1, 3));
+
+    expect(idsOf(ordered)).toEqual([2, 1, 3, 4, 5]);
+    expect(ordered[3].ranked).toBeUndefined();
+  });
+
+  it("attaches each issue's ranking", () => {
+    const ordered = orderWithinPages([issue(1)], [0], rankedAs(1));
+
+    expect(ordered[0].ranked?.score).toBe(50);
+  });
+
+  it("does not change its inputs", () => {
+    const input = [issue(2), issue(1)];
+
+    orderWithinPages(input, [0], rankedAs(1, 2));
+
+    expect(input.map((item) => item.id)).toEqual([2, 1]);
   });
 });

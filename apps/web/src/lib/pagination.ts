@@ -1,4 +1,4 @@
-import type { ApiIssue } from "@/lib/schemas";
+import type { ApiIssue, RankedIssue } from "@/lib/schemas";
 
 export const PAGE_SIZE = 20;
 
@@ -37,4 +37,30 @@ export function canLoadMore({
   exhausted: boolean;
 }): boolean {
   return !exhausted && loaded < Math.min(total, MAX_LOADED_ISSUES);
+}
+
+/**
+ * Sort issues by rank, but only inside the page they arrived with, so cards
+ * already on screen stay put when another page loads. `pageStarts` holds the
+ * index in `items` where each loaded page begins. Issues the ranking does not
+ * cover yet go last in their page, in the order they were loaded.
+ */
+export function orderWithinPages(
+  items: ApiIssue[],
+  pageStarts: number[],
+  ranked: RankedIssue[],
+): { issue: ApiIssue; ranked?: RankedIssue }[] {
+  const byId = new Map(ranked.map((entry) => [entry.issue.id, entry]));
+  const position = new Map(
+    ranked.map((entry, index) => [entry.issue.id, index]),
+  );
+  const rankOf = (issue: ApiIssue) => position.get(issue.id) ?? ranked.length;
+  const ends = [...pageStarts.slice(1), items.length];
+
+  return pageStarts.flatMap((start, page) =>
+    items
+      .slice(start, ends[page])
+      .sort((a, b) => rankOf(a) - rankOf(b))
+      .map((issue) => ({ issue, ranked: byId.get(issue.id) })),
+  );
 }
