@@ -5,6 +5,7 @@ from typing import Any
 from pydantic import ValidationError
 
 from api.schemas.issue import Issue, IssueSearchResult, TaskType
+from api.schemas.repository import RepoContext
 
 logger = logging.getLogger(__name__)
 
@@ -92,3 +93,25 @@ def normalise_search_response(raw: dict[str, Any]) -> IssueSearchResult:
         total_count=raw.get("total_count", len(items)),
         items=items,
     )
+
+
+def normalise_repository(raw: dict[str, Any]) -> RepoContext:
+    """Convert a GitHub /repos/{owner}/{repo} response. Raises ValueError if malformed."""
+    licence = raw.get("license")
+    spdx = licence.get("spdx_id") if isinstance(licence, dict) else None
+    topics = raw.get("topics") or []
+    try:
+        return RepoContext(
+            full_name=raw["full_name"],
+            url=raw["html_url"],
+            description=raw.get("description"),
+            language=raw.get("language"),
+            stars=raw.get("stargazers_count", 0),
+            pushed_at=raw.get("pushed_at"),
+            archived=raw.get("archived", False),
+            topics=[topic for topic in topics if isinstance(topic, str)],
+            # GitHub uses NOASSERTION for a licence file it could not identify.
+            license=spdx if isinstance(spdx, str) and spdx != "NOASSERTION" else None,
+        )
+    except (KeyError, ValidationError) as exc:
+        raise ValueError(f"Malformed GitHub repository: {exc}") from exc
