@@ -20,6 +20,7 @@ import {
   mergeIssues,
   orderWithinPages,
 } from "@/lib/pagination";
+import { formatCount } from "@/lib/format";
 import { isProfileEmpty, toApiProfile } from "@/lib/profile";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { useStoredProfile } from "@/lib/use-stored-profile";
@@ -187,7 +188,8 @@ function summarise(body: string | null): string {
 }
 
 // The API already normalised the issue; this only shapes it for the card UI.
-// "language" is only known when the search was filtered by it.
+// Language and stars come from the repository's context when GitHub gave it;
+// otherwise the language is only known when the search was filtered by it.
 function toCard(
   issue: ApiIssue,
   languageFilter: string | undefined,
@@ -198,10 +200,10 @@ function toCard(
     title: issue.title,
     repo: issue.repository.replace("/", " / "),
     description: summarise(issue.body),
-    language: languageFilter ?? "Unknown",
+    language: issue.repo_context?.language ?? languageFilter ?? "Unknown",
     type: issue.inferred_task_type ?? "Issue",
     labels: issue.labels,
-    stars: "",
+    stars: issue.repo_context ? formatCount(issue.repo_context.stars) : "",
     updated: new Date(issue.updated_at).toLocaleDateString(),
     url: issue.url,
     isSample: false,
@@ -264,7 +266,7 @@ export default function Home() {
     ? `ranking unavailable (${rankError})`
     : currentRanking?.ranked
       ? profileIsEmpty
-        ? "ordered by description clarity"
+        ? "ordered by clarity and repository activity"
         : "ranked for your profile"
       : "ranking…";
 

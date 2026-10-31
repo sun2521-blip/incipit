@@ -8,48 +8,62 @@ export const TASK_TYPES: TaskType[] = [
   "Testing",
 ];
 
-/** What is saved in the browser. Topics stay as typed so editing feels natural. */
+/**
+ * What is saved in the browser. Languages and topics stay as typed so editing
+ * feels natural.
+ */
 export type StoredProfile = {
+  languagesText: string;
   topicsText: string;
   taskTypes: TaskType[];
 };
 
-export const EMPTY_PROFILE: StoredProfile = { topicsText: "", taskTypes: [] };
+export const EMPTY_PROFILE: StoredProfile = {
+  languagesText: "",
+  topicsText: "",
+  taskTypes: [],
+};
 
-const MAX_TOPICS = 10;
-const MAX_TOPIC_LENGTH = 40;
-export const MAX_TOPICS_TEXT = 300;
+// The API accepts at most 10 entries of 40 characters each per list.
+const MAX_LIST_ITEMS = 10;
+const MAX_ITEM_LENGTH = 40;
+export const MAX_LIST_TEXT = 300;
 
 /** "API, testing ,api" -> ["API", "testing"]: trimmed, de-duplicated, capped. */
-export function parseTopics(text: string): string[] {
+export function parseList(text: string): string[] {
   const seen = new Set<string>();
-  const topics: string[] = [];
+  const items: string[] = [];
 
   for (const part of text.split(",")) {
-    const topic = part.trim().slice(0, MAX_TOPIC_LENGTH);
-    const key = topic.toLowerCase();
+    const item = part.trim().slice(0, MAX_ITEM_LENGTH);
+    const key = item.toLowerCase();
 
-    if (!topic || seen.has(key)) continue;
+    if (!item || seen.has(key)) continue;
 
     seen.add(key);
-    topics.push(topic);
+    items.push(item);
 
-    if (topics.length === MAX_TOPICS) break;
+    if (items.length === MAX_LIST_ITEMS) break;
   }
 
-  return topics;
+  return items;
 }
 
 export function toApiProfile(profile: StoredProfile): ApiProfile {
   return {
-    topics: parseTopics(profile.topicsText),
+    languages: parseList(profile.languagesText),
+    topics: parseList(profile.topicsText),
     task_types: profile.taskTypes,
   };
 }
 
 export function isProfileEmpty(profile: StoredProfile): boolean {
   const api = toApiProfile(profile);
-  return api.topics.length === 0 && api.task_types.length === 0;
+  return (
+    api.languages.length === 0 &&
+    api.topics.length === 0 &&
+    api.task_types.length === 0
+  );
 }
 
 /**
@@ -63,12 +77,20 @@ export function parseStoredProfile(raw: string): StoredProfile {
     const data: unknown = JSON.parse(raw);
     if (typeof data !== "object" || data === null) return EMPTY_PROFILE;
 
-    const { topicsText, taskTypes } = data as Record<string, unknown>;
+    const { languagesText, topicsText, taskTypes } = data as Record<
+      string,
+      unknown
+    >;
 
     return {
+      // Profiles saved before languages existed simply have none.
+      languagesText:
+        typeof languagesText === "string"
+          ? languagesText.slice(0, MAX_LIST_TEXT)
+          : "",
       topicsText:
         typeof topicsText === "string"
-          ? topicsText.slice(0, MAX_TOPICS_TEXT)
+          ? topicsText.slice(0, MAX_LIST_TEXT)
           : "",
       taskTypes: Array.isArray(taskTypes)
         ? taskTypes.filter((value): value is TaskType =>

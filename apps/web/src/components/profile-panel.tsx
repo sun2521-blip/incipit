@@ -1,7 +1,7 @@
 import type { TaskType } from "@/lib/api";
 import {
-  MAX_TOPICS_TEXT,
-  parseTopics,
+  MAX_LIST_TEXT,
+  parseList,
   TASK_TYPES,
   type StoredProfile,
 } from "@/lib/profile";
@@ -12,15 +12,18 @@ type ProfilePanelProps = {
 };
 
 export function ProfilePanel({ profile, onChange }: ProfilePanelProps) {
-  const topicCount = parseTopics(profile.topicsText).length;
+  const languageCount = parseList(profile.languagesText).length;
+  const topicCount = parseList(profile.topicsText).length;
   const taskCount = profile.taskTypes.length;
 
   const summary =
-    topicCount === 0 && taskCount === 0
+    languageCount === 0 && topicCount === 0 && taskCount === 0
       ? "set it up to personalise the ranking"
-      : `${topicCount} ${topicCount === 1 ? "topic" : "topics"}, ${taskCount} task ${
-          taskCount === 1 ? "type" : "types"
-        }`;
+      : [
+          `${languageCount} ${languageCount === 1 ? "language" : "languages"}`,
+          `${topicCount} ${topicCount === 1 ? "topic" : "topics"}`,
+          `${taskCount} task ${taskCount === 1 ? "type" : "types"}`,
+        ].join(", ");
 
   function toggleTask(type: TaskType) {
     onChange({
@@ -39,6 +42,25 @@ export function ProfilePanel({ profile, onChange }: ProfilePanelProps) {
 
       <div className="mt-4 grid gap-5 md:grid-cols-2">
         <label className="block text-sm">
+          <span className="font-medium">Languages you know</span>
+
+          <input
+            value={profile.languagesText}
+            onChange={(event) =>
+              onChange({ ...profile, languagesText: event.target.value })
+            }
+            maxLength={MAX_LIST_TEXT}
+            placeholder="e.g. Python, TypeScript"
+            className="mt-2 w-full rounded-xl border border-[#e5e0d5] bg-white px-4 py-3 text-sm outline-none placeholder:text-[#a09b90] focus:border-[#a14e35]"
+          />
+
+          <span className="mt-1 block text-xs text-[#77766d]">
+            Comma-separated, up to 10. Compared with each repository&apos;s
+            main language, as reported by GitHub.
+          </span>
+        </label>
+
+        <label className="block text-sm">
           <span className="font-medium">Topics you care about</span>
 
           <input
@@ -46,7 +68,7 @@ export function ProfilePanel({ profile, onChange }: ProfilePanelProps) {
             onChange={(event) =>
               onChange({ ...profile, topicsText: event.target.value })
             }
-            maxLength={MAX_TOPICS_TEXT}
+            maxLength={MAX_LIST_TEXT}
             placeholder="e.g. api, testing, machine learning"
             className="mt-2 w-full rounded-xl border border-[#e5e0d5] bg-white px-4 py-3 text-sm outline-none placeholder:text-[#a09b90] focus:border-[#a14e35]"
           />
@@ -94,8 +116,7 @@ export function ProfilePanel({ profile, onChange }: ProfilePanelProps) {
       </div>
 
       <p className="mt-4 text-xs text-[#77766d]">
-        Saved in this browser only. Language preferences will count once
-        repository data is available.
+        Saved in this browser only.
       </p>
     </details>
   );

@@ -2,29 +2,29 @@ import { describe, expect, it } from "vitest";
 import {
   EMPTY_PROFILE,
   isProfileEmpty,
-  MAX_TOPICS_TEXT,
+  MAX_LIST_TEXT,
   parseStoredProfile,
-  parseTopics,
+  parseList,
   toApiProfile,
 } from "@/lib/profile";
 
-describe("parseTopics", () => {
+describe("parseList", () => {
   it("trims, drops blanks and de-duplicates ignoring case", () => {
-    expect(parseTopics("API, testing ,api,, ")).toEqual(["API", "testing"]);
+    expect(parseList("API, testing ,api,, ")).toEqual(["API", "testing"]);
   });
 
   it("returns an empty list for empty text", () => {
-    expect(parseTopics("")).toEqual([]);
+    expect(parseList("")).toEqual([]);
   });
 
   it("keeps at most 10 topics", () => {
     const text = Array.from({ length: 30 }, (_, i) => `t${i}`).join(",");
 
-    expect(parseTopics(text)).toHaveLength(10);
+    expect(parseList(text)).toHaveLength(10);
   });
 
   it("cuts each topic to 40 characters", () => {
-    expect(parseTopics("x".repeat(100))[0]).toHaveLength(40);
+    expect(parseList("x".repeat(100))[0]).toHaveLength(40);
   });
 });
 
@@ -40,39 +40,66 @@ describe("parseStoredProfile", () => {
     const raw = '{"topicsText":"api","taskTypes":["Bug","Hacker","Testing",7]}';
 
     expect(parseStoredProfile(raw)).toEqual({
+      languagesText: "",
       topicsText: "api",
       taskTypes: ["Bug", "Testing"],
     });
   });
 
+  it("reads languages, and gives profiles saved before them none", () => {
+    const withLanguages =
+      '{"languagesText":"Python, Go","topicsText":"api","taskTypes":[]}';
+
+    expect(parseStoredProfile(withLanguages).languagesText).toBe("Python, Go");
+    expect(
+      parseStoredProfile('{"topicsText":"api","taskTypes":[]}').languagesText,
+    ).toBe("");
+  });
+
   it("ignores fields of the wrong type", () => {
     const raw = '{"topicsText":123,"taskTypes":"Bug"}';
 
-    expect(parseStoredProfile(raw)).toEqual({ topicsText: "", taskTypes: [] });
+    expect(parseStoredProfile(raw)).toEqual({
+      languagesText: "",
+      topicsText: "",
+      taskTypes: [],
+    });
   });
 
   it("caps the topics text", () => {
     const raw = JSON.stringify({ topicsText: "a".repeat(5000), taskTypes: [] });
 
-    expect(parseStoredProfile(raw).topicsText).toHaveLength(MAX_TOPICS_TEXT);
+    expect(parseStoredProfile(raw).topicsText).toHaveLength(MAX_LIST_TEXT);
   });
 });
 
 describe("toApiProfile and isProfileEmpty", () => {
   it("converts the stored profile to the API shape", () => {
-    expect(toApiProfile({ topicsText: "api, ml", taskTypes: ["Bug"] })).toEqual({
+    expect(
+      toApiProfile({
+        languagesText: "Python, python, Go",
+        topicsText: "api, ml",
+        taskTypes: ["Bug"],
+      }),
+    ).toEqual({
+      languages: ["Python", "Go"],
       topics: ["api", "ml"],
       task_types: ["Bug"],
     });
   });
 
-  it("treats blank topics and no task types as empty", () => {
+  it("treats blank lists and no task types as empty", () => {
     expect(isProfileEmpty(EMPTY_PROFILE)).toBe(true);
-    expect(isProfileEmpty({ topicsText: " , ", taskTypes: [] })).toBe(true);
+    expect(
+      isProfileEmpty({ languagesText: " ,", topicsText: " , ", taskTypes: [] }),
+    ).toBe(true);
   });
 
-  it("is not empty once there is a topic or a task type", () => {
-    expect(isProfileEmpty({ topicsText: "api", taskTypes: [] })).toBe(false);
-    expect(isProfileEmpty({ topicsText: "", taskTypes: ["Bug"] })).toBe(false);
+  it("is not empty once there is a language, a topic or a task type", () => {
+    expect(
+      isProfileEmpty({ ...EMPTY_PROFILE, languagesText: "Rust" }),
+    ).toBe(false);
+    expect(isProfileEmpty({ ...EMPTY_PROFILE, topicsText: "api" })).toBe(false);
+    expect(isProfileEmpty({ ...EMPTY_PROFILE, taskTypes: ["Bug"] })).toBe(false);
   });
 });
