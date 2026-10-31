@@ -2,10 +2,11 @@ import httpx
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.clients.github import GitHubClient
+from api.clients.github import GitHubClient, GitHubResponseError
 from api.normalise import normalise_search_response
 from api.query import build_issue_query
 from api.ranking.scorer import rank_issues
+from api.rate_limit import describe_wait, is_rate_limited, retry_after_seconds
 from api.schemas.issue import IssueSearchResult, TaskType
 from api.schemas.ranking import RankRequest, RankResponse
 from api.settings import settings
@@ -22,6 +23,7 @@ app.add_middleware(
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
+    expose_headers=["Retry-After"],
 )
 
 
@@ -47,19 +49,33 @@ async def get_issues(
         raw = await client.search_issues(search, per_page=per_page, page=page)
     except httpx.HTTPStatusError as exc:
         upstream = exc.response
-        remaining = upstream.headers.get("X-RateLimit-Remaining")
 
-        if upstream.status_code == 429 or (
-            upstream.status_code == 403 and remaining == "0"
-        ):
+        if is_rate_limited(upstream.status_code, upstream.headers):
+            wait = retry_after_seconds(upstream.headers)
+            detail = "GitHub API rate limit reached."
+            headers: dict[str, str] = {}
+            if wait is None:
+                detail += " Please try again in a little while."
+            else:
+                detail += f" Try again in {describe_wait(wait)}."
+                headers["Retry-After"] = str(wait)
             raise HTTPException(
-                status_code=503,
-                detail="GitHub API rate limit reached. Try again later or configure GITHUB_TOKEN.",
+                status_code=503, detail=detail, headers=headers
             ) from exc
 
         raise HTTPException(
             status_code=502,
             detail="GitHub returned an unsuccessful response.",
+        ) from exc
+    except GitHubResponseError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail="GitHub returned a response Incipit could not read.",
+        ) from exc
+    except httpx.TimeoutException as exc:
+        raise HTTPException(
+            status_code=504,
+            detail="GitHub took too long to respond. Please try again.",
         ) from exc
     except httpx.RequestError as exc:
         raise HTTPException(

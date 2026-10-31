@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ProfilePanel } from "@/components/profile-panel";
 import { ScoreBreakdown } from "@/components/score-breakdown";
 import {
@@ -14,6 +14,12 @@ import {
   type SignalResult,
   type TaskType,
 } from "@/lib/api";
+import {
+  canLoadMore,
+  MAX_LOADED_ISSUES,
+  mergeIssues,
+  orderWithinPages,
+} from "@/lib/pagination";
 import { isProfileEmpty, toApiProfile } from "@/lib/profile";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { useStoredProfile } from "@/lib/use-stored-profile";
@@ -137,12 +143,23 @@ const taskTypes = [
 const SEARCH_DEBOUNCE_MS = 400;
 const PROFILE_DEBOUNCE_MS = 300;
 
+type SearchParams = {
+  query: string;
+  language: string | undefined;
+  taskType: TaskType | undefined;
+};
+
 type SearchState = {
   key: string;
+  params: SearchParams;
   items: ApiIssue[] | null;
   languageFilter: string | undefined;
   total: number | null;
   error: string | null;
+  page: number; // the last page loaded
+  pageStarts: number[]; // index in `items` where each loaded page begins
+  exhausted: boolean; // a page came back with nothing new
+  moreError: string | null; // error from the last "Load more"
 };
 
 type RankState = {
@@ -201,6 +218,10 @@ export default function Home() {
   const [apiHealthy, setApiHealthy] = useState<boolean | null>(null);
   const [result, setResult] = useState<SearchState | null>(null);
   const [ranking, setRanking] = useState<RankState | null>(null);
+  // The result key a "Load more" is running for, so a new search never
+  // inherits a stuck "Loading…" button from the old one.
+  const [loadingMoreFor, setLoadingMoreFor] = useState<string | null>(null);
+  const loadMoreController = useRef<AbortController | null>(null);
   const [profile, setProfile] = useStoredProfile();
 
   const debouncedSearch = useDebouncedValue(search.trim(), SEARCH_DEBOUNCE_MS);
@@ -217,6 +238,7 @@ export default function Home() {
   const issueError = result?.error ?? null;
   const totalCount = result?.total ?? null;
   const loadingIssues = result?.key !== requestKey;
+  const loadingMore = loadingMoreFor !== null && loadingMoreFor === result?.key;
 
   // Scores only count while they belong to the search result on screen.
   const currentRanking = ranking?.resultKey === result?.key ? ranking : null;
@@ -228,8 +250,10 @@ export default function Home() {
     const ranked = currentRanking?.ranked;
 
     if (ranked) {
-      return ranked.map((entry) =>
-        toCard(entry.issue, result.languageFilter, entry),
+      // Issues from a page that was just loaded wait at the end of it,
+      // unscored, until the next ranking arrives.
+      return orderWithinPages(result.items, result.pageStarts, ranked).map(
+        (entry) => toCard(entry.issue, result.languageFilter, entry.ranked),
       );
     }
 
@@ -263,20 +287,28 @@ export default function Home() {
     const key = requestKey;
     const languageFilter =
       language === "All languages" ? undefined : language;
-
-    fetchIssues({
+    const params: SearchParams = {
       query: debouncedSearch,
       language: languageFilter,
       taskType: task === "All tasks" ? undefined : (task as TaskType),
-      signal: controller.signal,
-    })
+    };
+
+    // A "Load more" for the old filters is no longer wanted.
+    loadMoreController.current?.abort();
+
+    fetchIssues({ ...params, signal: controller.signal })
       .then((data) => {
         setResult({
           key,
+          params,
           items: data.items,
           languageFilter,
           total: data.total_count,
           error: null,
+          page: 1,
+          pageStarts: [0],
+          exhausted: false,
+          moreError: null,
         });
       })
       .catch((error: unknown) => {
@@ -284,9 +316,14 @@ export default function Home() {
 
         setResult({
           key,
+          params,
           items: null,
           languageFilter,
           total: null,
+          page: 1,
+          pageStarts: [0],
+          exhausted: false,
+          moreError: null,
           error:
             error instanceof Error
               ? error.message
@@ -297,14 +334,19 @@ export default function Home() {
     return () => controller.abort();
   }, [requestKey, debouncedSearch, language, task]);
 
+  // Re-rank only when the issues change, not on every update to `result`
+  // (such as a "Load more" error).
+  const itemsToRank = result?.items ?? null;
+  const itemsKey = result?.key ?? null;
+
   useEffect(() => {
-    if (!result?.items) return undefined;
+    if (!itemsToRank || itemsKey === null) return undefined;
 
     const controller = new AbortController();
-    const resultKey = result.key;
+    const resultKey = itemsKey;
 
     rankIssues({
-      issues: result.items,
+      issues: itemsToRank,
       profile: JSON.parse(profileKey) as ApiProfile,
       signal: controller.signal,
     })
@@ -322,7 +364,7 @@ export default function Home() {
       });
 
     return () => controller.abort();
-  }, [result, profileKey]);
+  }, [itemsToRank, itemsKey, profileKey]);
 
   const displayedIssues = liveIssues ?? issues;
 
@@ -347,6 +389,58 @@ export default function Home() {
       return matchesSearch && matchesLanguage && matchesTask;
     });
   }, [search, language, task, liveIssues]);
+
+  async function loadMore() {
+    const current = result;
+    if (!current?.items || loadingMore) return;
+
+    const controller = new AbortController();
+    loadMoreController.current = controller;
+    setLoadingMoreFor(current.key);
+
+    try {
+      const next = await fetchIssues({
+        ...current.params,
+        page: current.page + 1,
+        signal: controller.signal,
+      });
+
+      // Ignore the answer if the filters changed while it was loading.
+      setResult((latest) => {
+        if (!latest?.items || latest.key !== current.key) return latest;
+
+        const merged = mergeIssues(latest.items, next.items);
+
+        return {
+          ...latest,
+          items: merged,
+          total: next.total_count,
+          page: latest.page + 1,
+          pageStarts:
+            merged.length > latest.items.length
+              ? [...latest.pageStarts, latest.items.length]
+              : latest.pageStarts,
+          exhausted: merged.length === latest.items.length,
+          moreError: null,
+        };
+      });
+    } catch (error: unknown) {
+      if (controller.signal.aborted) return;
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Could not load more issues.";
+
+      setResult((latest) =>
+        latest && latest.key === current.key
+          ? { ...latest, moreError: message }
+          : latest,
+      );
+    } finally {
+      setLoadingMoreFor((key) => (key === current.key ? null : key));
+    }
+  }
 
   function toggleSaved(id: number) {
     setSaved((current) =>
@@ -631,6 +725,35 @@ export default function Home() {
                 </div>
               </article>
             ))}
+          </div>
+        )}
+
+        {liveIssues !== null && result?.items && !loadingIssues && (
+          <div className="mt-8 flex flex-col items-center gap-2 text-sm text-[#77766d]">
+            {result.moreError && (
+              <p role="alert" className="text-[#a14e35]">
+                {result.moreError}
+              </p>
+            )}
+
+            {canLoadMore({
+              loaded: result.items.length,
+              total: result.total ?? 0,
+              exhausted: result.exhausted,
+            }) ? (
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="rounded-full border border-[#e5e0d5] bg-white px-5 py-2.5 font-semibold text-[#24251f] transition hover:border-[#a14e35] disabled:opacity-60"
+              >
+                {loadingMore ? "Loading…" : "Load more issues"}
+              </button>
+            ) : result.items.length >= MAX_LOADED_ISSUES ? (
+              <p>
+                Showing the first {MAX_LOADED_ISSUES} results. Narrow your
+                search to see others.
+              </p>
+            ) : null}
           </div>
         )}
 

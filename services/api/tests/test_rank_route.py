@@ -79,7 +79,7 @@ def test_rank_accepts_an_empty_list():
 @pytest.mark.parametrize(
     "payload",
     [
-        {"issues": [issue_json(id=i) for i in range(51)]},  # over the limit
+        {"issues": [issue_json(id=i) for i in range(101)]},  # over the limit
         {"issues": [issue_json()], "profile": {"topics": ["x" * 41]}},
         {"issues": [issue_json()], "profile": {"task_types": ["Nonsense"]}},
         {"issues": [{"id": 1}]},  # not a valid issue

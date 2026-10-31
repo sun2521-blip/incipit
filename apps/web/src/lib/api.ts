@@ -1,37 +1,21 @@
+import { PAGE_SIZE } from "@/lib/pagination";
+import {
+  parseIssueSearchResponse,
+  parseRankResponse,
+  type ApiIssue,
+  type IssueSearchResult,
+  type RankedIssue,
+  type SignalResult,
+  type TaskType,
+} from "@/lib/schemas";
+
+export type { ApiIssue, IssueSearchResult, RankedIssue, SignalResult, TaskType };
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8001";
 
 // The API only reads the first 20,000 characters of a body, so don't send more.
 const MAX_BODY_CHARS = 20_000;
-
-export type TaskType =
-  | "Bug"
-  | "Feature"
-  | "Documentation"
-  | "UI / UX"
-  | "Testing";
-
-/** An issue as returned by the Incipit API (already normalised). */
-export type ApiIssue = {
-  id: number;
-  number: number;
-  title: string;
-  url: string;
-  state: string;
-  repository: string; // "owner/name"
-  labels: string[];
-  body: string | null;
-  comments: number;
-  assignees: string[];
-  created_at: string;
-  updated_at: string;
-  inferred_task_type: TaskType | null;
-};
-
-export type IssueSearchResult = {
-  total_count: number;
-  items: ApiIssue[];
-};
 
 export type IssueSearchParams = {
   query?: string;
@@ -40,20 +24,6 @@ export type IssueSearchParams = {
   perPage?: number;
   page?: number;
   signal?: AbortSignal;
-};
-
-/** One scored signal. `score` is null when it could not be computed. */
-export type SignalResult = {
-  name: string;
-  score: number | null;
-  weight: number;
-  reason: string;
-};
-
-export type RankedIssue = {
-  issue: ApiIssue;
-  score: number;
-  breakdown: SignalResult[];
 };
 
 /** The profile as the API expects it. */
@@ -73,6 +43,27 @@ async function errorMessage(
     : `${fallback} (${response.status})`;
 }
 
+/** Read a JSON body and validate it; errors never expose raw server data. */
+async function readValidated<T>(
+  response: Response,
+  parse: (data: unknown) => T,
+  what: string,
+): Promise<T> {
+  let data: unknown;
+
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error(`The API returned an unreadable ${what} response.`);
+  }
+
+  try {
+    return parse(data);
+  } catch {
+    throw new Error(`The API returned an unexpected ${what} response.`);
+  }
+}
+
 export async function checkApiHealth(): Promise<boolean> {
   try {
     const response = await fetch(`${API_BASE_URL}/health`, {
@@ -88,7 +79,7 @@ export async function fetchIssues({
   query,
   language,
   taskType,
-  perPage = 20,
+  perPage = PAGE_SIZE,
   page = 1,
   signal,
 }: IssueSearchParams = {}): Promise<IssueSearchResult> {
@@ -110,7 +101,7 @@ export async function fetchIssues({
     throw new Error(await errorMessage(response, "Issue search failed"));
   }
 
-  return response.json() as Promise<IssueSearchResult>;
+  return readValidated(response, parseIssueSearchResponse, "search");
 }
 
 export async function rankIssues({
@@ -140,6 +131,5 @@ export async function rankIssues({
     throw new Error(await errorMessage(response, "Ranking failed"));
   }
 
-  const data = (await response.json()) as { items: RankedIssue[] };
-  return data.items;
+  return readValidated(response, parseRankResponse, "ranking");
 }

@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Incipit — Find your first open-source contribution",
   description:
     "Find open-source issues that match your skills. Every contribution has a beginning.",
