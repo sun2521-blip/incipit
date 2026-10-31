@@ -14,6 +14,11 @@ import {
   type SignalResult,
   type TaskType,
 } from "@/lib/api";
+import {
+  canLoadMore,
+  MAX_LOADED_ISSUES,
+  mergeIssues,
+} from "@/lib/pagination";
 import { isProfileEmpty, toApiProfile } from "@/lib/profile";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { useStoredProfile } from "@/lib/use-stored-profile";
@@ -137,12 +142,22 @@ const taskTypes = [
 const SEARCH_DEBOUNCE_MS = 400;
 const PROFILE_DEBOUNCE_MS = 300;
 
+type SearchParams = {
+  query: string;
+  language: string | undefined;
+  taskType: TaskType | undefined;
+};
+
 type SearchState = {
   key: string;
+  params: SearchParams;
   items: ApiIssue[] | null;
   languageFilter: string | undefined;
   total: number | null;
   error: string | null;
+  page: number; // the last page loaded
+  exhausted: boolean; // a page came back with nothing new
+  moreError: string | null; // error from the last "Load more"
 };
 
 type RankState = {
@@ -201,6 +216,7 @@ export default function Home() {
   const [apiHealthy, setApiHealthy] = useState<boolean | null>(null);
   const [result, setResult] = useState<SearchState | null>(null);
   const [ranking, setRanking] = useState<RankState | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [profile, setProfile] = useStoredProfile();
 
   const debouncedSearch = useDebouncedValue(search.trim(), SEARCH_DEBOUNCE_MS);
@@ -228,9 +244,18 @@ export default function Home() {
     const ranked = currentRanking?.ranked;
 
     if (ranked) {
-      return ranked.map((entry) =>
+      const cards = ranked.map((entry) =>
         toCard(entry.issue, result.languageFilter, entry),
       );
+
+      // Issues from a page that was just loaded wait here, unscored, until
+      // the next ranking arrives.
+      const rankedIds = new Set(ranked.map((entry) => entry.issue.id));
+      const waiting = result.items
+        .filter((item) => !rankedIds.has(item.id))
+        .map((item) => toCard(item, result.languageFilter));
+
+      return [...cards, ...waiting];
     }
 
     return result.items.map((item) => toCard(item, result.languageFilter));
@@ -263,20 +288,24 @@ export default function Home() {
     const key = requestKey;
     const languageFilter =
       language === "All languages" ? undefined : language;
-
-    fetchIssues({
+    const params: SearchParams = {
       query: debouncedSearch,
       language: languageFilter,
       taskType: task === "All tasks" ? undefined : (task as TaskType),
-      signal: controller.signal,
-    })
+    };
+
+    fetchIssues({ ...params, signal: controller.signal })
       .then((data) => {
         setResult({
           key,
+          params,
           items: data.items,
           languageFilter,
           total: data.total_count,
           error: null,
+          page: 1,
+          exhausted: false,
+          moreError: null,
         });
       })
       .catch((error: unknown) => {
@@ -284,9 +313,13 @@ export default function Home() {
 
         setResult({
           key,
+          params,
           items: null,
           languageFilter,
           total: null,
+          page: 1,
+          exhausted: false,
+          moreError: null,
           error:
             error instanceof Error
               ? error.message
@@ -347,6 +380,49 @@ export default function Home() {
       return matchesSearch && matchesLanguage && matchesTask;
     });
   }, [search, language, task, liveIssues]);
+
+  async function loadMore() {
+    const current = result;
+    if (!current?.items || loadingMore) return;
+
+    setLoadingMore(true);
+
+    try {
+      const next = await fetchIssues({
+        ...current.params,
+        page: current.page + 1,
+      });
+
+      // Ignore the answer if the filters changed while it was loading.
+      setResult((latest) => {
+        if (!latest?.items || latest.key !== current.key) return latest;
+
+        const merged = mergeIssues(latest.items, next.items);
+
+        return {
+          ...latest,
+          items: merged,
+          total: next.total_count,
+          page: latest.page + 1,
+          exhausted: merged.length === latest.items.length,
+          moreError: null,
+        };
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Could not load more issues.";
+
+      setResult((latest) =>
+        latest && latest.key === current.key
+          ? { ...latest, moreError: message }
+          : latest,
+      );
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   function toggleSaved(id: number) {
     setSaved((current) =>
@@ -631,6 +707,35 @@ export default function Home() {
                 </div>
               </article>
             ))}
+          </div>
+        )}
+
+        {liveIssues !== null && result?.items && !loadingIssues && (
+          <div className="mt-8 flex flex-col items-center gap-2 text-sm text-[#77766d]">
+            {result.moreError && (
+              <p role="alert" className="text-[#a14e35]">
+                {result.moreError}
+              </p>
+            )}
+
+            {canLoadMore({
+              loaded: result.items.length,
+              total: result.total ?? 0,
+              exhausted: result.exhausted,
+            }) ? (
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="rounded-full border border-[#e5e0d5] bg-white px-5 py-2.5 font-semibold text-[#24251f] transition hover:border-[#a14e35] disabled:opacity-60"
+              >
+                {loadingMore ? "Loading…" : "Load more issues"}
+              </button>
+            ) : result.items.length >= MAX_LOADED_ISSUES ? (
+              <p>
+                Showing the first {MAX_LOADED_ISSUES} results. Narrow your
+                search to see others.
+              </p>
+            ) : null}
           </div>
         )}
 

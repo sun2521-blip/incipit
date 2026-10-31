@@ -3,7 +3,8 @@ from pydantic import BaseModel, Field
 from api.schemas.issue import Issue
 from api.schemas.profile import Profile
 
-MAX_RANK_ISSUES = 50
+# Keep in step with MAX_LOADED_ISSUES in the frontend (lib/pagination.ts).
+MAX_RANK_ISSUES = 100
 
 
 class SignalResult(BaseModel):
