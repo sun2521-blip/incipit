@@ -7,6 +7,7 @@ from api.normalise import normalise_search_response
 from api.query import build_issue_query
 from api.ranking.scorer import rank_issues
 from api.rate_limit import describe_wait, is_rate_limited, retry_after_seconds
+from api.repo_context import attach_repo_contexts, fetch_repo_contexts
 from api.schemas.issue import IssueSearchResult, TaskType
 from api.schemas.ranking import RankRequest, RankResponse
 from api.settings import settings
@@ -83,7 +84,16 @@ async def get_issues(
             detail="Unable to reach the GitHub API.",
         ) from exc
 
-    return normalise_search_response(raw)
+    result = normalise_search_response(raw)
+
+    # Repository facts are extra: a failed lookup leaves that issue's
+    # repo_context as None instead of failing the whole search.
+    contexts = await fetch_repo_contexts(
+        client, [issue.repository for issue in result.items]
+    )
+    return result.model_copy(
+        update={"items": attach_repo_contexts(result.items, contexts)}
+    )
 
 
 @app.post("/rank")
