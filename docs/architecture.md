@@ -33,7 +33,7 @@ The MVP uses deterministic, explainable matching. An AI service is optional and 
 └────────────────────────────┘
 ```
 
-The diagram describes the intended architecture. Live discovery and ranking work end to end today; the issue dossier and repository context are not built yet.
+The diagram describes the intended architecture. Live discovery, repository context and ranking work end to end today; the issue dossier is not built yet.
 
 ## 3. Frontend
 
@@ -69,6 +69,10 @@ Responsibilities:
 
 Identical GitHub searches are cached in memory for 60 seconds, because the search API has the tightest rate limit. When GitHub rate-limits a request, the API answers 503 and says how long to wait.
 
+Each issue carries `repo_context`: verified facts from GitHub's `/repos` endpoint (main language, stars, last push, archived flag, topics, licence). `/issues` looks up each distinct repository on the page once, at most five at a time, and caches the answers for 30 minutes. A failed lookup (missing repository, rate limit, network error) leaves that issue's `repo_context` as null; it never fails the search.
+
+The contributing guide is read from GitHub's community profile and reported as found (with a link), not found, or unknown when the lookup failed. It is never guessed. The issue dossier will show it.
+
 Route handlers should remain thin. GitHub communication, normalization, ranking, and dossier generation should be separate modules.
 
 ## 5. Intended issue discovery flow
@@ -95,7 +99,7 @@ The ranking model uses these weights, which are hypotheses to evaluate rather th
 | Repository maintenance signals | 15% |
 | Contributor goal relevance | 10% |
 
-Skill/language match and maintenance need repository metadata, which is not fetched yet, so today's scores use the other three signals. A signal that cannot be computed is left out and the remaining weights are rescaled, so missing data neither helps nor hurts an issue.
+Skill/language match compares the repository's main language with the profile's languages. Maintenance falls as the last push ages, and is 0 for archived repositories. A signal that cannot be computed (for example, no languages in the profile, or no repository context) is left out and the remaining weights are rescaled, so missing data neither helps nor hurts an issue.
 
 The score is a heuristic for prioritization, not a probability that a contribution will be accepted or completed successfully.
 
@@ -123,9 +127,9 @@ The project prioritizes free tiers and should not require a paid AI provider for
 
 ## 9. Current limitations
 
-- Scores use 3 of 5 signals until repository metadata is fetched.
+- Language match uses only the repository's main language as GitHub reports it, so a repository that also uses the contributor's language can still score low.
+- Without `GITHUB_TOKEN`, repository lookups hit GitHub's limit of 60 calls an hour quickly; affected issues then show no repository details.
 - At most 100 issues are loaded and ranked per search.
 - Task type is inferred from labels, which are inconsistent between repositories.
-- Cards show a language only when a language filter is selected, and no star counts yet.
-- The issue dossier and repository context are not built yet.
+- The issue dossier is not built yet.
 - The shortlist is kept in memory and is lost on refresh; once saved, it will be local to the browser and not synchronised across devices.

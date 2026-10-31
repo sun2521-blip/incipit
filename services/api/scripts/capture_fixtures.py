@@ -47,7 +47,9 @@ def headers() -> dict[str, str]:
 def save(path: Path, data: Any) -> None:
     FIXTURES_DIR.mkdir(parents=True, exist_ok=True)
     path.write_text(
-        json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        json.dumps(data, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+        newline="\n",  # LF on every OS, matching .gitattributes
     )
 
 
