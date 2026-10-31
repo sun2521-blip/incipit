@@ -12,7 +12,6 @@ from dataclasses import dataclass
 from api.schemas.issue import Issue
 from api.schemas.profile import Profile
 
-_TEMPLATE_COMMENT = re.compile(r"<!--[\s\S]*?-->")
 _HEADING = re.compile(r"^#{1,6}\s.*$", re.MULTILINE)
 _DETAIL_WORDS = re.compile(
     r"steps to reproduce|how to reproduce|reproduc|expected|actual"
@@ -28,9 +27,37 @@ class Signal:
     reason: str
 
 
+# GitHub allows ~65,000 characters per issue body. Only the start is analysed,
+# which keeps the work per issue small and bounded.
+MAX_BODY_CHARS = 20_000
+
+
+def _strip_comments(text: str) -> str:
+    """Replace each <!-- ... --> with a space, in a single linear pass.
+
+    A regex like <!--[\\s\\S]*?--> gets quadratically slow on text with many
+    unclosed "<!--" openers, so this scans with str.find instead.
+    An unclosed comment swallows the rest of the text, as in HTML.
+    """
+    parts: list[str] = []
+    position = 0
+    while True:
+        start = text.find("<!--", position)
+        if start == -1:
+            parts.append(text[position:])
+            break
+        parts.append(text[position:start])
+        parts.append(" ")
+        end = text.find("-->", start + 4)
+        if end == -1:
+            break
+        position = end + 3
+    return "".join(parts)
+
+
 def clean_body(body: str | None) -> str:
     """Remove issue-template comments and headings, which carry no content."""
-    text = _TEMPLATE_COMMENT.sub(" ", body or "")
+    text = _strip_comments((body or "")[:MAX_BODY_CHARS])
     text = _HEADING.sub(" ", text)
     return text.strip()
 

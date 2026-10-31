@@ -1,3 +1,5 @@
+import time
+
 import pytest
 
 from api.ranking.signals import clarity, clean_body, goal_match, task_match
@@ -49,6 +51,23 @@ def test_clarity_ignores_template_headings_and_comments(make_issue):
 
     assert clean_body(body) == ""
     assert clarity(make_issue(body=body)).score == 0
+
+
+def test_clean_body_strips_every_comment():
+    assert clean_body("a<!--x-->b<!--y-->c") == "a b c"
+
+
+def test_clean_body_drops_text_after_an_unclosed_comment():
+    assert clean_body("keep this <!-- never closed") == "keep this"
+
+
+def test_clean_body_stays_fast_on_pathological_input():
+    # Thousands of unclosed "<!--" used to take seconds (quadratic regex).
+    started = time.perf_counter()
+
+    assert clean_body("<!--" * 100_000) == ""
+
+    assert time.perf_counter() - started < 1.0
 
 
 def test_clarity_short_plain_description_scores_low(make_issue):

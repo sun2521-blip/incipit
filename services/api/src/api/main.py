@@ -5,7 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.clients.github import GitHubClient
 from api.normalise import normalise_search_response
 from api.query import build_issue_query
+from api.ranking.scorer import rank_issues
 from api.schemas.issue import IssueSearchResult, TaskType
+from api.schemas.ranking import RankRequest, RankResponse
 from api.settings import settings
 
 app = FastAPI(
@@ -66,3 +68,9 @@ async def get_issues(
         ) from exc
 
     return normalise_search_response(raw)
+
+
+@app.post("/rank")
+def rank(request: RankRequest) -> RankResponse:
+    """Score and order issues for a profile. Pure computation: no GitHub calls."""
+    return RankResponse(items=rank_issues(request.issues, request.profile))
