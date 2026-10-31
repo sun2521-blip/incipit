@@ -11,7 +11,7 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 
 ## Status
 
-**62 of 140 sub-checkpoints done (44%).** Days 1 to 3 are complete, Days 4, 5, 10 and 12 are partly done, and the rest have not started. Dates are estimates at 3-4 hours a day; Day 1 was Oct 27.
+**64 of 140 sub-checkpoints done (46%).** Days 1 to 3 are complete, Days 4, 5, 10 and 12 are partly done, and the rest have not started. Dates are estimates at 3-4 hours a day; Day 1 was Oct 27.
 
 | Day | Goal | Status | Done | Target |
 | --- | --- | --- | --- | --- |
@@ -19,12 +19,12 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 | 2 | UI shell | Done | 6/6 | Oct 28 |
 | 3 | GitHub client | Done | 21/21 | Oct 29 (completed Oct 31) |
 | 4 | Ranking core | Partial | 9/11 | Oct 30 (completion: Nov 2) |
-| 5 | Real ranked results | Mostly done | 8/10 | Oct 31 (completion: Nov 2) |
+| 5 | Real ranked results | Mostly done | 9/10 | Oct 31 (completion: Nov 2) |
 | 6 | Repository context and the missing signals | Not started | 0/17 | Nov 2 |
 | 7 | Issue dossier | Not started | 0/13 | Nov 3 |
 | 8 | Saved shortlist | Not started | 0/7 | Nov 4 |
 | 9 | Evaluation | Not started | 0/6 | Nov 5 |
-| 10 | Frontend tests and CI | Partial | 5/9 | Nov 6 |
+| 10 | Frontend tests and CI | Partial | 6/9 | Nov 6 |
 | 11 | First deployment | Not started | 0/8 | Nov 7 |
 | 12 | Failure cases | Partial | 3/8 | Nov 8 |
 | 13 | Product polish | Not started | 0/8 | Nov 9 |
@@ -47,7 +47,7 @@ From the blueprint. Ticked only when true on the deployed product.
 - [ ] The dossier separates verified source facts from generated or inferred guidance.
 - [ ] Saved issues survive a refresh in the same browser.
 - [ ] Loading, empty, failure and rate-limit states are present. *(all present, and the rate-limit message says when to retry; confirm on the live URL)*
-- [ ] Backend tests, frontend tests, lint and type checks, and the production build pass in CI. *(workflow in place; waiting for a green run)*
+- [ ] Backend tests, frontend tests, lint and type checks, and the production build pass in CI. *(green on PR #1 and `main`; tick at release)*
 - [ ] The public deployment works without a paid AI API key.
 - [ ] README includes features, screenshots, architecture, local setup, environment variables, limitations and deployment notes.
 - [ ] A short demo shows the deployed product rather than only mockups.
@@ -172,7 +172,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 5: Real ranked results
 
-**Status:** Mostly done (8/10), target Oct 31 (completion: Nov 2)  
+**Status:** Mostly done (9/10), target Oct 31 (completion: Nov 2)  
 **Blueprint:** Add /issues and /rank integration; display score breakdowns and functional filters.
 
 #### CP5.1 API
@@ -192,7 +192,7 @@ From the blueprint. Ticked only when true on the deployed product.
 - [x] Frontend type check (`npm run typecheck`), `npm run lint` and `npm run build` confirmed clean locally
 - [ ] Manual check of the profile flow: persistence after refresh, re-ranking, API-down state; also click through "Load more"
 - [x] Bug, Feature and Documentation filters confirmed to return results against live GitHub on Oct 31 (UI / UX and Testing too). Note: some UI / UX results are inferred as Bug because the bug rule is checked first
-- [ ] Open a pull request so CI runs once on the current code; fix whatever it reports *(PR open; the first run failed on `LayoutProps` and is fixed with `next typegen`; waiting for a green run)*
+- [x] Open a pull request so CI runs once on the current code; fix whatever it reports (PR #1: the first run failed on `LayoutProps`, fixed with `next typegen`, then green)
 
 ### Day 6: Repository context and the missing signals
 
@@ -304,7 +304,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 10: Frontend tests and CI
 
-**Status:** Partial (5/9), target Nov 6  
+**Status:** Partial (6/9), target Nov 6  
 **Blueprint:** (Blueprint Day 13 CI, moved before deployment so the first deploy is a green build.)
 
 #### CP10.1 Frontend tests
@@ -317,7 +317,7 @@ From the blueprint. Ticked only when true on the deployed product.
 - [x] Workflow in `.github/workflows/ci.yml`: runs on pull requests and pushes to `main`, uses the lockfiles
 - [x] Backend job: `uv sync --locked` (stricter than `--frozen`: it also fails if the lockfile is stale), ruff check and format check, pytest with coverage (`--cov=api`, 99% on Oct 31)
 - [x] Frontend job: `npm ci`, lint, `npm run typecheck` (`next typegen` then `tsc --noEmit`), tests, build
-- [ ] Green on a pull request and on `main`
+- [x] Green on a pull request and on `main` (PR #1 and its merge, Oct 31)
 
 #### CP10.3 Hygiene
 
