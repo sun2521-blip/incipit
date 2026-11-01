@@ -1,0 +1,1215 @@
+{
+  "captured_at": "2026-11-01T15:28:09+00:00",
+  "issues": [
+    {
+      "id": 6148631421,
+      "number": 30,
+      "title": "Improve README",
+      "url": "https://github.com/ISTA-PLV/nael/issues/30",
+      "state": "open",
+      "repository": "ISTA-PLV/nael",
+      "labels": [
+        "documentation",
+        "good first issue"
+      ],
+      "body": "Improve the README. Suggestions\n- Put a table with key bindings at the top\n- Move the installation instructions up\n- Add pictures/gifs of the features rather than trying to explain what it looks like",
+      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-11-01T15:26:21Z",
+      "updated_at": "2026-11-01T15:26:21Z",
+      "inferred_task_type": "Documentation",
+      "repo_context": {
+        "full_name": "ISTA-PLV/nael",
+        "url": "https://github.com/ISTA-PLV/nael",
+        "description": "This is a fork of: https://codeberg.org/mekeor/nael",
+        "language": "Emacs Lisp",
+        "stars": 0,
+        "pushed_at": "2026-11-01T00:38:45Z",
+        "archived": false,
+        "topics": [],
+        "license": "GPL-3.0"
+      }
+    },
+    {
+      "id": 6099157828,
+      "number": 772,
+      "title": "[BUG] mergeAccount() helper doesn't warn when merging an account that still has open trustlines, which Stellar will reject",
+      "url": "https://github.com/trustflow-protocol/trustflow-sdk/issues/772",
+      "state": "open",
+      "repository": "trustflow-protocol/trustflow-sdk",
+      "labels": [
+        "bug",
+        "good first issue",
+        "sdk",
+        "core",
+        "difficulty: easy",
+        "priority: medium"
+      ],
+      "body": "## Description\n\nAccount merge operations fail on-chain if the source account has any open trustlines (non-native asset balances), but the SDK's `mergeAccount()` helper doesn't check for this client-side before building and submitting the operation.\n\n## Component\n\n`accounts`\n\n## Steps to Reproduce\n\n1. Attempt to merge an account that holds a non-zero balance of some issued asset (open trustline).\n2. Call `mergeAccount(source, destination)`.\n3. Observe the on-chain rejection.\n\n## Expected Behavior\n\nThe helper should check for open trustlines client-side and throw a clear, actionable error (\"close trustlines before merging\") rather than submitting a transaction guaranteed to fail.\n\n## Actual Behavior\n\nThe merge operation fails on-chain with a generic op-level error, giving the caller no hint that trustlines are the blocker.\n\n## Environment\n\n- SDK version: 0.3.x\n- Node version: 20.x, 22.x\n- OS: macOS / Linux\n- Network: TESTNET\n\n## Code Example\n\n```typescript\n// Not applicable — reproduced via API inspection, not a standalone snippet.\n```\n\n## Error Output\n\n```\nop_has_sub_entries\n```\n\n## Difficulty\n\n🟢 Easy\n\n## Additional Context\n\nNo pre-flight check for sub-entries (trustlines, offers, data entries) exists before attempting a merge.\n",
+      "comments": 2,
+      "assignees": [],
+      "created_at": "2026-10-29T11:59:48Z",
+      "updated_at": "2026-11-01T15:25:48Z",
+      "inferred_task_type": "Bug",
+      "repo_context": {
+        "full_name": "trustflow-protocol/trustflow-sdk",
+        "url": "https://github.com/trustflow-protocol/trustflow-sdk",
+        "description": null,
+        "language": "TypeScript",
+        "stars": 0,
+        "pushed_at": "2026-10-30T14:35:02Z",
+        "archived": false,
+        "topics": [
+          "blockchain",
+          "client-library",
+          "escrow",
+          "npm-package",
+          "sdk",
+          "soroban",
+          "stellar",
+          "stellar-sdk",
+          "typescript",
+          "web3",
+          "zod"
+        ],
+        "license": "MIT"
+      }
+    },
+    {
+      "id": 6145813229,
+      "number": 333,
+      "title": "/member/repair-activities 卡片同步优化，可以复用现有维修报名页面卡片设计",
+      "url": "https://github.com/ZAFU-PCHospital/zafu-pchospital-web/issues/333",
+      "state": "open",
+      "repository": "ZAFU-PCHospital/zafu-pchospital-web",
+      "labels": [
+        "enhancement",
+        "good first issue",
+        "Tier2"
+      ],
+      "body": "#317 ",
+      "comments": 1,
+      "assignees": [
+        "C1rcleW"
+      ],
+      "created_at": "2026-11-01T10:24:08Z",
+      "updated_at": "2026-11-01T15:25:32Z",
+      "inferred_task_type": "Feature",
+      "repo_context": {
+        "full_name": "ZAFU-PCHospital/zafu-pchospital-web",
+        "url": "https://github.com/ZAFU-PCHospital/zafu-pchospital-web",
+        "description": "浙江农林大学电脑医院社团官方网站（Next.js + TypeScript + Tailwind）",
+        "language": "TypeScript",
+        "stars": 3,
+        "pushed_at": "2026-11-01T15:06:49Z",
+        "archived": false,
+        "topics": [],
+        "license": "AGPL-3.0"
+      }
+    },
+    {
+      "id": 5829177643,
+      "number": 62,
+      "title": "[B6.3][Phase 4]: Wire Live AIS development runtime and acceptance harness",
+      "url": "https://github.com/ApexForge-cz/Pelagos-eye/issues/62",
+      "state": "open",
+      "repository": "ApexForge-cz/Pelagos-eye",
+      "labels": [
+        "enhancement",
+        "good first issue",
+        "area:api"
+      ],
+      "body": "# [B6.3][Phase 4]: Development runtime plumbing and acceptance harness\n\n## Owner, branch, and coordination\n\n- Owner: Developer B (@ZhouBx634).\n- Required branch: `infra/live-ais-development-runtime`, created from the latest `main`.\n- Open one focused PR to `main`; never push directly to `main`.\n- Developer A is working in `apps/web` on gateway-to-map integration. This issue must not edit `apps/web`, the frozen v1 event contract, gateway continuity logic, or database migrations.\n- Before coding, comment with the planned Compose environment mapping, Nginx WebSocket headers, no-key behavior, and smoke-test procedure.\n\nStart with:\n\n```bash\ngit switch main\ngit pull --ff-only origin main\ngit switch -c infra/live-ais-development-runtime\n```\n\n## Goal\n\nMake the already accepted bounded Live AIS backend reachable through both supported local development paths without exposing the Pelyr key:\n\n1. source Vite UI at `http://localhost:5173` -> `/live-ais/ws` -> API;\n2. Docker Web at `http://localhost:4173` -> Nginx `/live-ais/ws` -> API.\n\nThis task provides development/demo plumbing and repeatable acceptance evidence. It does not claim production readiness or global coverage.\n\n## Deliverables\n\n1. **Compose environment wiring**\n   - Pass server-only `PELYR_API_KEY` into the API container as optional/blank-safe; a missing key must keep the API healthy and AIS must report `DATA UNAVAILABLE`.\n   - Pass `OCEANSCOPE_LIVE_AIS_ORIGINS` into the API container with explicit localhost development origins for 4173 and 5173.\n   - Do not print, interpolate into frontend assets, copy, or commit the key.\n\n2. **Nginx same-origin WebSocket proxy**\n   - Proxy `/live-ais/` to the API using HTTP/1.1 Upgrade/Connection headers.\n   - Preserve Host, forwarded address, and forwarded protocol.\n   - Keep the existing SPA and HTTP API proxy behavior unchanged.\n\n3. **Small acceptance harness or documented smoke procedure**\n   - Verify `docker compose config` with a placeholder only, never a real credential.\n   - Verify Nginx configuration syntax.\n   - Verify the no-key path returns an initial product snapshot/status with explicit `DATA UNAVAILABLE` while `/health/ready` remains healthy.\n   - When a local key is supplied by the project lead, verify only the fixed Gulf of Finland coverage, snapshot-first ordering, monotonically increasing sequence, attribution, and clean shutdown. Do not record raw real-vessel payloads, MMSI, coordinates, or the key in committed evidence.\n   - Record commands, sanitized results, and remaining limitations in `docs/b-deliveries/B6.3-live-ais-development-runtime.md`.\n\n4. **Focused regression checks**\n   - Add only configuration/runtime tests justified by the changed files.\n   - Demonstrate that unapproved Origin remains rejected and Docker/Vite approved origins work.\n\n## Allowed paths\n\n- `infra/compose.yaml`\n- `infra/nginx.conf`\n- a narrowly scoped runtime/smoke script under `scripts/` if needed\n- focused backend/config tests needed for this wiring\n- `docs/b-deliveries/B6.3-live-ais-development-runtime.md`\n- `.env.example` only if a variable description is missing or inaccurate; never add a value\n\n## Forbidden\n\nNo `apps/web`, provider protocol or normalizer changes, public contract changes, new vessel query API, persistence, Redis/PostGIS/Alembic, replay, tracks, export, dynamic subscription bounds, production authentication claims, real-data fixtures, screenshots containing vessel identifiers, secrets, or new dependency without approval.\n\n## Acceptance criteria\n\n- Both localhost routes have an explicit, tested WebSocket path.\n- Blank/no key is healthy and truthfully shows `DATA UNAVAILABLE`.\n- A real key remains server-only and is never committed or logged.\n- Fixed Gulf of Finland bounds and current anti-extraction limits remain unchanged.\n- Relevant format/lint/type/tests, `git diff --check`, Compose config validation, Nginx syntax check, and configured secret scan pass.\n- Delivery note records exact sanitized evidence and clearly states that Phase 4 remains `Planned` until Developer A completes browser acceptance.\n\n## Learning value\n\nThis issue is intentionally limited to container environment injection, reverse-proxy WebSocket mechanics, safe configuration, and repeatable smoke testing. It gives practical Docker/Nginx/API integration experience without changing the accepted data model or frontend.",
+      "comments": 2,
+      "assignees": [
+        "ZhouBx634"
+      ],
+      "created_at": "2026-10-13T11:05:50Z",
+      "updated_at": "2026-11-01T15:25:21Z",
+      "inferred_task_type": "Feature",
+      "repo_context": {
+        "full_name": "ApexForge-cz/Pelagos-eye",
+        "url": "https://github.com/ApexForge-cz/Pelagos-eye",
+        "description": " 3D global maritime situational visualization platform with AIS and ocean environment data",
+        "language": "Python",
+        "stars": 1,
+        "pushed_at": "2026-10-13T14:20:25Z",
+        "archived": false,
+        "topics": [],
+        "license": "MIT"
+      }
+    },
+    {
+      "id": 3876010869,
+      "number": 1281,
+      "title": "Support Vortex File Format",
+      "url": "https://github.com/lakehq/sail/issues/1281",
+      "state": "open",
+      "repository": "lakehq/sail",
+      "labels": [
+        "good first issue",
+        "help wanted"
+      ],
+      "body": "https://github.com/vortex-data/vortex",
+      "comments": 3,
+      "assignees": [],
+      "created_at": "2026-01-30T14:40:12Z",
+      "updated_at": "2026-11-01T15:24:36Z",
+      "inferred_task_type": null,
+      "repo_context": {
+        "full_name": "lakehq/sail",
+        "url": "https://github.com/lakehq/sail",
+        "description": "Drop-in Apache Spark replacement written in Rust, unifying batch processing, stream processing, and compute-intensive AI workloads.",
+        "language": "Rust",
+        "stars": 3482,
+        "pushed_at": "2026-11-01T15:02:56Z",
+        "archived": false,
+        "topics": [
+          "apache-iceberg",
+          "apache-spark",
+          "arrow",
+          "artificial-intelligence",
+          "big-data",
+          "data-engineering",
+          "datafusion",
+          "delta-lake",
+          "distributed-computing",
+          "iceberg",
+          "lakehouse",
+          "machine-learning",
+          "parquet",
+          "pyspark",
+          "python",
+          "rust",
+          "spark",
+          "spark-connect",
+          "spark-sql",
+          "sql"
+        ],
+        "license": "Apache-2.0"
+      }
+    },
+    {
+      "id": 6138577493,
+      "number": 54,
+      "title": "Karta oryginału: UncheatableEval",
+      "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai/issues/54",
+      "state": "open",
+      "repository": "slayerlabs/benchmarks-fabryka-ai",
+      "labels": [
+        "good first issue",
+        "research"
+      ],
+      "body": "## Cel\n\nKarta opisuje, co mierzy UncheatableEval i jak liczą go autorzy, a od jej promptu, oceny i wyniku referencyjnego zależy odtworzenie wyniku i kod w #35.\n\n## Co zrobić\n\nKarta oryginału `research/benchmarks/uncheatable-eval/ORIGINAL.md` według [„A. Karta oryginału (ORIGINAL.md)”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#a-karta-oryginału-originalmd), pojęcia w [Słowniczku](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#słowniczek). Pierwsze zadanie dla nowej osoby: około 2 h, bez uruchamiania modeli.\n\n## Dane wejściowe\n\n- Wzór karty: [`research/benchmarks/_template/ORIGINAL.md`](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/benchmarks/_template/ORIGINAL.md).\n- Praca: Tan, Li, Shen, „Uncheatable Eval: Dynamic Compression-Based Evaluation of Language Models”, 2026, https://arxiv.org/abs/2609.27510.\n- Repo autorów z kodem i programami, które zbierają teksty: https://github.com/Jellyfish042/uncheatable_eval/tree/d2f07ae34241f0b409b7704f2da447778afbc9aa. Leaderboard: https://huggingface.co/spaces/Jellyfish042/UncheatableEval. Dane: https://huggingface.co/collections/Jellyfish042/uncheatableeval.\n- Zbiór zmienia się z każdym wydaniem danych. Metryka to BPB (bity na bajt), nie trafność.\n- Nie ma go wśród 50 testów Space.\n\n## Gotowe, gdy\n\n- [ ] `research/benchmarks/uncheatable-eval/ORIGINAL.md` ma wszystkie pola wzoru. Wśród nich jest jedna metryka decyzyjna i wyniki referencyjne z datą odczytu.\n- [ ] „Wyniki referencyjne” podają wynik z leaderboardu modelu, który da się pobrać z HF, na jednym wydaniu danych, z nazwą wydania i datą odczytu.\n- [ ] Pole „Dane” opisuje wybrane wydanie, czyli źródła i daty tekstów.\n- [ ] PR do `main` z `Refs #54`, według [CONTRIBUTING, „PR”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/CONTRIBUTING.md#pr).\n- [ ] Bramka liczb kończy się kodem 0.\n\nSprawdzenie: recenzja.\n",
+      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-10-31T18:56:03Z",
+      "updated_at": "2026-11-01T15:24:19Z",
+      "inferred_task_type": null,
+      "repo_context": {
+        "full_name": "slayerlabs/benchmarks-fabryka-ai",
+        "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai",
+        "description": "Repozytorium Bench Team ",
+        "language": "Python",
+        "stars": 9,
+        "pushed_at": "2026-11-01T14:59:37Z",
+        "archived": false,
+        "topics": [],
+        "license": null
+      }
+    },
+    {
+      "id": 6138577245,
+      "number": 53,
+      "title": "Karta oryginału: BLiMP Supplement",
+      "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai/issues/53",
+      "state": "open",
+      "repository": "slayerlabs/benchmarks-fabryka-ai",
+      "labels": [
+        "good first issue",
+        "research"
+      ],
+      "body": "## Cel\n\nKarta opisuje, co mierzy BLiMP Supplement i jak liczą go autorzy, a od jej promptu, oceny i wyniku referencyjnego zależy odtworzenie wyniku i kod w #33.\n\n## Co zrobić\n\nKarta oryginału `research/benchmarks/blimp-supplement/ORIGINAL.md` według [„A. Karta oryginału (ORIGINAL.md)”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#a-karta-oryginału-originalmd), pojęcia w [Słowniczku](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#słowniczek). Pierwsze zadanie dla nowej osoby: około 2 h, bez uruchamiania modeli.\n\n## Dane wejściowe\n\n- Wzór karty: [`research/benchmarks/_template/ORIGINAL.md`](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/benchmarks/_template/ORIGINAL.md). Gotowa karta z tej samej rodziny testów: [`research/benchmarks/blimp/ORIGINAL.md`](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/benchmarks/blimp/ORIGINAL.md).\n- Praca: Hu i in., „Findings of the Second BabyLM Challenge”, 2024, https://arxiv.org/abs/2412.05149. Repo autorów z kodem oceny: https://github.com/babylm/evaluation-pipeline-2024/tree/d680c2875e2141d0db14f68c305caca9e6d86b85.\n- Dane: archiwum `evaluation_data` z OSF, projekt `ad7qg`. Link jest w README repo autorów, w sekcji „Data”. Zbiór nie ma rewizji.\n- Podzadania (5): hypernym, qa_congruence_easy, qa_congruence_tricky, subject_aux_inversion, turn_taking. Ich definicje są w `lm_eval/tasks/blimp_supplement/` w repo autorów. Wynik to średnia bez wag.\n- Wynik referencyjny: `babylm/babyllama-10m-2024` (https://huggingface.co/babylm/babyllama-10m-2024), acc: hypernym 49,6, QA congruence easy 54,7, tricky 41,2, subject-aux inversion 86,0, turn taking 66,1, średnia 59,5. Źródło to README repo autorów, sekcja „Baselines”. Pythia v0 i EuroLLM-1.7B nie podają BLiMP Supplement.\n- Nie ma go wśród 50 testów Space.\n\n## Gotowe, gdy\n\n- [ ] `research/benchmarks/blimp-supplement/ORIGINAL.md` ma wszystkie pola wzoru. Wśród nich jest jedna metryka decyzyjna i wyniki referencyjne z datą odczytu.\n- [ ] Pole „Dane” podaje datę pobrania i SHA-256 archiwum `evaluation_data` z OSF.\n- [ ] Pole „Znane rozbieżności” mówi, czy lm-eval 0.4.9.1 ma to zadanie i czym różni się od kodu autorów.\n- [ ] PR do `main` z `Refs #53`, według [CONTRIBUTING, „PR”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/CONTRIBUTING.md#pr).\n- [ ] Bramka liczb kończy się kodem 0.\n\nSprawdzenie: recenzja.\n",
+      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-10-31T18:56:01Z",
+      "updated_at": "2026-11-01T15:24:17Z",
+      "inferred_task_type": null,
+      "repo_context": {
+        "full_name": "slayerlabs/benchmarks-fabryka-ai",
+        "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai",
+        "description": "Repozytorium Bench Team ",
+        "language": "Python",
+        "stars": 9,
+        "pushed_at": "2026-11-01T14:59:37Z",
+        "archived": false,
+        "topics": [],
+        "license": null
+      }
+    },
+    {
+      "id": 6138576739,
+      "number": 52,
+      "title": "Karta oryginału: LAMBADA",
+      "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai/issues/52",
+      "state": "open",
+      "repository": "slayerlabs/benchmarks-fabryka-ai",
+      "labels": [
+        "good first issue",
+        "research"
+      ],
+      "body": "## Cel\n\nKarta opisuje, co mierzy LAMBADA i jak liczą go autorzy, a od jej promptu, oceny i wyniku referencyjnego zależy odtworzenie wyniku i kod w #32.\n\n## Co zrobić\n\nKarta oryginału `research/benchmarks/lambada/ORIGINAL.md` według [„A. Karta oryginału (ORIGINAL.md)”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#a-karta-oryginału-originalmd), pojęcia w [Słowniczku](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#słowniczek). Pole „Znane rozbieżności” porównuje plik zadania lm-eval w wersji Space i repo według [„Wersja lm-eval”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#wersja-lm-eval). Pierwsze zadanie dla nowej osoby: około 2 h, bez uruchamiania modeli.\n\n## Dane wejściowe\n\n- Wzór karty: [`research/benchmarks/_template/ORIGINAL.md`](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/benchmarks/_template/ORIGINAL.md).\n- Praca: Paperno i in., „The LAMBADA dataset: Word prediction requiring a broad discourse context”, ACL 2016, https://arxiv.org/abs/1606.06031. Repo autorów z kodem oceny: nieustalone.\n- Zadanie lm-eval `lambada_openai` w wersji Space, commit `6d2abda4`: https://github.com/EleutherAI/lm-evaluation-harness/tree/6d2abda4fd171e68a8789330c4149e37c1ca0bda/lm_eval/tasks/lambada. W wersji repo, tag `v0.4.9.1`: https://github.com/EleutherAI/lm-evaluation-harness/tree/v0.4.9.1/lm_eval/tasks/lambada.\n- `lambada_openai` to wersja tekstu przygotowana przez OpenAI, `lambada_standard` to zbiór autorów.\n- Zbiór: https://huggingface.co/datasets/EleutherAI/lambada_openai, konfiguracja `default`, rewizja `900124bf3b8235c6daf21033af9948b3f07346c4`, split test. W Space to test T17, metryka `acc`, 0-shot.\n- Wynik referencyjny: Pythia-1B v0 (`EleutherAI/pythia-1b-v0` @ `step143000`), 0-shot, acc 0,5622, perpleksja 7,785. Źródło: [plik wyników Pythii v0](https://github.com/EleutherAI/pythia/blob/main/evals/pythia-v0/pythia-1b/zero-shot/pythia-1b-0shot-global_step143000_eval_results_11-28-2022-15-14-35.json).\n- Ocena: ostatnie słowo liczy się jako trafione tylko wtedy, gdy model przewiduje po kolei wszystkie jego tokeny jako najbardziej prawdopodobne. Dlatego wynik zależy od tokenizera i od spacji przed słowem.\n\n## Gotowe, gdy\n\n- [ ] `research/benchmarks/lambada/ORIGINAL.md` ma wszystkie pola wzoru. Wśród nich jest jedna metryka decyzyjna i wyniki referencyjne z datą odczytu.\n- [ ] Pole „Ocena” opisuje zależność wyniku od tokenizera i od spacji przed słowem.\n- [ ] Pole „Znane rozbieżności” opisuje też różnicę między `lambada_openai` a `lambada_standard`.\n- [ ] PR do `main` z `Refs #52`, według [CONTRIBUTING, „PR”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/CONTRIBUTING.md#pr).\n- [ ] Bramka liczb kończy się kodem 0.\n\nSprawdzenie: recenzja.\n",
+      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-10-31T18:55:58Z",
+      "updated_at": "2026-11-01T15:24:16Z",
+      "inferred_task_type": null,
+      "repo_context": {
+        "full_name": "slayerlabs/benchmarks-fabryka-ai",
+        "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai",
+        "description": "Repozytorium Bench Team ",
+        "language": "Python",
+        "stars": 9,
+        "pushed_at": "2026-11-01T14:59:37Z",
+        "archived": false,
+        "topics": [],
+        "license": null
+      }
+    },
+    {
+      "id": 142967474,
+      "number": 1170,
+      "title": "`link_to node_object` should display a better string",
+      "url": "https://github.com/neo4jrb/activegraph/issues/1170",
+      "state": "open",
+      "repository": "neo4jrb/activegraph",
+      "labels": [
+        "good first issue"
+      ],
+      "body": "Reported by josh on Slack, it shows `<Neo4j::ActiveNode::HasN::AssociationProxy:<id>>`\n",
+      "comments": 2,
+      "assignees": [],
+      "created_at": "2016-03-23T14:01:55Z",
+      "updated_at": "2026-11-01T15:24:16Z",
+      "inferred_task_type": null,
+      "repo_context": {
+        "full_name": "neo4jrb/activegraph",
+        "url": "https://github.com/neo4jrb/activegraph",
+        "description": "An active model wrapper for the Neo4j Graph Database for Ruby.",
+        "language": "Ruby",
+        "stars": 1408,
+        "pushed_at": "2026-11-01T14:27:23Z",
+        "archived": false,
+        "topics": [
+          "graph-database",
+          "neo4j",
+          "orm",
+          "railtie",
+          "ruby"
+        ],
+        "license": "MIT"
+      }
+    },
+    {
+      "id": 6138576310,
+      "number": 51,
+      "title": "Karta oryginału: OpenBookQA",
+      "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai/issues/51",
+      "state": "open",
+      "repository": "slayerlabs/benchmarks-fabryka-ai",
+      "labels": [
+        "good first issue",
+        "research"
+      ],
+      "body": "## Cel\n\nKarta opisuje, co mierzy OpenBookQA i jak liczą go autorzy, a od jej promptu, oceny i wyniku referencyjnego zależy odtworzenie wyniku i kod w #31.\n\n## Co zrobić\n\nKarta oryginału `research/benchmarks/openbookqa/ORIGINAL.md` według [„A. Karta oryginału (ORIGINAL.md)”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#a-karta-oryginału-originalmd), pojęcia w [Słowniczku](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#słowniczek). Pole „Znane rozbieżności” porównuje plik zadania lm-eval w wersji Space i repo według [„Wersja lm-eval”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#wersja-lm-eval), a model kontrolny wskazuje się według [„Model kontrolny etapu B”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#model-kontrolny-etapu-b). Pierwsze zadanie dla nowej osoby: około 2 h, bez uruchamiania modeli.\n\n## Dane wejściowe\n\n- Wzór karty: [`research/benchmarks/_template/ORIGINAL.md`](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/benchmarks/_template/ORIGINAL.md).\n- Praca: Mihaylov i in., „Can a Suit of Armor Conduct Electricity? A New Dataset for Open Book Question Answering”, EMNLP 2018, https://arxiv.org/abs/1809.02789. Repo autorów: https://github.com/allenai/OpenBookQA/tree/b51971646e9371a61508d9953fc706645e194a71.\n- Zadanie lm-eval `openbookqa` w wersji Space, commit `6d2abda4`: https://github.com/EleutherAI/lm-evaluation-harness/tree/6d2abda4fd171e68a8789330c4149e37c1ca0bda/lm_eval/tasks/openbookqa. W wersji repo, tag `v0.4.9.1`: https://github.com/EleutherAI/lm-evaluation-harness/tree/v0.4.9.1/lm_eval/tasks/openbookqa.\n- Zbiór: https://huggingface.co/datasets/allenai/openbookqa, konfiguracja `main`, rewizja `388097ea7776314e93a529163e0fea805b8a6454`, split test. W Space to test T08, metryka `acc_norm`, 0-shot.\n- Pythia v0 i EuroLLM-1.7B nie mają wyniku OpenBookQA.\n- Inny opublikowany wynik, nie do kontroli: Pythia-1.0B (wagi v1), 0-shot 31,40. Podaje go praca TinyLlama w Tabeli 3: https://arxiv.org/abs/2401.02385.\n\n## Gotowe, gdy\n\n- [ ] `research/benchmarks/openbookqa/ORIGINAL.md` ma wszystkie pola wzoru. Wśród nich jest jedna metryka decyzyjna i wyniki referencyjne z datą odczytu.\n- [ ] „Wyniki referencyjne” wskazują model kontrolny albo „nieustalone” z miejscami, w których szukano.\n- [ ] Przy wyniku z pracy TinyLlama karta mówi, czy 31,40 to acc czy acc_norm.\n- [ ] PR do `main` z `Refs #51`, według [CONTRIBUTING, „PR”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/CONTRIBUTING.md#pr).\n- [ ] Bramka liczb kończy się kodem 0.\n\nSprawdzenie: recenzja.\n",
+      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-10-31T18:55:55Z",
+      "updated_at": "2026-11-01T15:24:14Z",
+      "inferred_task_type": null,
+      "repo_context": {
+        "full_name": "slayerlabs/benchmarks-fabryka-ai",
+        "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai",
+        "description": "Repozytorium Bench Team ",
+        "language": "Python",
+        "stars": 9,
+        "pushed_at": "2026-11-01T14:59:37Z",
+        "archived": false,
+        "topics": [],
+        "license": null
+      }
+    },
+    {
+      "id": 6138575963,
+      "number": 50,
+      "title": "Karta oryginału: SciQ",
+      "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai/issues/50",
+      "state": "open",
+      "repository": "slayerlabs/benchmarks-fabryka-ai",
+      "labels": [
+        "good first issue",
+        "research"
+      ],
+      "body": "## Cel\n\nKarta opisuje, co mierzy SciQ i jak liczą go autorzy, a od jej promptu, oceny i wyniku referencyjnego zależy odtworzenie wyniku i kod w #30.\n\n## Co zrobić\n\nKarta oryginału `research/benchmarks/sciq/ORIGINAL.md` według [„A. Karta oryginału (ORIGINAL.md)”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#a-karta-oryginału-originalmd), pojęcia w [Słowniczku](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#słowniczek). Pole „Znane rozbieżności” porównuje plik zadania lm-eval w wersji Space i repo według [„Wersja lm-eval”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#wersja-lm-eval). Pierwsze zadanie dla nowej osoby: około 2 h, bez uruchamiania modeli.\n\n## Dane wejściowe\n\n- Wzór karty: [`research/benchmarks/_template/ORIGINAL.md`](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/benchmarks/_template/ORIGINAL.md).\n- Praca: Welbl, Liu, Gardner, „Crowdsourcing Multiple Choice Science Questions”, W-NUT 2017, https://arxiv.org/abs/1707.06209. Repo autorów z kodem oceny: nieustalone. Zbiór publikuje AllenAI.\n- Zadanie lm-eval `sciq` w wersji Space, commit `6d2abda4`: https://github.com/EleutherAI/lm-evaluation-harness/tree/6d2abda4fd171e68a8789330c4149e37c1ca0bda/lm_eval/tasks/sciq. W wersji repo, tag `v0.4.9.1`: https://github.com/EleutherAI/lm-evaluation-harness/tree/v0.4.9.1/lm_eval/tasks/sciq.\n- Zbiór: https://huggingface.co/datasets/allenai/sciq, rewizja `2c94ad3e1aafab77146f384e23536f97a4849815`, split test. W Space to test T09, metryka `acc_norm`, 0-shot. Zbiór dołącza do pytania akapit „support”, czyli tekst pomocniczy.\n- Wynik referencyjny: Pythia-1B v0 (`EleutherAI/pythia-1b-v0` @ `step143000`), 0-shot, acc 0,843, acc_norm 0,761. Źródło: [plik wyników Pythii v0](https://github.com/EleutherAI/pythia/blob/main/evals/pythia-v0/pythia-1b/zero-shot/pythia-1b-0shot-global_step143000_eval_results_11-28-2022-15-14-35.json).\n\n## Gotowe, gdy\n\n- [ ] `research/benchmarks/sciq/ORIGINAL.md` ma wszystkie pola wzoru. Wśród nich jest jedna metryka decyzyjna i wyniki referencyjne z datą odczytu.\n- [ ] Pole „Prompt” mówi, czy prompt zawiera akapit „support”.\n- [ ] PR do `main` z `Refs #50`, według [CONTRIBUTING, „PR”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/CONTRIBUTING.md#pr).\n- [ ] Bramka liczb kończy się kodem 0.\n\nSprawdzenie: recenzja.\n",
+      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-10-31T18:55:53Z",
+      "updated_at": "2026-11-01T15:24:12Z",
+      "inferred_task_type": null,
+      "repo_context": {
+        "full_name": "slayerlabs/benchmarks-fabryka-ai",
+        "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai",
+        "description": "Repozytorium Bench Team ",
+        "language": "Python",
+        "stars": 9,
+        "pushed_at": "2026-11-01T14:59:37Z",
+        "archived": false,
+        "topics": [],
+        "license": null
+      }
+    },
+    {
+      "id": 6138575664,
+      "number": 49,
+      "title": "Karta oryginału: ARC-Challenge",
+      "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai/issues/49",
+      "state": "open",
+      "repository": "slayerlabs/benchmarks-fabryka-ai",
+      "labels": [
+        "good first issue",
+        "research"
+      ],
+      "body": "## Cel\n\nKarta opisuje, co mierzy ARC-Challenge i jak liczą go autorzy, a od jej promptu, oceny i wyniku referencyjnego zależy odtworzenie wyniku i kod w #29.\n\n## Co zrobić\n\nKarta oryginału `research/benchmarks/arc-challenge/ORIGINAL.md` według [„A. Karta oryginału (ORIGINAL.md)”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#a-karta-oryginału-originalmd), pojęcia w [Słowniczku](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#słowniczek). Pole „Znane rozbieżności” porównuje plik zadania lm-eval w wersji Space i repo według [„Wersja lm-eval”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#wersja-lm-eval). Pierwsze zadanie dla nowej osoby: około 2 h, bez uruchamiania modeli.\n\n## Dane wejściowe\n\n- Wzór karty: [`research/benchmarks/_template/ORIGINAL.md`](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/benchmarks/_template/ORIGINAL.md).\n- Praca: Clark i in., 2018, https://arxiv.org/abs/1803.05457. Repo autorów z rozwiązaniami bazowymi: https://github.com/allenai/ARC-Solvers/tree/8f21cb821b3a457f25535ccd1b5cddb01ed1bc4e.\n- Zadanie lm-eval `arc_challenge` w wersji Space, commit `6d2abda4`: https://github.com/EleutherAI/lm-evaluation-harness/tree/6d2abda4fd171e68a8789330c4149e37c1ca0bda/lm_eval/tasks/arc. W wersji repo, tag `v0.4.9.1`: https://github.com/EleutherAI/lm-evaluation-harness/tree/v0.4.9.1/lm_eval/tasks/arc.\n- Zbiór: https://huggingface.co/datasets/allenai/ai2_arc, konfiguracja `ARC-Challenge`, rewizja `210d026faf9955653af8916fad021475a3f00453`, split test. W Space to test T02, metryka `acc_norm`, 0-shot.\n- Wynik referencyjny 1: Pythia-1B v0 (`EleutherAI/pythia-1b-v0` @ `step143000`), 0-shot, acc 0,2440, acc_norm 0,2722. Źródło: [plik wyników Pythii v0](https://github.com/EleutherAI/pythia/blob/main/evals/pythia-v0/pythia-1b/zero-shot/pythia-1b-0shot-global_step143000_eval_results_11-28-2022-15-14-35.json).\n- Wynik referencyjny 2: `utter-project/EuroLLM-1.7B` @ `c730cd9b616799ace3c65e927d63191446f59374`, ARC-Challenge po angielsku 0,4061. Karta modelu: https://huggingface.co/utter-project/EuroLLM-1.7B. Karta nie podaje metryki ani liczby przykładów w prompcie.\n- Pułapka: Pythia-1B v0 leży przy bazie losowej (około 0,25), więc jako kontrola nie odróżnia działającego kodu od zepsutego. W tabeli karty EuroLLM TinyLlama-v1.1 ma ARC-Challenge 0,3712, a praca TinyLlama (https://arxiv.org/abs/2401.02385, Tabela 3) podaje 0-shot 32,68; ustawienia karty EuroLLM prawdopodobnie nie są 0-shot.\n\n## Gotowe, gdy\n\n- [ ] `research/benchmarks/arc-challenge/ORIGINAL.md` ma wszystkie pola wzoru. Wśród nich jest jedna metryka decyzyjna i wyniki referencyjne z datą odczytu.\n- [ ] Wynik EuroLLM-1.7B ma ustaloną metrykę i liczbę przykładów w prompcie.\n- [ ] Pole „Bazy” podaje, jak daleko od bazy losowej leży każdy wynik referencyjny, w SE.\n- [ ] PR do `main` z `Refs #49`, według [CONTRIBUTING, „PR”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/CONTRIBUTING.md#pr).\n- [ ] Bramka liczb kończy się kodem 0.\n\nSprawdzenie: recenzja.\n",
+      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-10-31T18:55:51Z",
+      "updated_at": "2026-11-01T15:24:10Z",
+      "inferred_task_type": null,
+      "repo_context": {
+        "full_name": "slayerlabs/benchmarks-fabryka-ai",
+        "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai",
+        "description": "Repozytorium Bench Team ",
+        "language": "Python",
+        "stars": 9,
+        "pushed_at": "2026-11-01T14:59:37Z",
+        "archived": false,
+        "topics": [],
+        "license": null
+      }
+    },
+    {
+      "id": 6138575338,
+      "number": 48,
+      "title": "Karta oryginału: WinoGrande",
+      "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai/issues/48",
+      "state": "open",
+      "repository": "slayerlabs/benchmarks-fabryka-ai",
+      "labels": [
+        "good first issue",
+        "research"
+      ],
+      "body": "## Cel\n\nKarta opisuje, co mierzy WinoGrande i jak liczą go autorzy, a od jej promptu, oceny i wyniku referencyjnego zależy odtworzenie wyniku i kod w #27.\n\n## Co zrobić\n\nKarta oryginału `research/benchmarks/winogrande/ORIGINAL.md` według [„A. Karta oryginału (ORIGINAL.md)”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#a-karta-oryginału-originalmd), pojęcia w [Słowniczku](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#słowniczek). Pole „Znane rozbieżności” porównuje plik zadania lm-eval w wersji Space i repo według [„Wersja lm-eval”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#wersja-lm-eval). Pierwsze zadanie dla nowej osoby: około 2 h, bez uruchamiania modeli.\n\n## Dane wejściowe\n\n- Wzór karty: [`research/benchmarks/_template/ORIGINAL.md`](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/benchmarks/_template/ORIGINAL.md).\n- Praca: Sakaguchi i in., „WinoGrande: An Adversarial Winograd Schema Challenge at Scale”, 2019, https://arxiv.org/abs/1907.10641. Repo autorów: https://github.com/allenai/winogrande/tree/727e837f77521ef38bcc56df3b275c8da43f45af.\n- Zadanie lm-eval `winogrande` w wersji Space, commit `6d2abda4`: https://github.com/EleutherAI/lm-evaluation-harness/tree/6d2abda4fd171e68a8789330c4149e37c1ca0bda/lm_eval/tasks/winogrande. W wersji repo, tag `v0.4.9.1`: https://github.com/EleutherAI/lm-evaluation-harness/tree/v0.4.9.1/lm_eval/tasks/winogrande. Ocenia kontynuację zdania po podstawieniu opcji.\n- Zbiór: https://huggingface.co/datasets/allenai/winogrande, konfiguracja `winogrande_xl`, rewizja `01e74176c63542e6b0bcb004dcdea22d94fb67b5`, split validation. W Space to test T07, metryka `acc`, 0-shot. Baza losowa wynosi 50%.\n- Wynik referencyjny: Pythia-1B v0 (`EleutherAI/pythia-1b-v0` @ `step143000`), 0-shot, acc 0,5375. Źródło: [plik wyników Pythii v0](https://github.com/EleutherAI/pythia/blob/main/evals/pythia-v0/pythia-1b/zero-shot/pythia-1b-0shot-global_step143000_eval_results_11-28-2022-15-14-35.json).\n\n## Gotowe, gdy\n\n- [ ] `research/benchmarks/winogrande/ORIGINAL.md` ma wszystkie pola wzoru. Wśród nich jest jedna metryka decyzyjna i wyniki referencyjne z datą odczytu.\n- [ ] Pole „Ocena” opisuje, którą część zdania ocenia lm-eval.\n- [ ] PR do `main` z `Refs #48`, według [CONTRIBUTING, „PR”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/CONTRIBUTING.md#pr).\n- [ ] Bramka liczb kończy się kodem 0.\n\nSprawdzenie: recenzja.\n",
+      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-10-31T18:55:50Z",
+      "updated_at": "2026-11-01T15:24:09Z",
+      "inferred_task_type": null,
+      "repo_context": {
+        "full_name": "slayerlabs/benchmarks-fabryka-ai",
+        "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai",
+        "description": "Repozytorium Bench Team ",
+        "language": "Python",
+        "stars": 9,
+        "pushed_at": "2026-11-01T14:59:37Z",
+        "archived": false,
+        "topics": [],
+        "license": null
+      }
+    },
+    {
+      "id": 6138574987,
+      "number": 47,
+      "title": "Karta oryginału: BoolQ",
+      "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai/issues/47",
+      "state": "open",
+      "repository": "slayerlabs/benchmarks-fabryka-ai",
+      "labels": [
+        "good first issue",
+        "research"
+      ],
+      "body": "## Cel\n\nKarta opisuje, co mierzy BoolQ i jak liczą go autorzy, a od jej promptu, oceny i wyniku referencyjnego zależy odtworzenie wyniku i kod w #26.\n\n## Co zrobić\n\nKarta oryginału `research/benchmarks/boolq/ORIGINAL.md` według [„A. Karta oryginału (ORIGINAL.md)”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#a-karta-oryginału-originalmd), pojęcia w [Słowniczku](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#słowniczek). Pole „Znane rozbieżności” porównuje plik zadania lm-eval w wersji Space i repo według [„Wersja lm-eval”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#wersja-lm-eval), a model kontrolny wskazuje się według [„Model kontrolny etapu B”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#model-kontrolny-etapu-b) i [„Bez kontroli”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#bez-kontroli). Pierwsze zadanie dla nowej osoby: około 2 h, bez uruchamiania modeli.\n\n## Dane wejściowe\n\n- Wzór karty: [`research/benchmarks/_template/ORIGINAL.md`](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/benchmarks/_template/ORIGINAL.md).\n- Praca: Clark i in., „BoolQ: Exploring the Surprising Difficulty of Natural Yes/No Questions”, NAACL 2019, https://arxiv.org/abs/1905.10044. Repo autorów z danymi: https://github.com/google-research-datasets/boolean-questions/tree/90af34107399cc7a446b373dc4ee35b8001da7c2.\n- Zadanie lm-eval `boolq` w wersji Space, commit `6d2abda4`: https://github.com/EleutherAI/lm-evaluation-harness/tree/6d2abda4fd171e68a8789330c4149e37c1ca0bda/lm_eval/tasks/super_glue/boolq. W wersji repo, tag `v0.4.9.1`: https://github.com/EleutherAI/lm-evaluation-harness/tree/v0.4.9.1/lm_eval/tasks/super_glue/boolq.\n- Zbiór: https://huggingface.co/datasets/aps/super_glue, konfiguracja `boolq`, rewizja `3de24cf8022e94f4ee4b9d55a6f539891524d646`, split validation. W Space to test T10, metryka `acc`, 0-shot.\n- Baza większościowa: 62,17% (2033 z 3270 odpowiedzi „tak” w splicie validation, policzone przez HF datasets-server).\n- Pythia v0 i EuroLLM-1.7B nie mają wyniku BoolQ.\n- Inny opublikowany wynik, nie do kontroli: Pythia-1.0B (wagi v1), 0-shot 57,83, czyli poniżej bazy większościowej. Podaje go praca TinyLlama w Tabeli 3: https://arxiv.org/abs/2401.02385.\n\n## Gotowe, gdy\n\n- [ ] `research/benchmarks/boolq/ORIGINAL.md` ma wszystkie pola wzoru. Wśród nich jest jedna metryka decyzyjna i wyniki referencyjne z datą odczytu.\n- [ ] Pole „Bazy” podaje bazę większościową, czyli udział odpowiedzi „tak” w splicie validation.\n- [ ] „Wyniki referencyjne” wskazują model kontrolny albo „brak” z miejscami, w których szukano, i zapis, że etap B idzie bez kontroli.\n- [ ] PR do `main` z `Refs #47`, według [CONTRIBUTING, „PR”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/CONTRIBUTING.md#pr).\n- [ ] Bramka liczb kończy się kodem 0.\n\nSprawdzenie: recenzja.\n",
+      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-10-31T18:55:48Z",
+      "updated_at": "2026-11-01T15:24:07Z",
+      "inferred_task_type": null,
+      "repo_context": {
+        "full_name": "slayerlabs/benchmarks-fabryka-ai",
+        "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai",
+        "description": "Repozytorium Bench Team ",
+        "language": "Python",
+        "stars": 9,
+        "pushed_at": "2026-11-01T14:59:37Z",
+        "archived": false,
+        "topics": [],
+        "license": null
+      }
+    },
+    {
+      "id": 6138574593,
+      "number": 46,
+      "title": "Karta oryginału: HellaSwag",
+      "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai/issues/46",
+      "state": "open",
+      "repository": "slayerlabs/benchmarks-fabryka-ai",
+      "labels": [
+        "good first issue",
+        "research"
+      ],
+      "body": "## Cel\n\nKarta opisuje, co mierzy HellaSwag i jak liczą go autorzy, a od jej promptu, oceny i wyniku referencyjnego zależy odtworzenie wyniku i kod w #24.\n\n## Co zrobić\n\nKarta oryginału `research/benchmarks/hellaswag/ORIGINAL.md` według [„A. Karta oryginału (ORIGINAL.md)”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#a-karta-oryginału-originalmd), pojęcia w [Słowniczku](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#słowniczek). Pole „Znane rozbieżności” porównuje plik zadania lm-eval w wersji Space i repo według [„Wersja lm-eval”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#wersja-lm-eval). Pierwsze zadanie dla nowej osoby: około 2 h, bez uruchamiania modeli.\n\n## Dane wejściowe\n\n- Wzór karty: [`research/benchmarks/_template/ORIGINAL.md`](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/benchmarks/_template/ORIGINAL.md).\n- Praca: Zellers i in., ACL 2019, https://arxiv.org/abs/1905.07830. Repo autorów `rowanz/hellaswag` jest niedostępne. Zwraca HTTP 451 po zgłoszeniu DMCA: https://github.com/github/dmca/blob/master/2026/09/2026-09-14-wikihow.md.\n- Zadanie lm-eval `hellaswag` w wersji Space, commit `6d2abda4`: https://github.com/EleutherAI/lm-evaluation-harness/tree/6d2abda4fd171e68a8789330c4149e37c1ca0bda/lm_eval/tasks/hellaswag. W wersji repo, tag `v0.4.9.1`: https://github.com/EleutherAI/lm-evaluation-harness/tree/v0.4.9.1/lm_eval/tasks/hellaswag.\n- Zbiór: https://huggingface.co/datasets/Rowan/hellaswag, rewizja `218ec52e09a7e7462a5400043bb9a69a41d06b76`, split validation. W Space to test T05, metryka `acc_norm`, 0-shot.\n- Wynik referencyjny 1: `utter-project/EuroLLM-1.7B` @ `c730cd9b616799ace3c65e927d63191446f59374`, HellaSwag po angielsku 0,4760. Karta modelu: https://huggingface.co/utter-project/EuroLLM-1.7B. Karta nie podaje metryki ani liczby przykładów w prompcie. Ta sama tabela karty podaje TinyLlama-v1.1 HellaSwag 0,6248, a praca TinyLlama (https://arxiv.org/abs/2401.02385, Tabela 3) 0-shot 61,47.\n- Model kontrolny według [„Model kontrolny etapu B”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#model-kontrolny-etapu-b) to EuroLLM-1.7B, z wynikiem podanym wyżej. Pythia v0 nie ma wyniku HellaSwag.\n- Inny opublikowany wynik, nie do kontroli: Pythia-1B (wagi v1), 0-shot acc_norm 47,2. Podaje go praca Mamba w Tabeli 1 i Dodatku E.2.3: https://arxiv.org/html/2312.00752v2.\n\n## Gotowe, gdy\n\n- [ ] `research/benchmarks/hellaswag/ORIGINAL.md` ma wszystkie pola wzoru. Wśród nich jest jedna metryka decyzyjna i wyniki referencyjne z datą odczytu.\n- [ ] Pole „Źródła” mówi, że repo autorów jest zablokowane, i co wzięto zamiast niego.\n- [ ] Wynik EuroLLM-1.7B ma ustaloną metrykę i liczbę przykładów w prompcie.\n- [ ] PR do `main` z `Refs #46`, według [CONTRIBUTING, „PR”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/CONTRIBUTING.md#pr).\n- [ ] Bramka liczb kończy się kodem 0.\n\nSprawdzenie: recenzja.\n",
+      "comments": 0,
+      "assignees": [
+        "jakublvndsky"
+      ],
+      "created_at": "2026-10-31T18:55:45Z",
+      "updated_at": "2026-11-01T15:24:05Z",
+      "inferred_task_type": null,
+      "repo_context": {
+        "full_name": "slayerlabs/benchmarks-fabryka-ai",
+        "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai",
+        "description": "Repozytorium Bench Team ",
+        "language": "Python",
+        "stars": 9,
+        "pushed_at": "2026-11-01T14:59:37Z",
+        "archived": false,
+        "topics": [],
+        "license": null
+      }
+    },
+    {
+      "id": 6138574289,
+      "number": 45,
+      "title": "Karta oryginału: ARC-Easy",
+      "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai/issues/45",
+      "state": "open",
+      "repository": "slayerlabs/benchmarks-fabryka-ai",
+      "labels": [
+        "good first issue",
+        "research"
+      ],
+      "body": "## Cel\n\nKarta opisuje, co mierzy ARC-Easy i jak liczą go autorzy, a od jej promptu, oceny i wyniku referencyjnego zależy odtworzenie wyniku i kod w #23.\n\n## Co zrobić\n\nKarta oryginału `research/benchmarks/arc-easy/ORIGINAL.md` według [„A. Karta oryginału (ORIGINAL.md)”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#a-karta-oryginału-originalmd), pojęcia w [Słowniczku](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#słowniczek). Pole „Znane rozbieżności” porównuje plik zadania lm-eval w wersji Space i repo według [„Wersja lm-eval”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/METODOLOGIA.md#wersja-lm-eval). Pierwsze zadanie dla nowej osoby: około 2 h, bez uruchamiania modeli.\n\n## Dane wejściowe\n\n- Wzór karty: [`research/benchmarks/_template/ORIGINAL.md`](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/research/benchmarks/_template/ORIGINAL.md).\n- Praca: Clark i in., 2018, https://arxiv.org/abs/1803.05457. Repo autorów z rozwiązaniami bazowymi: https://github.com/allenai/ARC-Solvers/tree/8f21cb821b3a457f25535ccd1b5cddb01ed1bc4e.\n- Zadanie lm-eval `arc_easy` w wersji Space, commit `6d2abda4`: https://github.com/EleutherAI/lm-evaluation-harness/tree/6d2abda4fd171e68a8789330c4149e37c1ca0bda/lm_eval/tasks/arc. W wersji repo, tag `v0.4.9.1`: https://github.com/EleutherAI/lm-evaluation-harness/tree/v0.4.9.1/lm_eval/tasks/arc.\n- Zbiór: https://huggingface.co/datasets/allenai/ai2_arc, konfiguracja `ARC-Easy`, rewizja `210d026faf9955653af8916fad021475a3f00453`, split test. Nie ma go wśród 50 testów Space.\n- Wynik referencyjny: Pythia-1B v0 (`EleutherAI/pythia-1b-v0` @ `step143000`), 0-shot, acc 0,5585, acc_norm 0,5004. Źródło: [plik wyników Pythii v0](https://github.com/EleutherAI/pythia/blob/main/evals/pythia-v0/pythia-1b/zero-shot/pythia-1b-0shot-global_step143000_eval_results_11-28-2022-15-14-35.json).\n\n## Gotowe, gdy\n\n- [ ] `research/benchmarks/arc-easy/ORIGINAL.md` ma wszystkie pola wzoru. Wśród nich jest jedna metryka decyzyjna i wyniki referencyjne z datą odczytu.\n- [ ] PR do `main` z `Refs #45`, według [CONTRIBUTING, „PR”](https://github.com/slayerlabs/benchmarks-fabryka-ai/blob/main/CONTRIBUTING.md#pr).\n- [ ] Bramka liczb kończy się kodem 0.\n\nSprawdzenie: recenzja.\n",
+      "comments": 0,
+      "assignees": [
+        "janbanot"
+      ],
+      "created_at": "2026-10-31T18:55:44Z",
+      "updated_at": "2026-11-01T15:24:04Z",
+      "inferred_task_type": null,
+      "repo_context": {
+        "full_name": "slayerlabs/benchmarks-fabryka-ai",
+        "url": "https://github.com/slayerlabs/benchmarks-fabryka-ai",
+        "description": "Repozytorium Bench Team ",
+        "language": "Python",
+        "stars": 9,
+        "pushed_at": "2026-11-01T14:59:37Z",
+        "archived": false,
+        "topics": [],
+        "license": null
+      }
+    },
+    {
+      "id": 6097978041,
+      "number": 101,
+      "title": "Feature: add a text case converter command",
+      "url": "https://github.com/codepiyusss/open_source_issue_contribution/issues/101",
+      "state": "open",
+      "repository": "codepiyusss/open_source_issue_contribution",
+      "labels": [
+        "good first issue",
+        "medium",
+        "feature"
+      ],
+      "body": "## Summary\nConvert text between naming styles.\n\n## What to do\n1. Write the logic as a plain function in ``fixit/textutils.py`` (create the file if it does not exist). Return the result, do not print inside it.\n2. Add a subcommand in `fixit/cli.py`: define its arguments in `build_parser` and handle it in `main`, like the existing commands.\n3. Behavior: Styles: `snake`, `kebab`, `camel`, `pascal`. Words are split on spaces, hyphens and underscores. Example: `camel` turns `hello world` into `helloWorld`.\n4. Add tests for normal input and at least one edge case.\n\n## Hint\nExample: `fixit case snake 'Hello World'  ->  hello_world`\n\n## Files you will touch\n``fixit/textutils.py``, `fixit/cli.py`, `tests/`\n\n## Done when\n- [ ] The behavior matches the description above\n- [ ] Tests are added or updated\n- [ ] `pytest` passes locally\n\n## Before you start\nComment `I'd like to work on this` and wait until a maintainer assigns you. Set up the project with the steps in CONTRIBUTING.md. Keep your pull request focused on this one issue and write `Closes #<issue number>` in its description. Stuck? Ask in a comment below. No question is too basic.\n",
+      "comments": 1,
+      "assignees": [],
+      "created_at": "2026-10-29T10:44:54Z",
+      "updated_at": "2026-11-01T15:23:33Z",
+      "inferred_task_type": "Feature",
+      "repo_context": {
+        "full_name": "codepiyusss/open_source_issue_contribution",
+        "url": "https://github.com/codepiyusss/open_source_issue_contribution",
+        "description": "🐛 Beginner-friendly Python CLI with 30+ good first issues: planted bugs, missing tests & small features. Practice open source: fork, fix, PR, and turn your GitHub contribution graph green 🟩",
+        "language": "Python",
+        "stars": 9,
+        "pushed_at": "2026-11-01T06:56:47Z",
+        "archived": false,
+        "topics": [
+          "beginner",
+          "beginner-code",
+          "beginner-friendly",
+          "beginner-python",
+          "beginners",
+          "beginners-friendly",
+          "first-contributions",
+          "good-first-issue",
+          "good-first-issue-finder",
+          "good-first-issues",
+          "learn",
+          "learn-to-code",
+          "learn-to-contribute",
+          "open-source"
+        ],
+        "license": "MIT"
+      }
+    },
+    {
+      "id": 6137707193,
+      "number": 23,
+      "title": "Test PR-Agent detection on real workflows",
+      "url": "https://github.com/layer8labs8/ci-agent-audit/issues/23",
+      "state": "open",
+      "repository": "layer8labs8/ci-agent-audit",
+      "labels": [
+        "help wanted",
+        "good first issue",
+        "detection"
+      ],
+      "body": "PR-Agent is on our supported list, but we've barely tried it on real workflows. Our tests pass, but they're small examples we wrote ourselves, so we need someone to try it for real.\n\n**How to help**\n\n```bash\npip install ci-agent-audit\nci-agent-audit scan path/to/.github/workflows\n```\n\nRun it on a few workflows that use PR-Agent. Your own, public ones, or a small test repo you set up are all fine, and the more you try the better.\n\n**What to look at**\n\n- Real setups seem to configure it through `env:` rather than `with:`. Is outside text in those env vars flagged?\n- `--auto_approve` and the `pr-agent` command are detected.\n- The project moved to `The-PR-Agent/pr-agent`. That name is coming in the next release, so a PyPI install only knows `qodo-ai/pr-agent` and `Codium-ai/pr-agent` for now. Those two should give the same result.\n\n**What to send back**\n\nTell us what it missed and what it flagged by mistake. Even \"I tried 5 workflows and it looked right\" helps.\n\nIf something is wrong, you can add a small case to [`benchmark/cases.yml`](https://github.com/layer8labs8/ci-agent-audit/blob/main/benchmark/cases.yml). It's just YAML, no Python needed. Run `python tools/run_benchmark.py` to see the result.\n\nPlease don't name another project here if you find a real risk in its workflow. Share a small made-up example instead.\n",
+      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-10-31T17:24:34Z",
+      "updated_at": "2026-11-01T15:22:49Z",
+      "inferred_task_type": null,
+      "repo_context": {
+        "full_name": "layer8labs8/ci-agent-audit",
+        "url": "https://github.com/layer8labs8/ci-agent-audit",
+        "description": "Find prompt injection and unsafe AI agent setups in GitHub Actions and GitLab CI",
+        "language": "Python",
+        "stars": 2,
+        "pushed_at": "2026-10-31T17:20:45Z",
+        "archived": false,
+        "topics": [
+          "ai-security",
+          "ci-cd",
+          "claude-code",
+          "codex",
+          "devsecops",
+          "gemini-cli",
+          "github-actions",
+          "gitlab-ci",
+          "llm-security",
+          "mcp",
+          "prompt-injection",
+          "python",
+          "sarif",
+          "security",
+          "static-analysis"
+        ],
+        "license": "MIT"
+      }
+    },
+    {
+      "id": 6137706482,
+      "number": 22,
+      "title": "Test OpenHands detection on real workflows",
+      "url": "https://github.com/layer8labs8/ci-agent-audit/issues/22",
+      "state": "open",
+      "repository": "layer8labs8/ci-agent-audit",
+      "labels": [
+        "help wanted",
+        "good first issue",
+        "detection"
+      ],
+      "body": "OpenHands is on our supported list, but we've barely tried it on real workflows. Our tests pass, but they're small examples we wrote ourselves, so we need someone to try it for real.\n\n**How to help**\n\n```bash\npip install ci-agent-audit\nci-agent-audit scan path/to/.github/workflows\n```\n\nRun it on a few workflows that use `All-Hands-AI/OpenHands`, `OpenHands/extensions/plugins/pr-review`, or the `openhands` command. Your own, public ones, or a small test repo you set up are all fine, and the more you try the better.\n\n**What to look at**\n\n- The `pr-review` and `qa-changes` actions under `OpenHands/extensions/plugins/` are coming in the next release, so a PyPI install won't detect them yet.\n- `release-notes` and `vulnerability-remediation` run the agent too, but we left them out for now. Their outputs are mostly counts, and the scan would treat those as model text. `issue-duplicate-checker` runs on OpenHands Cloud. Should any of these be detected?\n- A lot of setups call a remote reusable workflow, which the scan can't read. Can we still warn when outside text goes into one?\n- The `openhands` command is detected in `run:`.\n\n**What to send back**\n\nTell us what it missed and what it flagged by mistake. Even \"I tried 5 workflows and it looked right\" helps.\n\nIf something is wrong, you can add a small case to [`benchmark/cases.yml`](https://github.com/layer8labs8/ci-agent-audit/blob/main/benchmark/cases.yml). It's just YAML, no Python needed. Run `python tools/run_benchmark.py` to see the result.\n\nPlease don't name another project here if you find a real risk in its workflow. Share a small made-up example instead.\n",
+      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-10-31T17:24:30Z",
+      "updated_at": "2026-11-01T15:22:48Z",
+      "inferred_task_type": null,
+      "repo_context": {
+        "full_name": "layer8labs8/ci-agent-audit",
+        "url": "https://github.com/layer8labs8/ci-agent-audit",
+        "description": "Find prompt injection and unsafe AI agent setups in GitHub Actions and GitLab CI",
+        "language": "Python",
+        "stars": 2,
+        "pushed_at": "2026-10-31T17:20:45Z",
+        "archived": false,
+        "topics": [
+          "ai-security",
+          "ci-cd",
+          "claude-code",
+          "codex",
+          "devsecops",
+          "gemini-cli",
+          "github-actions",
+          "gitlab-ci",
+          "llm-security",
+          "mcp",
+          "prompt-injection",
+          "python",
+          "sarif",
+          "security",
+          "static-analysis"
+        ],
+        "license": "MIT"
+      }
+    },
+    {
+      "id": 6126608047,
+      "number": 9,
+      "title": "[Signature]: Add support for Amp",
+      "url": "https://github.com/layer8labs8/ci-agent-audit/issues/9",
+      "state": "open",
+      "repository": "layer8labs8/ci-agent-audit",
+      "labels": [
+        "good first issue",
+        "signature"
+      ],
+      "body": "## What to do\n\nAdd one YAML file so `ci-agent-audit` recognizes **Amp**. No Python is needed.\n\nCreate `src/ci_agent_audit/signatures/amp.yaml`, using an existing file such as `aider-ci.yaml` as your model.\n\n## Details to start from\n\n- CLI binary: `amp`\n- npm package: `@sourcegraph/amp`\n\n## Check the tool's documentation for\n\n- `action_prefixes`: the official GitHub Action, if there is one. CI usually runs the action, so don't leave it out.\n- `prompt_inputs`: action inputs that carry the prompt\n- `cli_prompt_flags`: command flags that carry the prompt\n- `cli_subcommands`: the commands that start the agent, if the tool also has others like `auth` or `models`\n- `dangerous_arg_patterns`: flags that skip approvals or sandboxing. Keep them narrow, because `--auto` on its own also matches `gh pr merge --auto`. Tie short flags to the command, like `tool\\\\s+run\\\\s+.*--auto(?:\\\\s|$)`.\n- `dangerous_inputs`: settings that let anyone trigger it\n\nOnly add entries you can find in the official documentation, and link that page in your pull request.\n\n## Test your change\n\n```bash\npip install -e \".[dev]\"\nci-agent-audit validate-signatures\npytest\n```\n\n`tests/test_signatures.py` picks up your file and tests every prompt input, command, package, and flag, so you don't need to write a test. If one asks you to teach `_sample()` your pattern, say so in your pull request and we'll help.\n\nNew to the project? See [CONTRIBUTING.md](https://github.com/layer8labs8/ci-agent-audit/blob/main/CONTRIBUTING.md). Comment here if you get stuck.\n\n",
+      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-10-30T20:39:20Z",
+      "updated_at": "2026-11-01T15:22:46Z",
+      "inferred_task_type": null,
+      "repo_context": {
+        "full_name": "layer8labs8/ci-agent-audit",
+        "url": "https://github.com/layer8labs8/ci-agent-audit",
+        "description": "Find prompt injection and unsafe AI agent setups in GitHub Actions and GitLab CI",
+        "language": "Python",
+        "stars": 2,
+        "pushed_at": "2026-10-31T17:20:45Z",
+        "archived": false,
+        "topics": [
+          "ai-security",
+          "ci-cd",
+          "claude-code",
+          "codex",
+          "devsecops",
+          "gemini-cli",
+          "github-actions",
+          "gitlab-ci",
+          "llm-security",
+          "mcp",
+          "prompt-injection",
+          "python",
+          "sarif",
+          "security",
+          "static-analysis"
+        ],
+        "license": "MIT"
+      }
+    },
+    {
+      "id": 6148599720,
+      "number": 76,
+      "title": "SARIF: heuristic rules declared with high precision, non-ASCII paths collide",
+      "url": "https://github.com/JExcellence/privalint/issues/76",
+      "state": "open",
+      "repository": "JExcellence/privalint",
+      "labels": [
+        "bug",
+        "good first issue"
+      ],
+      "body": "Two small SARIF issues in `src/reporters/sarif.ts`:\n\n1. Every rule is declared with `precision: 'high'`. `reject-option`, `consent-settings-link` and `impressum-link` work from labels and heuristics; code scanning uses precision to rank and filter alerts. `medium` fits them better.\n2. `pseudoPath` replaces non-ASCII characters with `_`, so `/über-uns` and `/_ber-uns` get the same location. Fingerprints still differ, but the alert list shows them as one file. Percent-encoding the path would keep them apart.\n\n**Done when** both are fixed with a test each in `test/reporters.test.ts`.",
+      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-11-01T15:22:59Z",
+      "updated_at": "2026-11-01T15:22:59Z",
+      "inferred_task_type": "Bug",
+      "repo_context": {
+        "full_name": "JExcellence/privalint",
+        "url": "https://github.com/JExcellence/privalint",
+        "description": "Lint your website for GDPR problems: trackers before consent, Google Fonts, missing Impressum. Real browser, CLI and GitHub Action.",
+        "language": "TypeScript",
+        "stars": 2,
+        "pushed_at": "2026-10-31T10:40:51Z",
+        "archived": false,
+        "topics": [
+          "cli",
+          "consent",
+          "cookie-consent",
+          "cookies",
+          "dsgvo",
+          "gdpr",
+          "github-actions",
+          "google-fonts",
+          "impressum",
+          "linter",
+          "playwright",
+          "privacy"
+        ],
+        "license": "MIT"
+      }
+    },
+    {
+      "id": 6148598465,
+      "number": 71,
+      "title": "Find vendor sources for VWO, Reddit, Amazon Ads, Xandr, ProvenExpert and Google Ads paths",
+      "url": "https://github.com/JExcellence/privalint/issues/71",
+      "state": "open",
+      "repository": "JExcellence/privalint",
+      "labels": [
+        "enhancement",
+        "help wanted",
+        "good first issue"
+      ],
+      "body": "The tracker list only takes hosts that the vendor documents itself (see CONTRIBUTING.md). For these vendors no vendor-owned source was found yet, so they are not on the list:\n\n- **VWO / Wingify**: cookies are documented (`_vwo_*`, `_vis_opt_*`, `_wingify_*`, [Wingify cookie list](https://help.wingify.com/hc/en-us/articles/58793798517785-Cookies-Stored-by-Wingify)), the script and collection hosts are not.\n- **Reddit Pixel**: `www.redditstatic.com/ads/pixel.js` appears only in third-party guides.\n- **Amazon Ads** (`amazon-adsystem.com`): Amazon names hosts only for TV apps.\n- **Microsoft Xandr / AppNexus** (`adnxs.com`): only the API host is documented.\n- **ProvenExpert** widget: only `www.provenexpert.com` as the WordPress plugin's API host.\n- **Google Ads conversion paths** on `www.google.com` (`/pagead/`, `/ccm/collect`): Google's [CSP guide](https://developers.google.com/tag-platform/security/guides/csp) lists the origin, not the paths, and `www.google.com` also serves harmless content.\n\n**What to do:** pick one vendor, find its hosts in the vendor's own documentation (install snippet, CSP or allowlist page) and link it in the PR. A live site where the request shows up in DevTools also counts, as for the session-replay tools in `docs/rules/pre-consent-trackers.md`.\n\n**Done when** the entry is in `src/data/trackers.ts` (or `third-parties.ts` for ProvenExpert) with a test in `test/trackers.test.ts`, a lookalike that must not match, and a row in the sources table.",
+      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-11-01T15:22:51Z",
+      "updated_at": "2026-11-01T15:22:51Z",
+      "inferred_task_type": "Feature",
+      "repo_context": {
+        "full_name": "JExcellence/privalint",
+        "url": "https://github.com/JExcellence/privalint",
+        "description": "Lint your website for GDPR problems: trackers before consent, Google Fonts, missing Impressum. Real browser, CLI and GitHub Action.",
+        "language": "TypeScript",
+        "stars": 2,
+        "pushed_at": "2026-10-31T10:40:51Z",
+        "archived": false,
+        "topics": [
+          "cli",
+          "consent",
+          "cookie-consent",
+          "cookies",
+          "dsgvo",
+          "gdpr",
+          "github-actions",
+          "google-fonts",
+          "impressum",
+          "linter",
+          "playwright",
+          "privacy"
+        ],
+        "license": "MIT"
+      }
+    },
+    {
+      "id": 5888856517,
+      "number": 1682,
+      "title": "The theme inspector reads design tokens on `<body>` only, so a scoped palette reads `offTheme`",
+      "url": "https://github.com/reticlehq/reticle/issues/1682",
+      "state": "open",
+      "repository": "reticlehq/reticle",
+      "labels": [
+        "bug",
+        "good first issue",
+        "help wanted",
+        "agent-reported",
+        "area/browser",
+        "P2"
+      ],
+      "body": "### Problem\n`reticle_look { action: \"element\" }` reports theme compliance. It resolves every design token against `<body>`. When an app redefines its tokens on a subtree, an element inside that subtree uses the scoped values. Reticle compares its colors with the root values, so it reports `offTheme: true` and a low `tokenCount` for a correct element.\n\n### Steps to reproduce\n1. Add `:root { --primary: #111; } .admin { --primary: #c00; }`.\n2. Render `<div class=\"admin\"><button style=\"color: var(--primary)\">Save</button></div>`.\n3. Inspect the button.\n\n### Expected\nThe color matches `--primary` and the element is on theme.\n\n### Actual\n`offTheme: true`.\n\n### Where in the code\n- `adapters/realm/browser/src/dom/theme.ts:61-74` (`palette`) reads tokens from `getComputedStyle(document.body)`.\n- `adapters/realm/browser/src/dom/theme.ts:146` (`themeReport`) uses that palette.\n\n### Done when\n- [ ] Token values resolve on the inspected element (its computed style includes inherited custom properties).\n- [ ] A unit test covers a token redefined on an ancestor.\n\n### Scope\n`theme.ts` only. Pass the inspected element into `palette`.",
+      "comments": 2,
+      "assignees": [],
+      "created_at": "2026-10-16T18:00:05Z",
+      "updated_at": "2026-11-01T15:21:13Z",
+      "inferred_task_type": "Bug",
+      "repo_context": {
+        "full_name": "reticlehq/reticle",
+        "url": "https://github.com/reticlehq/reticle",
+        "description": "AI agents can generate code, but still struggle to understand what they build. Reticle brings Jev-style machine-native runtime perception to web & desktop applications.",
+        "language": "TypeScript",
+        "stars": 1294,
+        "pushed_at": "2026-11-01T12:06:12Z",
+        "archived": false,
+        "topics": [
+          "agent-skill",
+          "agent-skills",
+          "agent-testing",
+          "agent-verification",
+          "ai-testing-tool",
+          "automated-testing",
+          "claude-code",
+          "claude-skills",
+          "hacktoberfest",
+          "hacktoberfest-accepted",
+          "hacktoberfest2026",
+          "jev",
+          "mcp",
+          "mcp-server",
+          "model-context-protocol",
+          "playwright-mcp",
+          "proof-layer",
+          "reticle-mcp",
+          "skills-sh",
+          "testing-tool"
+        ],
+        "license": null
+      }
+    },
+    {
+      "id": 6148559846,
+      "number": 20,
+      "title": "Check security requirements in `--validate-requests`",
+      "url": "https://github.com/wylan24/mockgen/issues/20",
+      "state": "open",
+      "repository": "wylan24/mockgen",
+      "labels": [
+        "enhancement",
+        "good first issue"
+      ],
+      "body": "### What's missing\r\n\r\nSpecs declare auth with `securitySchemes` and `security`, but mockgen never reads them (`security` doesn't appear in `src/`). With `--validate-requests`, a request to a protected route with no credentials succeeds, so the client's \"not signed in\" path can't be exercised.\r\n\r\n### What done looks like\r\n\r\nPresence checks only. A mock can't know which tokens are valid, and shouldn't pretend to.\r\n\r\n- At load (`src/openapi.ts`), resolve each operation's effective `security` (operation-level, else the document's top-level; `security: []` means public) into the route model (`MockRoute.security` in `src/model.ts`) as a list of alternatives, each a list of requirements.\r\n- With `--validate-requests`, a request passes when **any** alternative has **all** its credentials present:\r\n  - `http` + `bearer`: `Authorization: Bearer <anything>`\r\n  - `http` + `basic`: `Authorization: Basic <anything>`\r\n  - `apiKey`: the named header, query parameter or cookie is present\r\n  - `oauth2` / `openIdConnect`: treated like bearer\r\n- Otherwise respond with the route's documented `401` if it has one, else a plain 401 with an `X-Mock-Validation: security: missing bearer token` header, matching how other validation failures are reported.\r\n- `X-Mock-Status` still skips validation.\r\n- Tests in `test/requests.test.ts` or `test/server.test.ts`: public route, missing token, present token, two alternatives where only one is satisfied, `security: []` override.\r\n- README **Request validation** section updated; CHANGELOG line.\r\n",
+      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-11-01T15:18:53Z",
+      "updated_at": "2026-11-01T15:18:53Z",
+      "inferred_task_type": "Feature",
+      "repo_context": {
+        "full_name": "wylan24/mockgen",
+        "url": "https://github.com/wylan24/mockgen",
+        "description": "Turn an OpenAPI spec or a folder of sample JSON into a running mock server with realistic, deterministic fake data. One command.",
+        "language": "TypeScript",
+        "stars": 0,
+        "pushed_at": "2026-11-01T15:23:52Z",
+        "archived": false,
+        "topics": [
+          "api-mocking",
+          "cli",
+          "fake-data",
+          "mock",
+          "mock-server",
+          "openapi",
+          "testing",
+          "typescript"
+        ],
+        "license": "MIT"
+      }
+    },
+    {
+      "id": 6148559239,
+      "number": 18,
+      "title": "Load Swagger 2.0 specs by converting them on the fly",
+      "url": "https://github.com/wylan24/mockgen/issues/18",
+      "state": "open",
+      "repository": "wylan24/mockgen",
+      "labels": [
+        "enhancement",
+        "good first issue"
+      ],
+      "body": "### What's missing\r\n\r\n`mockgen serve swagger.json` stops with `Swagger 2.0 is not supported; convert it to OpenAPI 3 first`. Lots of public and internal APIs still ship Swagger 2.0, so this is often the first thing a new user hits.\r\n\r\n### What done looks like\r\n\r\n- In `loadOpenApi` (`src/openapi.ts`), when the document has `swagger: \"2.0\"`, convert it to OpenAPI 3.0 with [`swagger2openapi`](https://github.com/Mermade/oas-kit) (`convertObj`, with `patch: true` so common spec mistakes are fixed rather than fatal) and continue with the converted document.\r\n- Convert *before* dereferencing, so multi-file `$ref`s keep working. That probably means parsing the root file first (`$RefParser.parse`), converting, then dereferencing the result with the original file as the base path.\r\n- Loader warnings from the conversion go into `model.warnings`, so `serve` prints them like other lenient-mode warnings.\r\n- Tests: a small Swagger 2.0 fixture (Petstore 2.0 is fine) that loads, serves `GET /pets` and validates with `mockgen validate`.\r\n- README **Supported input** says Swagger 2.0 works (converted on load); CHANGELOG line.\r\n\r\nBonus, not required: add one or two Swagger 2.0 specs from APIs.guru to `corpus/specs.json`.\r\n",
+      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-11-01T15:18:50Z",
+      "updated_at": "2026-11-01T15:18:50Z",
+      "inferred_task_type": "Feature",
+      "repo_context": {
+        "full_name": "wylan24/mockgen",
+        "url": "https://github.com/wylan24/mockgen",
+        "description": "Turn an OpenAPI spec or a folder of sample JSON into a running mock server with realistic, deterministic fake data. One command.",
+        "language": "TypeScript",
+        "stars": 0,
+        "pushed_at": "2026-11-01T15:23:52Z",
+        "archived": false,
+        "topics": [
+          "api-mocking",
+          "cli",
+          "fake-data",
+          "mock",
+          "mock-server",
+          "openapi",
+          "testing",
+          "typescript"
+        ],
+        "license": "MIT"
+      }
+    },
+    {
+      "id": 6148558942,
+      "number": 17,
+      "title": "Check cookie parameters in `--validate-requests`",
+      "url": "https://github.com/wylan24/mockgen/issues/17",
+      "state": "open",
+      "repository": "wylan24/mockgen",
+      "labels": [
+        "enhancement",
+        "good first issue"
+      ],
+      "body": "### What's missing\r\n\r\nWith `--validate-requests`, path, query and header parameters are checked, but `in: cookie` parameters are skipped entirely (`src/requests.ts`, the `p.in === 'cookie'` early `continue` in `checkRequest`). A route that requires a `session_id` cookie accepts requests without one.\r\n\r\n### What done looks like\r\n\r\n- `RequestParts` gains a `cookies: Record<string, string>` field, parsed from the `Cookie` header in `src/server.ts` where the other parts are built (around the `checkRequest(...)` call).\r\n- `checkRequest` reads cookie values like header values: missing + `required: true` → `is required`; present → converted with the existing `readings()` and validated against the schema.\r\n- `RequestIssue['in']` includes `'cookie'`, so errors read `cookie session_id: is required`.\r\n- Tests in `test/requests.test.ts`: a required cookie missing, present and valid, and present with the wrong type (`page=abc` for an integer).\r\n- README's **Request validation** section no longer says cookies aren't checked; a line under **Unreleased** in `CHANGELOG.md`.\r\n\r\nParsing a `Cookie` header is a few lines (`a=1; b=2`, URL-decode values); no dependency needed.\r\n",
+      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-11-01T15:18:48Z",
+      "updated_at": "2026-11-01T15:18:48Z",
+      "inferred_task_type": "Feature",
+      "repo_context": {
+        "full_name": "wylan24/mockgen",
+        "url": "https://github.com/wylan24/mockgen",
+        "description": "Turn an OpenAPI spec or a folder of sample JSON into a running mock server with realistic, deterministic fake data. One command.",
+        "language": "TypeScript",
+        "stars": 0,
+        "pushed_at": "2026-11-01T15:23:52Z",
+        "archived": false,
+        "topics": [
+          "api-mocking",
+          "cli",
+          "fake-data",
+          "mock",
+          "mock-server",
+          "openapi",
+          "testing",
+          "typescript"
+        ],
+        "license": "MIT"
+      }
+    },
+    {
+      "id": 4918412318,
+      "number": 37,
+      "title": "Docusaurus v4 / Rspack: verify and migrate the configureWebpack externals hook",
+      "url": "https://github.com/toasty-kj/docusaurus-plugin-pagefind/issues/37",
+      "state": "open",
+      "repository": "toasty-kj/docusaurus-plugin-pagefind",
+      "labels": [
+        "enhancement",
+        "good first issue",
+        "docusaurus-v4"
+      ],
+      "body": "## Status update (2026-11) — part of #110\n\nVerified against `@docusaurus/core@4.0.0-canary-7002`, where Rspack v2 is the default bundler:\n\n- **The function-form `externals` + `promise import(...)` works unchanged under Rspack.** The build emits the baseUrl-aware `/fixture-base/pagefind/pagefind.js` import, and search returns hits in the browser. The main unknown below is resolved.\n- **`configureBundler({params})` does not exist yet.** It is only an *optional* item in the upstream umbrella meta/docusaurus#11719, and no implementation, PR or issue exists. Upstream phrases it as a deprecation, so `configureWebpack` would likely keep working through v4 (like `getSwizzleComponentList`, kept until v5).\n- `configureWebpack`'s signature is unchanged on Docusaurus `main` (only a `// TODO Docusaurus v4 ?` comment). Opting back into Webpack via `siteConfig.webpack` (meta/docusaurus#12626) uses the same hook.\n\nRemaining: migrate when `configureBundler` ships. Keep `peerDependencies` as is while we support v3 and v4 together (see #110).\n\n---\n\n## Background\n\nDocusaurus v4 makes **Rspack** the default bundler (`experimental_faster` becomes stable/default; opting back into webpack remains possible). Rspack is largely webpack-API compatible, so this is not expected to be an immediate break — but there are concrete follow-ups for this plugin.\n\nRefs:\n- [Docusaurus V4 umbrella issue #11719](https://github.com/facebook/docusaurus/issues/11719)\n- [Docusaurus Faster – For plugins authors #10572](https://github.com/facebook/docusaurus/issues/10572)\n- [PR #10402 – Replace Webpack with Rspack](https://github.com/facebook/docusaurus/pull/10402)\n\n## Does the API change?\n\nShort version: **`configureWebpack` keeps working under Rspack**, and this plugin does **not** import `webpack` directly (it only returns an `externals` entry in `src/index.ts`), so the usual breakage cause for plugin authors does not apply here.\n\nTwo upstream changes to track:\n\n1. **`configureWebpack(...args)` → `configureBundler({params})`** — Docusaurus v4 plans to deprecate the positional-args hook in favor of a single-params-object hook. (This is the same direction as the already-noted future signature `configureWebpack({config, isServer, utils, content})`.)\n2. **`currentBundler` param** — bundler internals should be accessed via the injected `currentBundler` (`.name` is `\"webpack\" | \"rspack\"`, `.instance` is the module) rather than importing webpack. Not needed today because we don't touch the bundler instance.\n\n## What this plugin does today\n\n`src/index.ts` `configureWebpack` returns a **function-form `externals`** that intercepts `/pagefind/pagefind.js` and resolves it as `promise import(...)`:\n\n```ts\nexternals: [\n  ({ request }, callback) => {\n    if (request === '/pagefind/pagefind.js') {\n      callback(null, `promise import(${JSON.stringify(request)})`)\n      return\n    }\n    callback()\n  }\n]\n```\n\n## Tasks\n\n- [x] **Verify** the function-form `externals` + `promise import(...)` external type behaves identically under Rspack (this is the main unknown).\n- [ ] Enable `future.experimental_faster.rspackBundler: true` in `apps/wiki` and confirm the search bundle loads and search works end to end. *(Verified end to end on a v4 canary fixture site, where Rspack is the default; not yet in `apps/wiki`.)*\n- [ ] When Docusaurus ships `configureBundler({params})`, migrate the hook (keeping backward compat for supported Docusaurus versions).\n- [ ] Update `peerDependencies` (`@docusaurus/core`) range once v4 compatibility is confirmed.\n- [ ] Refresh the notes in `docs/architecture.md` and `docs/references/docusaurus-plugin-api-llms.txt` (the \"configureWebpack future change\" section).\n\n## Acceptance\n\n`apps/wiki` builds and search works with the Rspack bundler enabled, and the plugin no longer relies on any webpack-only behavior.\n",
+      "comments": 1,
+      "assignees": [],
+      "created_at": "2026-07-18T13:17:29Z",
+      "updated_at": "2026-11-01T15:14:22Z",
+      "inferred_task_type": "Feature",
+      "repo_context": {
+        "full_name": "toasty-kj/docusaurus-plugin-pagefind",
+        "url": "https://github.com/toasty-kj/docusaurus-plugin-pagefind",
+        "description": "A Docusaurus plugin that integrates Pagefind",
+        "language": "TypeScript",
+        "stars": 2,
+        "pushed_at": "2026-11-01T14:58:32Z",
+        "archived": false,
+        "topics": [
+          "docusaurus",
+          "docusaurus-plugin",
+          "pagefind"
+        ],
+        "license": "MIT"
+      }
+    },
+    {
+      "id": 4804271831,
+      "number": 4,
+      "title": "[AGENT-TASK] Mobile-first landing page with wallet deep-link — +15% conversion",
+      "url": "https://github.com/Nexussyn/ai-growth-engine/issues/4",
+      "state": "open",
+      "repository": "Nexussyn/ai-growth-engine",
+      "labels": [
+        "good first issue",
+        "agent-task",
+        "bounty",
+        "frontend"
+      ],
+      "body": "## 🎯 Objective\nCreate a mobile-optimized landing page that detects mobile context and shows a simplified CTA with wallet app deep-links.\n\n## 📋 Scope\nThe current landing page is desktop-first. On mobile:\n1. Detect user agent / screen size\n2. Show simplified hero: 1 headline + 1 CTA button\n3. CTA deep-links to MetaMask Mobile, Coinbase Wallet, Rainbow\n4. Track mobile vs desktop conversion separately\n\n## ✅ Acceptance Criteria\n- [ ] HTML/CSS/JS mobile landing page (or React component)\n- [ ] User agent detection for mobile\n- [ ] Deep-links for: MetaMask (`metamask://`), Coinbase Wallet (`cbwallet://`), Rainbow (`rainbow://`)\n- [ ] Conversion event tracked in `system_events` with `mobile_landing_cta_click`\n- [ ] Passes Lighthouse mobile score > 90\n- [ ] Works on iOS Safari and Android Chrome\n\n## 📤 Expected Output\n- `src/landing/mobile.html` or `src/components/MobileLanding.tsx`\n- Screenshot/demo in PR description\n\n## 💰 Reward\n`$10 USDC` logged on merge\n\n## 🔗 Context\n- Source: `improvement_proposals.prop_mobile_landing`\n- ~60% of web3 users are on mobile\n- Expected impact: +15% conversion\n\n## 🤖 For AI agents\nBranch: `agent/[your-name]/issue-4`",
+      "comments": 59,
+      "assignees": [],
+      "created_at": "2026-07-03T14:32:41Z",
+      "updated_at": "2026-11-01T15:14:03Z",
+      "inferred_task_type": null,
+      "repo_context": {
+        "full_name": "Nexussyn/ai-growth-engine",
+        "url": "https://github.com/Nexussyn/ai-growth-engine",
+        "description": "🤖 Open autonomous AI growth system — contribute, improve, earn. Multi-agent bounty marketplace powered by x402 protocol. PRs welcome from all AIs and developers.",
+        "language": "TypeScript",
+        "stars": 8,
+        "pushed_at": "2026-09-18T14:48:09Z",
+        "archived": false,
+        "topics": [],
+        "license": null
+      }
+    },
+    {
+      "id": 6148500964,
+      "number": 31,
+      "title": "Split the organization page into tabs",
+      "url": "https://github.com/VaibhavBansa1/coding-contest-platform/issues/31",
+      "state": "open",
+      "repository": "VaibhavBansa1/coding-contest-platform",
+      "labels": [
+        "enhancement",
+        "good first issue"
+      ],
+      "body": "`src/app/orgs/[slug]/page.tsx` has grown long: contests, units, groups, student import, people, invites, custom roles and settings on one page. Split it into tabs (Contests · People · Units and groups · Roles · Settings) using the existing `Tabs` component in `src/components/ui/`.\n\nThe server already decides what each person may see; the tabs only show what the API returns.",
+      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-11-01T15:12:55Z",
+      "updated_at": "2026-11-01T15:12:55Z",
+      "inferred_task_type": "Feature",
+      "repo_context": {
+        "full_name": "VaibhavBansa1/coding-contest-platform",
+        "url": "https://github.com/VaibhavBansa1/coding-contest-platform",
+        "description": null,
+        "language": "TypeScript",
+        "stars": 1,
+        "pushed_at": "2026-11-01T15:14:18Z",
+        "archived": false,
+        "topics": [],
+        "license": null
+      }
+    },
+    {
+      "id": 6148499198,
+      "number": 25,
+      "title": "Problem tags and filtering",
+      "url": "https://github.com/VaibhavBansa1/coding-contest-platform/issues/25",
+      "state": "open",
+      "repository": "VaibhavBansa1/coding-contest-platform",
+      "labels": [
+        "enhancement",
+        "good first issue"
+      ],
+      "body": "Tag problems (Arrays, Graphs, Dynamic Programming ...) and filter the practice list by tag.\n\nA good first issue: a new table, a field in the problem form (`src/components/admin/ProblemForm.tsx`), and a filter on the problems page. Exam-only problems must never appear in the practice list, with or without tags.",
+      "comments": 0,
+      "assignees": [],
+      "created_at": "2026-11-01T15:12:44Z",
+      "updated_at": "2026-11-01T15:12:44Z",
+      "inferred_task_type": "Feature",
+      "repo_context": {
+        "full_name": "VaibhavBansa1/coding-contest-platform",
+        "url": "https://github.com/VaibhavBansa1/coding-contest-platform",
+        "description": null,
+        "language": "TypeScript",
+        "stars": 1,
+        "pushed_at": "2026-11-01T15:14:18Z",
+        "archived": false,
+        "topics": [],
+        "license": null
+      }
+    },
+    {
+      "id": 4697791534,
+      "number": 1,
+      "title": "[$50 BOUNTY] [Python] Add cross-platform health check fallbacks",
+      "url": "https://github.com/weilixiong/TentOfTrials/issues/1",
+      "state": "open",
+      "repository": "weilixiong/TentOfTrials",
+      "labels": [
+        "help wanted",
+        "good first issue",
+        "bounty",
+        "language:python"
+      ],
+      "body": "**Bounty:** $50 (LT)\n\n**Area:** `tools/health_check.py`\n\n**Current state:** The health check tool reads Linux-only `/proc/meminfo` and `/proc/loadavg` directly for memory and load checks. On macOS or other non-Linux environments those checks degrade to warning-only results even though Python standard-library fallbacks can still provide useful diagnostics.\n\n**What's needed:** Add cross-platform fallbacks for the memory and load checks so non-Linux environments report useful values instead of generic `/proc` read failures. Keep the Linux behavior compatible with the current output.\n\n**Acceptance criteria:**\n- `check_memory_usage()` keeps the existing `/proc/meminfo` path on Linux but has a non-Linux fallback that returns a meaningful status/detail tuple.\n- `check_load_average()` keeps the existing `/proc/loadavg` path where available but falls back to `os.getloadavg()` or another standard-library path where possible.\n- Add focused tests or a small validation path that simulates missing `/proc` files and verifies fallback behavior.\n- JSON and text health-check output remain backward compatible for existing callers.\n- PR description explains the fallback behavior and validation performed.\n\n**Required validation:**\n- Run `python3 build.py`\n- Include the generated diagnostic `.logd` artifact from `diagnostic/build-XXX.logd` in the PR; also include `diagnostic/build-XXX.json` if present\n- Use `.github/pull_request_template.md` for your submission",
+      "comments": 24,
+      "assignees": [],
+      "created_at": "2026-06-19T03:58:20Z",
+      "updated_at": "2026-11-01T15:12:35Z",
+      "inferred_task_type": null,
+      "repo_context": {
+        "full_name": "weilixiong/TentOfTrials",
+        "url": "https://github.com/weilixiong/TentOfTrials",
+        "description": "Trading and risk platform.",
+        "language": null,
+        "stars": 0,
+        "pushed_at": "2026-06-19T04:37:07Z",
+        "archived": false,
+        "topics": [],
+        "license": null
+      }
+    },
+    {
+      "id": 6147823393,
+      "number": 2623,
+      "title": "claude-managed-setup help omits AGENT_SWARM_API_KEY precedence",
+      "url": "https://github.com/desplega-ai/agent-swarm/issues/2623",
+      "state": "open",
+      "repository": "desplega-ai/agent-swarm",
+      "labels": [
+        "bug",
+        "good first issue",
+        "prio:low",
+        "size:S"
+      ],
+      "body": "### Intent\n\nThe `claude-managed-setup` help text says its `--api-key` default is `API_KEY` or `123123`. The command actually resolves the namespaced `AGENT_SWARM_API_KEY` first, then legacy `API_KEY`. An operator who follows the help cannot tell which value wins when both are set.\n\n### Repro\n\n1. On current main, run `bun run src/cli.tsx claude-managed-setup --help`.\n2. Read the `--api-key` line. It says `API_KEY` or `123123`.\n3. Compare it with `src/commands/claude-managed-setup.ts:434`, which calls `getApiKey(env)`, and `src/utils/api-key.ts:12-13`, which gives `AGENT_SWARM_API_KEY` precedence over `API_KEY`.\n\n### Setup\n\n- Version or commit: current main (`6aff700f5`)\n- Deployment: local checkout\n- Harness providers: claude-managed\n\n### Proof\n\n`src/cli.tsx:361` already documents the correct precedence for the same command family, while the command-specific help at `src/commands/claude-managed-setup.ts:128` does not.\n\n### Acceptance criteria\n\n- `agent-swarm claude-managed-setup --help` states that `AGENT_SWARM_API_KEY` is preferred and `API_KEY` is the legacy fallback.\n- The help retains the `123123` fallback when neither variable is set.\n- A focused test covers the displayed `--api-key` default or the help text is derived from the same source as the resolver.\n\n### Urgency\n\nnice to have\n\n### Component\n\nCLI (`bunx @desplega.ai/agent-swarm`)",
+      "comments": 2,
+      "assignees": [],
+      "created_at": "2026-11-01T14:07:23Z",
+      "updated_at": "2026-11-01T15:12:01Z",
+      "inferred_task_type": "Bug",
+      "repo_context": {
+        "full_name": "desplega-ai/agent-swarm",
+        "url": "https://github.com/desplega-ai/agent-swarm",
+        "description": "Your Company Agentic Operating System",
+        "language": "TypeScript",
+        "stars": 979,
+        "pushed_at": "2026-11-01T07:49:31Z",
+        "archived": false,
+        "topics": [
+          "agent-coordination",
+          "agent-infrastructure",
+          "agent-runtime",
+          "agent-swarm",
+          "agent-teams",
+          "agentic-os",
+          "agentic-workflows",
+          "ai-agents",
+          "ai-orchestration",
+          "claude-agent-sdk",
+          "claude-code",
+          "coding-agent",
+          "llm-orchestration",
+          "mcp-server",
+          "multi-agent",
+          "multi-agent-orchestration",
+          "openai-codex",
+          "parallel-agents",
+          "slack-bot",
+          "subagents"
+        ],
+        "license": "MIT"
+      }
+    },
+    {
+      "id": 6010293217,
+      "number": 1851,
+      "title": "A synthetic `tap` sends pointer events with no coordinates",
+      "url": "https://github.com/reticlehq/reticle/issues/1851",
+      "state": "open",
+      "repository": "reticlehq/reticle",
+      "labels": [
+        "bug",
+        "good first issue",
+        "agent-reported",
+        "area/browser",
+        "P2"
+      ],
+      "body": "### Problem\nA synthetic `tap` sends `pointerdown` and `pointerup` with `clientX` and `clientY` set to 0. The touch events in the same tap use the element's centre. Code that reads the pointer position, such as a canvas hit test, sees the tap at the top-left corner.\n\n### Steps to reproduce\n1. Put a listener for `pointerdown` on an element that is not at (0, 0).\n2. Run `reticle_act { action: \"tap\" }` on it.\n3. Read `event.clientX` and `event.clientY`.\n\n### Expected\nThe centre of the element.\n\n### Actual\n0 and 0.\n\n### Where in the code\n`adapters/realm/browser/src/actions/actions-dom.ts:386-398` (`firePointerTouch`).\n\n### Done when\n- [ ] Tap pointer events carry the element centre, the same as the touch events.\n- [ ] A test fails before the fix.\n\n### Scope\none function and one test.",
+      "comments": 2,
+      "assignees": [],
+      "created_at": "2026-10-24T06:49:58Z",
+      "updated_at": "2026-11-01T15:09:03Z",
+      "inferred_task_type": "Bug",
+      "repo_context": {
+        "full_name": "reticlehq/reticle",
+        "url": "https://github.com/reticlehq/reticle",
+        "description": "AI agents can generate code, but still struggle to understand what they build. Reticle brings Jev-style machine-native runtime perception to web & desktop applications.",
+        "language": "TypeScript",
+        "stars": 1294,
+        "pushed_at": "2026-11-01T12:06:12Z",
+        "archived": false,
+        "topics": [
+          "agent-skill",
+          "agent-skills",
+          "agent-testing",
+          "agent-verification",
+          "ai-testing-tool",
+          "automated-testing",
+          "claude-code",
+          "claude-skills",
+          "hacktoberfest",
+          "hacktoberfest-accepted",
+          "hacktoberfest2026",
+          "jev",
+          "mcp",
+          "mcp-server",
+          "model-context-protocol",
+          "playwright-mcp",
+          "proof-layer",
+          "reticle-mcp",
+          "skills-sh",
+          "testing-tool"
+        ],
+        "license": null
+      }
+    }
+  ]
+}
