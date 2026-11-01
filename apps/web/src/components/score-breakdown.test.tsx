@@ -54,3 +54,31 @@ describe("ScoreBreakdown", () => {
     expect(screen.getByText("mystery_signal")).toBeInTheDocument();
   });
 });
+
+describe("ScoreBreakdown penalties", () => {
+  it("lists each rule that lowered the score, with its reason", () => {
+    render(
+      <ScoreBreakdown
+        breakdown={breakdown}
+        penalties={[
+          {
+            reason: "GitHub lists octocat as assigned, so someone may already be working on it.",
+            factor: 0.5,
+          },
+          { reason: "12 comments: it may already be claimed or under discussion.", factor: 0.75 },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText(/based on 2 of 3 signals · 2 penalties/)).toBeInTheDocument();
+    expect(screen.getByText("Lowered by half:")).toBeInTheDocument();
+    expect(screen.getByText(/octocat as assigned/)).toBeInTheDocument();
+    expect(screen.getByText("Lowered by a quarter:")).toBeInTheDocument();
+  });
+
+  it("says nothing about penalties when there are none", () => {
+    render(<ScoreBreakdown breakdown={breakdown} />);
+
+    expect(screen.queryByText(/penalt/)).not.toBeInTheDocument();
+  });
+});

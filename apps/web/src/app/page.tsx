@@ -11,6 +11,7 @@ import {
   rankIssues,
   type ApiIssue,
   type ApiProfile,
+  type Penalty,
   type RankedIssue,
   type SignalResult,
   type TaskType,
@@ -44,6 +45,7 @@ type Issue = {
   isSample?: boolean;
   score?: number;
   breakdown?: SignalResult[];
+  penalties?: Penalty[];
 };
 
 const issues: Issue[] = [
@@ -217,6 +219,7 @@ function toCard(
     isSample: false,
     score: ranked?.score,
     breakdown: ranked?.breakdown,
+    penalties: ranked?.penalties,
   };
 }
 
@@ -711,7 +714,10 @@ export default function Home() {
                     </p>
 
                     {issue.breakdown && (
-                      <ScoreBreakdown breakdown={issue.breakdown} />
+                      <ScoreBreakdown
+                        breakdown={issue.breakdown}
+                        penalties={issue.penalties}
+                      />
                     )}
 
                     <div className="mt-5 flex flex-wrap gap-2">

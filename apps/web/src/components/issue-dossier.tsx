@@ -353,7 +353,9 @@ export function IssueDossier({
             </Fact>
           </dl>
 
-          {ranked && <ScoreBreakdown breakdown={ranked.breakdown} />}
+          {ranked && (
+            <ScoreBreakdown breakdown={ranked.breakdown} penalties={ranked.penalties} />
+          )}
 
           <p className="mt-4 text-xs text-[#77766d]">
             A score is a rough guide for prioritising, not a promise that the issue

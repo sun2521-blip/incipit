@@ -10,7 +10,7 @@ from api.ranking.signals import (
 )
 from api.schemas.issue import Issue
 from api.schemas.profile import Profile
-from api.schemas.ranking import RankedIssue, SignalResult
+from api.schemas.ranking import Penalty, RankedIssue, SignalResult
 
 # Blueprint formula: S = 0.30L + 0.25T + 0.20C + 0.15M + 0.10R
 # These weights are hypotheses to evaluate on Day 9, not scientific truth.
@@ -37,6 +37,43 @@ def combine(breakdown: list[SignalResult]) -> int:
     return round(weighted / total_weight)
 
 
+# Rules applied after the weighted signals, each from a verified GitHub fact.
+# Added on Day 9 from the evaluation in docs/ranking-evaluation.md.
+ASSIGNED_FACTOR = 0.5
+# (at least this many comments, factor). A long thread on a "good first issue"
+# usually means it is being claimed or argued over.
+BUSY_DISCUSSION = [(25, 0.5), (10, 0.75)]
+
+
+def penalties(issue: Issue) -> list[Penalty]:
+    """Signs that someone else may already be on the issue. Never a guess:
+    an assignee is a fact GitHub reports; its absence proves nothing."""
+    found: list[Penalty] = []
+    if issue.assignees:
+        found.append(
+            Penalty(
+                reason=(
+                    f"GitHub lists {', '.join(issue.assignees[:3])} as assigned, "
+                    "so someone may already be working on it."
+                ),
+                factor=ASSIGNED_FACTOR,
+            )
+        )
+    for threshold, factor in BUSY_DISCUSSION:
+        if issue.comments >= threshold:
+            found.append(
+                Penalty(
+                    reason=(
+                        f"{issue.comments} comments: it may already be claimed "
+                        "or under discussion."
+                    ),
+                    factor=factor,
+                )
+            )
+            break
+    return found
+
+
 def score_issue(issue: Issue, profile: Profile, now: datetime) -> RankedIssue:
     signals: list[tuple[str, Signal]] = [
         ("skill_match", skill_match(issue, profile)),
@@ -54,7 +91,13 @@ def score_issue(issue: Issue, profile: Profile, now: datetime) -> RankedIssue:
         )
         for name, signal in signals
     ]
-    return RankedIssue(issue=issue, score=combine(breakdown), breakdown=breakdown)
+    applied = penalties(issue)
+    score = float(combine(breakdown))
+    for penalty in applied:
+        score *= penalty.factor
+    return RankedIssue(
+        issue=issue, score=round(score), breakdown=breakdown, penalties=applied
+    )
 
 
 def rank_issues(

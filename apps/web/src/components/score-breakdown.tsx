@@ -1,4 +1,4 @@
-import type { SignalResult } from "@/lib/api";
+import type { Penalty, SignalResult } from "@/lib/api";
 
 const SIGNAL_LABELS: Record<string, string> = {
   skill_match: "Language match",
@@ -8,13 +8,27 @@ const SIGNAL_LABELS: Record<string, string> = {
   goal_match: "Your topics",
 };
 
-export function ScoreBreakdown({ breakdown }: { breakdown: SignalResult[] }) {
+function describeFactor(factor: number): string {
+  if (factor === 0.5) return "Lowered by half";
+  if (factor === 0.75) return "Lowered by a quarter";
+  return `Multiplied by ${factor}`;
+}
+
+export function ScoreBreakdown({
+  breakdown,
+  penalties = [],
+}: {
+  breakdown: SignalResult[];
+  penalties?: Penalty[];
+}) {
   const counted = breakdown.filter((signal) => signal.score !== null).length;
 
   return (
     <details className="mt-4 text-xs text-[#77766d]">
       <summary className="cursor-pointer font-semibold text-[#494940]">
         Why this score · based on {counted} of {breakdown.length} signals
+        {penalties.length > 0 &&
+          ` · ${penalties.length} ${penalties.length === 1 ? "penalty" : "penalties"}`}
       </summary>
 
       <ul className="mt-3 space-y-3">
@@ -38,6 +52,19 @@ export function ScoreBreakdown({ breakdown }: { breakdown: SignalResult[] }) {
           </li>
         ))}
       </ul>
+
+      {penalties.length > 0 && (
+        <ul className="mt-3 space-y-1 border-t border-[#eee9df] pt-3">
+          {penalties.map((penalty) => (
+            <li key={penalty.reason}>
+              <span className="font-semibold text-[#8a3f2a]">
+                {describeFactor(penalty.factor)}:
+              </span>{" "}
+              {penalty.reason}
+            </li>
+          ))}
+        </ul>
+      )}
     </details>
   );
 }
