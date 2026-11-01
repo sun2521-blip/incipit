@@ -265,3 +265,37 @@ describe("fetchDossier", () => {
     ).rejects.toThrow("The API returned an unexpected issue response.");
   });
 });
+
+describe("an unreachable API", () => {
+  it("gives every call the same message people can act on", async () => {
+    globalThis.fetch = (async () => {
+      throw new TypeError("Failed to fetch");
+    }) as typeof fetch;
+
+    for (const call of [
+      () => fetchIssues(),
+      () =>
+        rankIssues({
+          issues: [],
+          profile: { languages: [], topics: [], task_types: [] },
+        }),
+    ]) {
+      const error = await call().catch((caught: unknown) => caught);
+      expect(error).toBeInstanceOf(ApiError);
+      expect(error).toMatchObject({ status: 0 });
+      expect((error as Error).message).not.toContain("Failed to fetch");
+    }
+  });
+
+  it("lets a cancelled request stay cancelled", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    globalThis.fetch = (async () => {
+      throw new DOMException("Aborted", "AbortError");
+    }) as typeof fetch;
+
+    await expect(fetchIssues({ signal: controller.signal })).rejects.toMatchObject({
+      name: "AbortError",
+    });
+  });
+});
