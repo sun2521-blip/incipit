@@ -24,7 +24,7 @@ export function ScoreBreakdown({
   const counted = breakdown.filter((signal) => signal.score !== null).length;
 
   return (
-    <details className="mt-4 text-xs text-[#77766d]">
+    <details className="mt-4 text-xs text-[#6b6a61]">
       <summary className="cursor-pointer font-semibold text-[#494940]">
         Why this score · based on {counted} of {breakdown.length} signals
         {penalties.length > 0 &&
@@ -42,7 +42,7 @@ export function ScoreBreakdown({
               <span className="font-semibold text-[#24251f]">
                 {signal.score === null ? "not counted" : `${signal.score}/100`}
               </span>
-              <span className="text-[#a09b90]">
+              <span className="text-[#6b6a61]">
                 {" "}
                 · weight {Math.round(signal.weight * 100)}%
               </span>

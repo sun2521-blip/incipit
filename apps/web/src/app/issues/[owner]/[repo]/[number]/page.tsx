@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { IssueDossier } from "@/components/issue-dossier";
 
 export const metadata: Metadata = {
-  title: "Issue dossier · Incipit",
+  title: "Issue dossier",
   description:
     "Verified GitHub facts, why it may fit you, and a checklist for getting started.",
 };
@@ -16,7 +16,7 @@ export default function DossierPage({
   return (
     <Suspense
       fallback={
-        <p className="min-h-screen bg-[#f8f6f0] p-10 text-sm text-[#77766d]">
+        <p className="min-h-screen bg-[#f8f6f0] p-10 text-sm text-[#6b6a61]">
           Loading…
         </p>
       }

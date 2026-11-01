@@ -37,7 +37,7 @@ export function ProfilePanel({ profile, onChange }: ProfilePanelProps) {
   return (
     <details className="mb-6 rounded-2xl border border-[#e5e0d5] bg-white/70 p-4">
       <summary className="cursor-pointer text-sm font-semibold">
-        Your profile <span className="font-normal text-[#77766d]">· {summary}</span>
+        Your profile <span className="font-normal text-[#6b6a61]">· {summary}</span>
       </summary>
 
       <div className="mt-4 grid gap-5 md:grid-cols-2">
@@ -51,10 +51,10 @@ export function ProfilePanel({ profile, onChange }: ProfilePanelProps) {
             }
             maxLength={MAX_LIST_TEXT}
             placeholder="e.g. Python, TypeScript"
-            className="mt-2 w-full rounded-xl border border-[#e5e0d5] bg-white px-4 py-3 text-sm outline-none placeholder:text-[#a09b90] focus:border-[#a14e35]"
+            className="mt-2 w-full rounded-xl border border-[#e5e0d5] bg-white px-4 py-3 text-sm outline-none placeholder:text-[#6b6a61] focus:border-[#a14e35]"
           />
 
-          <span className="mt-1 block text-xs text-[#77766d]">
+          <span className="mt-1 block text-xs text-[#6b6a61]">
             Comma-separated, up to 10. Compared with each repository&apos;s
             main language, as reported by GitHub.
           </span>
@@ -70,10 +70,10 @@ export function ProfilePanel({ profile, onChange }: ProfilePanelProps) {
             }
             maxLength={MAX_LIST_TEXT}
             placeholder="e.g. api, testing, machine learning"
-            className="mt-2 w-full rounded-xl border border-[#e5e0d5] bg-white px-4 py-3 text-sm outline-none placeholder:text-[#a09b90] focus:border-[#a14e35]"
+            className="mt-2 w-full rounded-xl border border-[#e5e0d5] bg-white px-4 py-3 text-sm outline-none placeholder:text-[#6b6a61] focus:border-[#a14e35]"
           />
 
-          <span className="mt-1 block text-xs text-[#77766d]">
+          <span className="mt-1 block text-xs text-[#6b6a61]">
             Comma-separated, up to 10. Issues that mention them in the title,
             labels or description score higher.
           </span>
@@ -109,13 +109,13 @@ export function ProfilePanel({ profile, onChange }: ProfilePanelProps) {
             })}
           </div>
 
-          <p className="mt-2 text-xs text-[#77766d]">
+          <p className="mt-2 text-xs text-[#6b6a61]">
             Based on issue labels, which are not always accurate.
           </p>
         </fieldset>
       </div>
 
-      <p className="mt-4 text-xs text-[#77766d]">
+      <p className="mt-4 text-xs text-[#6b6a61]">
         Saved in this browser only.
       </p>
     </details>
