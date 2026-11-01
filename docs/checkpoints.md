@@ -11,7 +11,9 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 
 ## Status
 
-**105 of 140 sub-checkpoints done (75%).** Days 1 to 4, 6 and 7 are complete, Days 5 and 8 are nearly done, Days 10 and 12 are partly done, and Days 9, 11, 13 and 14 have not started. Dates are estimates at 3-4 hours a day; Day 1 was Oct 27.
+**111 of 140 sub-checkpoints done (79%).** Days 1 to 4, 6 and 7 are complete, Days 5, 8 and 11 are nearly done, Days 10 and 12 are partly done, and Days 9, 13 and 14 have not started.
+
+**Live:** web app https://incipit-five.vercel.app · API https://incipit-api-blz7.onrender.com Dates are estimates at 3-4 hours a day; Day 1 was Oct 27.
 
 | Day | Goal | Status | Done | Target |
 | --- | --- | --- | --- | --- |
@@ -25,7 +27,7 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 | 8 | Saved shortlist | Nearly done | 6/7 | Nov 4 |
 | 9 | Evaluation | Not started | 0/6 | Nov 5 |
 | 10 | Frontend tests and CI | Partial | 7/9 | Nov 6 |
-| 11 | First deployment | Not started | 0/8 | Nov 7 |
+| 11 | First deployment | Nearly done | 6/8 | Nov 7 (deployed Nov 1) |
 | 12 | Failure cases | Partial | 5/8 | Nov 8 |
 | 13 | Product polish | Not started | 0/8 | Nov 9 |
 | 14 | Documentation and release | Not started | 0/6 | Nov 10 |
@@ -35,21 +37,21 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 - **Repository context comes before the dossier** (blueprint Days 7 and 6). The dossier needs the contribution-guide lookup, and two ranking signals (language and maintenance) need repository data.
 - **Frontend tests start in Day 3 and CI moves before deployment** (blueprint Day 13 CI). The first deployment should be a green build.
 - **Day 8's shortlist landed with Day 7**, because the dossier's Save button needs a shortlist that outlives the page.
-- **Deployment is prepared but not live.** `render.yaml`, Vercel settings and a smoke test are ready (docs/deployment.md); Day 11 is ticked once the public URLs pass it.
+- **Deployed early, on Nov 1**, so everything after Day 7 is checked on the live site. The smoke test in docs/deployment.md passed against the public URLs.
 - **Some Day 10 and Day 12 work landed early**, with the Day 3 branch: the CI workflow, and the rate-limit, timeout and malformed-response handling.
 
 ## Definition of done
 
 From the blueprint. Ticked only when true on the deployed product.
 
-- [ ] A user can discover real open GitHub issues and navigate to the canonical issue URL. *(works locally; confirm on the live URL)*
-- [ ] Ranking is deterministic, explainable, tested and tied to the user's profile. *(all 5 signals; confirm on the live URL)*
+- [x] A user can discover real open GitHub issues and navigate to the canonical issue URL. *(checked on the live site, Nov 1)*
+- [x] Ranking is deterministic, explainable, tested and tied to the user's profile. *(all 5 signals; live ranking checked Nov 1)*
 - [ ] Closed issues are filtered appropriately and errors do not crash the application. *(closed issues are filtered and malformed responses are handled; confirm on the live URL)*
-- [ ] The dossier separates verified source facts from generated or inferred guidance. *(built and tested; confirm on the live URL)*
+- [x] The dossier separates verified source facts from generated or inferred guidance. *(checked on the live site, Nov 1)*
 - [ ] Saved issues survive a refresh in the same browser. *(works locally; confirm on the live URL)*
 - [ ] Loading, empty, failure and rate-limit states are present. *(all present, and the rate-limit message says when to retry; confirm on the live URL)*
-- [ ] Backend tests, frontend tests, lint and type checks, and the production build pass in CI. *(green on PR #1 and `main`; tick at release)*
-- [ ] The public deployment works without a paid AI API key.
+- [x] Backend tests, frontend tests, lint and type checks, and the production build pass in CI. *(green on PR #4 and on `main`, which is what is deployed)*
+- [x] The public deployment works without a paid AI API key. *(no AI key is configured anywhere)*
 - [ ] README includes features, screenshots, architecture, local setup, environment variables, limitations and deployment notes.
 - [ ] A short demo shows the deployed product rather than only mockups.
 
@@ -57,7 +59,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 1: Foundation
 
-**Status:** Done (10/10), target Oct 27  
+**Status:** Done (10/10), target Oct 27\
 **Blueprint:** Create repo, frontend shell, FastAPI app and /health endpoint; establish architecture notes and acceptance criteria. Run both locally and commit.
 
 #### CP1.1 Repository and layout
@@ -81,7 +83,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 2: UI shell
 
-**Status:** Done (6/6), target Oct 28  
+**Status:** Done (6/6), target Oct 28\
 **Blueprint:** Build landing/discovery pages, filter controls, issue cards, loading/empty/error states using fixtures.
 
 #### CP2.1 Page and layout
@@ -101,7 +103,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 3: GitHub client
 
-**Status:** Done (21/21), target Oct 29, completed Oct 31  
+**Status:** Done (21/21), target Oct 29, completed Oct 31\
 **Blueprint:** Fetch public issue data; implement pagination, timeouts, normalisation, rate-limit/error handling.
 
 #### CP3.1 Client basics
@@ -145,7 +147,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 4: Ranking core
 
-**Status:** Done (11/11), target Oct 30, completed Nov 1  
+**Status:** Done (11/11), target Oct 30, completed Nov 1\
 **Blueprint:** Write pure scoring functions and tests for language/task match, clarity, missing signals and deterministic ordering.
 
 #### CP4.1 Profile
@@ -173,7 +175,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 5: Real ranked results
 
-**Status:** Mostly done (9/10), target Oct 31 (completion: Nov 2)  
+**Status:** Mostly done (9/10), target Oct 31 (completion: Nov 2)\
 **Blueprint:** Add /issues and /rank integration; display score breakdowns and functional filters.
 
 #### CP5.1 API
@@ -197,7 +199,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 6: Repository context and the missing signals
 
-**Status:** Done (17/17), target Nov 2, completed Nov 1  
+**Status:** Done (17/17), target Nov 2, completed Nov 1\
 **Blueprint:** Fetch repository metadata and contribution-guide links; distinguish unavailable context from inferred guidance. (Blueprint Day 7, moved earlier because the dossier and two signals need it.)
 
 #### CP6.1 Repository metadata client
@@ -234,7 +236,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 7: Issue dossier
 
-**Status:** Done (13/13), target Nov 3, completed Nov 1  
+**Status:** Done (13/13), target Nov 3, completed Nov 1\
 **Blueprint:** Build dossier page with canonical links, metadata and contribution checklist. (Blueprint Day 6.)
 
 #### CP7.1 Backend
@@ -264,7 +266,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 8: Saved shortlist
 
-**Status:** Nearly done (6/7), target Nov 4  
+**Status:** Nearly done (6/7), target Nov 4\
 **Blueprint:** Persist saved issues in localStorage; avoid accounts/database unless truly necessary.
 
 #### CP8.1 Persistence
@@ -285,7 +287,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 9: Evaluation
 
-**Status:** Not started (0/6), target Nov 5  
+**Status:** Not started (0/6), target Nov 5\
 **Blueprint:** Manually assess 30-50 real issues; document bad results, adjust weights and record limitations.
 
 #### CP9.1 Evaluation set
@@ -305,7 +307,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 10: Frontend tests and CI
 
-**Status:** Partial (7/9), target Nov 6  
+**Status:** Partial (7/9), target Nov 6\
 **Blueprint:** (Blueprint Day 13 CI, moved before deployment so the first deploy is a green build.)
 
 #### CP10.1 Frontend tests
@@ -328,29 +330,29 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 11: First deployment
 
-**Status:** Not started (0/8), target Nov 7  
+**Status:** Nearly done (6/8), target Nov 7, deployed Nov 1\
 **Blueprint:** Deploy frontend to Vercel and API to Render; verify end-to-end flow and environment configuration. (Blueprint Day 10.)
 
 #### CP11.1 API on Render
 
-- [ ] Build `uv sync --frozen`; start `uv run uvicorn api.main:app --host 0.0.0.0 --port $PORT` (the blueprint says `app.main:app`, our package is `api`) *(in `render.yaml` as `uv sync --frozen --no-dev` and `.venv/bin/uvicorn ... --proxy-headers`; verified locally from a clean checkout)*
-- [ ] Environment: allowed origin set to the frontend URL; `GITHUB_TOKEN` server-side only
-- [ ] `/health` and `/issues` work on the public URL
+- [x] Build `uv sync --frozen`; start `uv run uvicorn api.main:app --host 0.0.0.0 --port $PORT` (the blueprint says `app.main:app`, our package is `api`). Deployed from `render.yaml` as `uv sync --frozen --no-dev` and `.venv/bin/uvicorn ... --proxy-headers` at https://incipit-api-blz7.onrender.com
+- [x] Environment: allowed origin set to the frontend URL; `GITHUB_TOKEN` server-side only (the smoke test saw repository details for 5 of 5 issues, so the token works)
+- [x] `/health` and `/issues` work on the public URL (plus a dossier, `/rank`, a 404 and the security headers: `scripts/smoke_test.py` passed 11 of 11)
 
 #### CP11.2 Frontend on Vercel
 
-- [ ] Root directory `apps/web`; `NEXT_PUBLIC_API_BASE_URL` set to the API URL
-- [ ] Production requests go to the API, not localhost; no secret in any `NEXT_PUBLIC_` variable
+- [x] Root directory `apps/web`; `NEXT_PUBLIC_API_BASE_URL` set to the API URL, live at https://incipit-five.vercel.app
+- [x] Production requests go to the API, not localhost; no secret in any `NEXT_PUBLIC_` variable (the page bundle names only the Render API, and the CSP allows only it)
 
 #### CP11.3 Smoke test
 
-- [ ] Fresh browser: discover, rank, and the profile and saved list persist
-- [ ] Cold start (free tier sleeps): friendly loading message and a labelled sample fallback
-- [ ] CORS verified; works without any AI key
+- [ ] Fresh browser: discover, rank, and the profile and saved list persist *(discover, rank and dossier checked in a fresh headless browser on Nov 1; persistence needs a click-through)*
+- [ ] Cold start (free tier sleeps): friendly loading message and a labelled sample fallback *(built and tested; check on the live site after the API has slept for 15 minutes)*
+- [x] CORS verified (the web app is allowed, other sites are refused); works without any AI key
 
 ### Day 12: Failure cases
 
-**Status:** Partial (5/8), target Nov 8  
+**Status:** Partial (5/8), target Nov 8\
 **Blueprint:** Test closed/deleted issues, malformed input, timeouts, rate limits, empty results and API downtime. (Blueprint Day 11.)
 
 #### CP12.1 GitHub failures
@@ -372,7 +374,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 13: Product polish
 
-**Status:** Not started (0/8), target Nov 9  
+**Status:** Not started (0/8), target Nov 9\
 **Blueprint:** Improve responsive layout, keyboard accessibility, typography, feedback states and interaction details. (Blueprint Day 12.)
 
 #### CP13.1 Structure and decisions
@@ -394,7 +396,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 14: Documentation and release
 
-**Status:** Not started (0/6), target Nov 10  
+**Status:** Not started (0/6), target Nov 10\
 **Blueprint:** Run release gate, verify live URL, record demo, document known limitations and create a release tag if desired. (Blueprint Days 13 and 14.)
 
 #### CP14.1 Docs

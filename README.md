@@ -2,6 +2,8 @@
 
 open source is cool until you spend 3 hours looking for one issue you can actually solve. incipit helps you find your starting point, minus the existential crisis.
 
+**Try it:** https://incipit-five.vercel.app
+
 ## What is Incipit?
 
 Incipit is an open-source contribution navigator that helps developers discover public GitHub issues suited to their skills and interests.
