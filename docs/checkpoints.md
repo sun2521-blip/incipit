@@ -430,6 +430,7 @@ From the blueprint. Ticked only when true on the deployed product.
 | D10 | 100-issue cap | Decided | Keeps the `/rank` request bounded and is far below GitHub's 1,000-result limit, so the UI explains the cap rather than GitHub's limit |
 | D11 | Score on the dossier | Decided | The dossier endpoint has no score; the browser ranks the issue with `POST /rank` and the stored profile, so profiles never appear in URLs or server logs |
 | D12 | API abuse limits | Decided | Per-client rate limits, a 4 MB body cap and security headers before going public. In memory and per process, which suits one free instance |
+| D13 | Searching one repository | Decided | Typing `owner/repo` or pasting a github.com link searches that repository's beginner issues. A missing or private repository, or one with no `good first issue` issues, gets a plain-language notice instead of an error |
 
 ## Known limitations right now
 
