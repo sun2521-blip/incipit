@@ -16,17 +16,34 @@ export const taskTypeSchema = z.enum([
 
 export type TaskType = z.infer<typeof taskTypeSchema>;
 
+// Rendered as links, so only real GitHub URLs are accepted (this rules out
+// "javascript:" and similar).
+const githubUrl = z
+  .string()
+  .refine((value) => value.startsWith("https://github.com/"), {
+    message: "must be a GitHub URL",
+  });
+
+/** Verified facts about an issue's repository, from GitHub's /repos endpoint. */
+export const repoContextSchema = z.object({
+  full_name: z.string(),
+  url: githubUrl,
+  description: z.string().nullable(),
+  language: z.string().nullable(),
+  stars: z.number().int().nonnegative(),
+  pushed_at: z.string().nullable(),
+  archived: z.boolean(),
+  topics: z.array(z.string()),
+  license: z.string().nullable(),
+});
+
+export type RepoContext = z.infer<typeof repoContextSchema>;
+
 export const apiIssueSchema = z.object({
   id: z.number().int(),
   number: z.number().int(),
   title: z.string(),
-  // Rendered as a link, so only real GitHub URLs are accepted (this rules out
-  // "javascript:" and similar).
-  url: z
-    .string()
-    .refine((value) => value.startsWith("https://github.com/"), {
-      message: "must be a GitHub URL",
-    }),
+  url: githubUrl,
   state: z.string(),
   repository: z.string(),
   labels: z.array(z.string()),
@@ -37,6 +54,9 @@ export const apiIssueSchema = z.object({
   updated_at: z.string(),
   // Only a hint: an unknown value counts as "no type" instead of failing.
   inferred_task_type: taskTypeSchema.nullable().catch(null),
+  // Extra facts: missing or malformed context means "unavailable", and the
+  // issue is kept.
+  repo_context: repoContextSchema.nullable().catch(null),
 });
 
 export type ApiIssue = z.infer<typeof apiIssueSchema>;

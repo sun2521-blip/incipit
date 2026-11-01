@@ -1,8 +1,16 @@
 import time
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from api.ranking.signals import clarity, clean_body, goal_match, task_match
+from api.ranking.signals import (
+    clarity,
+    clean_body,
+    goal_match,
+    maintenance,
+    skill_match,
+    task_match,
+)
 from api.schemas.issue import TaskType
 from api.schemas.profile import Profile
 
@@ -142,3 +150,109 @@ def test_goal_match_whole_word_matching(make_issue, topic, title, expected):
     issue = make_issue(title=title, labels=[])
 
     assert goal_match(issue, Profile(topics=[topic])).score == expected
+
+
+# ---- skill match (repository language) ---------------------------------------
+
+
+def test_skill_match_unavailable_without_languages(make_issue, make_repo):
+    issue = make_issue(repo_context=make_repo())
+
+    assert skill_match(issue, Profile()).score is None
+
+
+def test_skill_match_unavailable_without_repository_context(make_issue):
+    signal = skill_match(make_issue(), Profile(languages=["Python"]))
+
+    assert signal.score is None
+    assert "unavailable" in signal.reason
+
+
+def test_skill_match_unavailable_when_github_reports_no_language(make_issue, make_repo):
+    issue = make_issue(repo_context=make_repo(language=None))
+
+    assert skill_match(issue, Profile(languages=["Python"])).score is None
+
+
+def test_skill_match_full_score_ignoring_case(make_issue, make_repo):
+    issue = make_issue(repo_context=make_repo(language="TypeScript"))
+
+    signal = skill_match(issue, Profile(languages=["typescript"]))
+
+    assert signal.score == 100
+    assert "TypeScript" in signal.reason
+
+
+def test_skill_match_low_but_nonzero_for_another_language(make_issue, make_repo):
+    issue = make_issue(repo_context=make_repo(language="Rust"))
+
+    signal = skill_match(issue, Profile(languages=["Python", "Go"]))
+
+    assert signal.score == 20
+    assert "Rust" in signal.reason
+
+
+# ---- maintenance (repository activity) ---------------------------------------
+
+NOW = datetime(2026, 10, 31, 12, tzinfo=UTC)
+
+
+def pushed(make_issue, make_repo, days_ago: float):
+    return make_issue(repo_context=make_repo(pushed_at=NOW - timedelta(days=days_ago)))
+
+
+def test_maintenance_unavailable_without_repository_context(make_issue):
+    assert maintenance(make_issue(), NOW).score is None
+
+
+def test_maintenance_unavailable_without_push_date(make_issue, make_repo):
+    issue = make_issue(repo_context=make_repo(pushed_at=None))
+
+    assert maintenance(issue, NOW).score is None
+
+
+def test_maintenance_zero_for_archived_repository(make_issue, make_repo):
+    issue = make_issue(repo_context=make_repo(archived=True, pushed_at=NOW))
+
+    signal = maintenance(issue, NOW)
+
+    assert signal.score == 0
+    assert "archived" in signal.reason
+
+
+@pytest.mark.parametrize(
+    ("days_ago", "points"),
+    [
+        (0, 100),
+        (7, 100),
+        (8, 85),
+        (30, 85),
+        (31, 60),
+        (90, 60),
+        (91, 35),
+        (180, 35),
+        (181, 15),
+        (365, 15),
+        (366, 5),
+        (2000, 5),
+    ],
+)
+def test_maintenance_points_fall_as_the_last_push_ages(
+    make_issue, make_repo, days_ago, points
+):
+    assert maintenance(pushed(make_issue, make_repo, days_ago), NOW).score == points
+
+
+@pytest.mark.parametrize(
+    ("days_ago", "words"),
+    [(0, "today"), (1, "yesterday"), (12, "12 days ago")],
+)
+def test_maintenance_reason_says_when(make_issue, make_repo, days_ago, words):
+    signal = maintenance(pushed(make_issue, make_repo, days_ago), NOW)
+
+    assert signal.reason == f"Code was last pushed {words}."
+
+
+def test_maintenance_treats_a_future_push_date_as_today(make_issue, make_repo):
+    # Clock skew between GitHub and this server must not break the signal.
+    assert maintenance(pushed(make_issue, make_repo, -1), NOW).score == 100

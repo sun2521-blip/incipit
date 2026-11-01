@@ -84,6 +84,42 @@ describe("parseIssueSearchResponse", () => {
     expect(result.items).toEqual([]);
   });
 
+  it("reads repository context, and treats a missing one as unavailable", () => {
+    const repo = {
+      full_name: "example/project",
+      url: "https://github.com/example/project",
+      description: null,
+      language: "Python",
+      stars: 42,
+      pushed_at: "2026-10-30T00:00:00Z",
+      archived: false,
+      topics: ["cli"],
+      license: "MIT",
+    };
+
+    const result = parseIssueSearchResponse({
+      total_count: 2,
+      items: [rawIssue({ repo_context: repo }), rawIssue({ id: 2 })],
+    });
+
+    expect(result.items[0].repo_context).toEqual(repo);
+    expect(result.items[1].repo_context).toBeNull();
+  });
+
+  it("keeps an issue whose repository context is malformed", () => {
+    const result = parseIssueSearchResponse({
+      total_count: 1,
+      items: [
+        rawIssue({
+          repo_context: { full_name: "x/y", url: "javascript:alert(1)" },
+        }),
+      ],
+    });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0].repo_context).toBeNull();
+  });
+
   it("treats an unknown task type as no task type", () => {
     const result = parseIssueSearchResponse({
       total_count: 1,

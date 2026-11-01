@@ -22,6 +22,7 @@ function issue(id: number): ApiIssue {
     created_at: "2026-10-01T10:00:00Z",
     updated_at: "2026-10-29T08:30:00Z",
     inferred_task_type: null,
+    repo_context: null,
   };
 }
 

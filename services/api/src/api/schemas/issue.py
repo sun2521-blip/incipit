@@ -3,6 +3,8 @@ from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict
 
+from api.schemas.repository import RepoContext
+
 
 class TaskType(StrEnum):
     BUG = "Bug"
@@ -37,6 +39,10 @@ class Issue(BaseModel):
 
     # --- inferred by Incipit from labels; a heuristic, not a fact ---
     inferred_task_type: TaskType | None
+
+    # --- verified facts about the repository, fetched separately ---
+    # None when the lookup failed or has not happened; never guessed.
+    repo_context: RepoContext | None = None
 
 
 class IssueSearchResult(BaseModel):

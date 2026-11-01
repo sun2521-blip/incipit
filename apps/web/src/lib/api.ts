@@ -28,6 +28,7 @@ export type IssueSearchParams = {
 
 /** The profile as the API expects it. */
 export type ApiProfile = {
+  languages: string[];
   topics: string[];
   task_types: TaskType[];
 };

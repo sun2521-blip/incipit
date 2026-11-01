@@ -1,6 +1,7 @@
 import time
 
 import httpx
+import pytest
 from fastapi.testclient import TestClient
 
 from api.clients.github import GitHubClient, GitHubResponseError
@@ -8,6 +9,18 @@ from api.main import app
 from api.settings import settings
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def no_repository_lookups(monkeypatch):
+    """Route tests never reach GitHub: every repository lookup answers 404."""
+
+    async def get_repository(self, full_name):
+        request = httpx.Request("GET", f"https://api.github.com/repos/{full_name}")
+        response = httpx.Response(404, request=request)
+        raise httpx.HTTPStatusError("not found", request=request, response=response)
+
+    monkeypatch.setattr(GitHubClient, "get_repository", get_repository)
 
 
 def failing_search(exc: Exception):

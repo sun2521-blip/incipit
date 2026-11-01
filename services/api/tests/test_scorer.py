@@ -7,13 +7,15 @@ from api.schemas.issue import TaskType
 from api.schemas.profile import Profile
 from api.schemas.ranking import SignalResult
 
+NOW = datetime(2026, 10, 31, tzinfo=UTC)
+
 
 def test_weights_sum_to_one():
     assert sum(WEIGHTS.values()) == pytest.approx(1.0)
 
 
 def test_unavailable_signals_are_reported_not_scored(make_issue):
-    ranked = score_issue(make_issue(), Profile())
+    ranked = score_issue(make_issue(), Profile(), NOW)
 
     by_name = {s.name: s for s in ranked.breakdown}
     assert [s.name for s in ranked.breakdown] == [
@@ -34,7 +36,7 @@ def test_score_rescales_weights_over_available_signals(make_issue):
     issue = make_issue(inferred_task_type=TaskType.BUG, body=None)
     profile = Profile(task_types=[TaskType.BUG])
 
-    ranked = score_issue(issue, profile)
+    ranked = score_issue(issue, profile, NOW)
 
     # task_match 100 (weight .25) and clarity 0 (weight .20) are available:
     # (100 * .25 + 0 * .20) / (.25 + .20) = 55.56 -> 56
@@ -49,7 +51,7 @@ def test_score_uses_all_available_signals(make_issue, detailed_body):
     )
     profile = Profile(task_types=[TaskType.BUG], topics=["pandas"])
 
-    ranked = score_issue(issue, profile)
+    ranked = score_issue(issue, profile, NOW)
 
     # task 100 * .25 + clarity 100 * .20 + goal 60 * .10 = 51; weights = .55
     # 51 / .55 = 92.7 -> 93
@@ -104,3 +106,34 @@ def test_order_does_not_depend_on_input_order(make_issue, detailed_body):
     backward = [r.issue.id for r in rank_issues(list(reversed(issues)), profile)]
 
     assert forward == backward
+
+
+def test_repository_context_fills_in_language_and_maintenance(
+    make_issue, make_repo, detailed_body
+):
+    issue = make_issue(
+        title="Fix pandas import",
+        inferred_task_type=TaskType.BUG,
+        body=detailed_body,
+        repo_context=make_repo(language="Python", pushed_at=NOW),
+    )
+    profile = Profile(
+        languages=["python"], task_types=[TaskType.BUG], topics=["pandas"]
+    )
+
+    ranked = score_issue(issue, profile, NOW)
+
+    assert all(s.score is not None for s in ranked.breakdown)
+    # language 100 * .30 + task 100 * .25 + clarity 100 * .20
+    # + maintenance 100 * .15 + goal 60 * .10 = 96
+    assert ranked.score == 96
+
+
+def test_archived_repository_ranks_below_an_active_one(make_issue, make_repo):
+    profile = Profile(languages=["Python"])
+    active = make_issue(id=1, repo_context=make_repo(pushed_at=NOW))
+    archived = make_issue(id=2, repo_context=make_repo(archived=True))
+
+    ranked = rank_issues([archived, active], profile, now=NOW)
+
+    assert [r.issue.id for r in ranked] == [1, 2]

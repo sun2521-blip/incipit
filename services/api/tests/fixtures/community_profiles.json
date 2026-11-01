@@ -1,0 +1,113 @@
+{
+  "hivecommons/hive": {
+    "health_percentage": 100,
+    "description": "AI agent orchestration for open and closed source — a fully customizable fleet of AI agents covering every level of project maintenance, from brainstorming to full autonomy",
+    "documentation": "https://hive.hivecommons.dev/",
+    "files": {
+      "code_of_conduct": {
+        "key": "other",
+        "name": "Other",
+        "html_url": "https://github.com/hivecommons/hive/blob/v5/CODE_OF_CONDUCT.md",
+        "url": "https://api.github.com/repos/hivecommons/hive/community/code_of_conduct"
+      },
+      "code_of_conduct_file": {
+        "url": "https://api.github.com/repos/hivecommons/hive/contents/CODE_OF_CONDUCT.md",
+        "html_url": "https://github.com/hivecommons/hive/blob/v5/CODE_OF_CONDUCT.md"
+      },
+      "contributing": {
+        "url": "https://api.github.com/repos/hivecommons/hive/contents/CONTRIBUTING.md",
+        "html_url": "https://github.com/hivecommons/hive/blob/v5/CONTRIBUTING.md"
+      },
+      "issue_template": null,
+      "pull_request_template": {
+        "url": "https://api.github.com/repos/hivecommons/hive/contents/.github/PULL_REQUEST_TEMPLATE.md",
+        "html_url": "https://github.com/hivecommons/hive/blob/v5/.github/PULL_REQUEST_TEMPLATE.md"
+      },
+      "license": {
+        "key": "apache-2.0",
+        "name": "Apache License 2.0",
+        "spdx_id": "Apache-2.0",
+        "url": "https://api.github.com/licenses/apache-2.0",
+        "node_id": "MDc6TGljZW5zZTI=",
+        "html_url": "https://github.com/hivecommons/hive/blob/v5/LICENSE"
+      },
+      "readme": {
+        "url": "https://api.github.com/repos/hivecommons/hive/contents/README.md",
+        "html_url": "https://github.com/hivecommons/hive/blob/v5/README.md"
+      }
+    },
+    "updated_at": "2026-10-31T10:44:40Z",
+    "content_reports_enabled": true
+  },
+  "HassyPro/lifeops-agent-sandbox": {
+    "health_percentage": 42,
+    "description": "Throwaway repository for rehearsing a coding agent. Safe to delete.",
+    "documentation": null,
+    "files": {
+      "code_of_conduct": null,
+      "code_of_conduct_file": null,
+      "contributing": {
+        "url": "https://api.github.com/repos/HassyPro/lifeops-agent-sandbox/contents/CONTRIBUTING.md",
+        "html_url": "https://github.com/HassyPro/lifeops-agent-sandbox/blob/main/CONTRIBUTING.md"
+      },
+      "issue_template": null,
+      "pull_request_template": null,
+      "license": null,
+      "readme": {
+        "url": "https://api.github.com/repos/HassyPro/lifeops-agent-sandbox/contents/README.md",
+        "html_url": "https://github.com/HassyPro/lifeops-agent-sandbox/blob/main/README.md"
+      }
+    },
+    "updated_at": null
+  },
+  "noruzzamans/gslider-blocks": {
+    "health_percentage": 85,
+    "description": "Modern WordPress Gutenberg slider & carousel blocks with Swiper.js & Headless API. 🎨 Storybook: https://noruzzamans.github.io/gslider-blocks/",
+    "documentation": "https://wordpress.org/plugins/gslider-blocks/",
+    "files": {
+      "code_of_conduct": {
+        "key": "other",
+        "name": "Other",
+        "html_url": "https://github.com/noruzzamans/gslider-blocks/blob/main/CODE_OF_CONDUCT.md",
+        "url": "https://api.github.com/repos/noruzzamans/gslider-blocks/community/code_of_conduct"
+      },
+      "code_of_conduct_file": {
+        "url": "https://api.github.com/repos/noruzzamans/gslider-blocks/contents/CODE_OF_CONDUCT.md",
+        "html_url": "https://github.com/noruzzamans/gslider-blocks/blob/main/CODE_OF_CONDUCT.md"
+      },
+      "contributing": {
+        "url": "https://api.github.com/repos/noruzzamans/gslider-blocks/contents/CONTRIBUTING.md",
+        "html_url": "https://github.com/noruzzamans/gslider-blocks/blob/main/CONTRIBUTING.md"
+      },
+      "issue_template": null,
+      "pull_request_template": {
+        "url": "https://api.github.com/repos/noruzzamans/gslider-blocks/contents/.github/PULL_REQUEST_TEMPLATE.md",
+        "html_url": "https://github.com/noruzzamans/gslider-blocks/blob/main/.github/PULL_REQUEST_TEMPLATE.md"
+      },
+      "license": null,
+      "readme": {
+        "url": "https://api.github.com/repos/noruzzamans/gslider-blocks/contents/README.md",
+        "html_url": "https://github.com/noruzzamans/gslider-blocks/blob/main/README.md"
+      }
+    },
+    "updated_at": "2026-10-30T05:55:04Z"
+  },
+  "octocat/Hello-World": {
+    "health_percentage": 28,
+    "description": "My first repository on GitHub!",
+    "documentation": null,
+    "files": {
+      "code_of_conduct": null,
+      "code_of_conduct_file": null,
+      "contributing": null,
+      "issue_template": null,
+      "pull_request_template": null,
+      "license": null,
+      "readme": {
+        "url": "https://api.github.com/repos/octocat/Hello-World/contents/README",
+        "html_url": "https://github.com/octocat/Hello-World/blob/master/README"
+      }
+    },
+    "updated_at": "2018-05-17T13:41:07Z"
+  }
+}

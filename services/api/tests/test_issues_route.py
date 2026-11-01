@@ -9,6 +9,19 @@ from api.main import app
 
 client = TestClient(app)
 
+
+@pytest.fixture(autouse=True)
+def no_repository_lookups(monkeypatch):
+    """Route tests never reach GitHub: every repository lookup answers 404."""
+
+    async def get_repository(self, full_name):
+        request = httpx.Request("GET", f"https://api.github.com/repos/{full_name}")
+        response = httpx.Response(404, request=request)
+        raise httpx.HTTPStatusError("not found", request=request, response=response)
+
+    monkeypatch.setattr(GitHubClient, "get_repository", get_repository)
+
+
 EMPTY: dict[str, Any] = {"total_count": 0, "items": []}
 
 
@@ -135,3 +148,54 @@ def test_issues_maps_network_failure_to_502(monkeypatch):
 
     assert response.status_code == 502
     assert "Unable to reach" in response.json()["detail"]
+
+
+def test_issues_include_repository_context(monkeypatch):
+    result = {
+        "total_count": 2,
+        "items": [
+            raw_issue(id=1),
+            raw_issue(id=2, repository_url="https://api.github.com/repos/other/gone"),
+        ],
+    }
+    monkeypatch.setattr(GitHubClient, "search_issues", fake_search(result))
+    looked_up: list[str] = []
+
+    async def get_repository(self, full_name):
+        looked_up.append(full_name)
+        if full_name == "other/gone":
+            request = httpx.Request("GET", "https://api.github.com/repos/other/gone")
+            response = httpx.Response(404, request=request)
+            raise httpx.HTTPStatusError("gone", request=request, response=response)
+        return {
+            "full_name": full_name,
+            "html_url": f"https://github.com/{full_name}",
+            "language": "Python",
+            "stargazers_count": 42,
+            "pushed_at": "2026-10-30T00:00:00Z",
+            "archived": False,
+            "topics": ["cli"],
+            "license": {"spdx_id": "MIT"},
+        }
+
+    monkeypatch.setattr(GitHubClient, "get_repository", get_repository)
+
+    response = client.get("/issues")
+
+    assert response.status_code == 200
+    first, second = response.json()["items"]
+    assert first["repo_context"]["language"] == "Python"
+    assert first["repo_context"]["stars"] == 42
+    assert first["repo_context"]["license"] == "MIT"
+    assert second["repo_context"] is None  # unavailable, not an error
+    assert sorted(looked_up) == ["example/project", "other/gone"]
+
+
+def test_issues_without_repository_context_still_succeed(monkeypatch):
+    result = {"total_count": 1, "items": [raw_issue()]}
+    monkeypatch.setattr(GitHubClient, "search_issues", fake_search(result))
+
+    response = client.get("/issues")
+
+    assert response.status_code == 200
+    assert response.json()["items"][0]["repo_context"] is None

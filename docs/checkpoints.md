@@ -11,16 +11,16 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 
 ## Status
 
-**64 of 140 sub-checkpoints done (46%).** Days 1 to 3 are complete, Days 4, 5, 10 and 12 are partly done, and the rest have not started. Dates are estimates at 3-4 hours a day; Day 1 was Oct 27.
+**81 of 140 sub-checkpoints done (58%).** Days 1 to 3 are complete, Day 6 is nearly done, Days 4, 5, 10 and 12 are partly done, and the rest have not started. Dates are estimates at 3-4 hours a day; Day 1 was Oct 27.
 
 | Day | Goal | Status | Done | Target |
 | --- | --- | --- | --- | --- |
 | 1 | Foundation | Done | 10/10 | Oct 27 |
 | 2 | UI shell | Done | 6/6 | Oct 28 |
 | 3 | GitHub client | Done | 21/21 | Oct 29 (completed Oct 31) |
-| 4 | Ranking core | Partial | 9/11 | Oct 30 (completion: Nov 2) |
+| 4 | Ranking core | Partial | 10/11 | Oct 30 (completion: Nov 2) |
 | 5 | Real ranked results | Mostly done | 9/10 | Oct 31 (completion: Nov 2) |
-| 6 | Repository context and the missing signals | Not started | 0/17 | Nov 2 |
+| 6 | Repository context and the missing signals | Nearly done | 16/17 | Nov 2 (ahead, Oct 31) |
 | 7 | Issue dossier | Not started | 0/13 | Nov 3 |
 | 8 | Saved shortlist | Not started | 0/7 | Nov 4 |
 | 9 | Evaluation | Not started | 0/6 | Nov 5 |
@@ -34,7 +34,7 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 
 - **Repository context comes before the dossier** (blueprint Days 7 and 6). The dossier needs the contribution-guide lookup, and two ranking signals (language and maintenance) need repository data.
 - **Frontend tests start in Day 3 and CI moves before deployment** (blueprint Day 13 CI). The first deployment should be a green build.
-- **Day 4 is not closed yet.** It finishes when the language signal lands in Day 6.
+- **Day 4 is not closed yet.** The language signal landed with Day 6; only the `experience` decision (D3) is left.
 - **Some Day 10 and Day 12 work landed early**, with the Day 3 branch: the CI workflow, and the rate-limit, timeout and malformed-response handling.
 
 ## Definition of done
@@ -42,7 +42,7 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 From the blueprint. Ticked only when true on the deployed product.
 
 - [ ] A user can discover real open GitHub issues and navigate to the canonical issue URL. *(works locally; confirm on the live URL)*
-- [ ] Ranking is deterministic, explainable, tested and tied to the user's profile. *(3 of 5 signals so far)*
+- [ ] Ranking is deterministic, explainable, tested and tied to the user's profile. *(all 5 signals; confirm on the live URL)*
 - [ ] Closed issues are filtered appropriately and errors do not crash the application. *(closed issues are filtered and malformed responses are handled; confirm on the live URL)*
 - [ ] The dossier separates verified source facts from generated or inferred guidance.
 - [ ] Saved issues survive a refresh in the same browser.
@@ -144,7 +144,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 4: Ranking core
 
-**Status:** Partial (9/11), target Oct 30 (completion: Nov 2)  
+**Status:** Partial (10/11), target Oct 30 (completion: Nov 2)  
 **Blueprint:** Write pure scoring functions and tests for language/task match, clarity, missing signals and deterministic ordering.
 
 #### CP4.1 Profile
@@ -157,7 +157,7 @@ From the blueprint. Ticked only when true on the deployed product.
 - [x] Task match: 100 for a preferred type, 20 for another type, unknown when no label suggests one
 - [x] Clarity: length, reproduction wording, code block, list; template headings and comments ignored
 - [x] Topic match: whole-word and case-insensitive; title and labels count double
-- [ ] Language match (needs repository language, built in Day 6)
+- [x] Language match: 100 when the repository's main language is one of yours (ignoring case), 20 otherwise, unknown without languages or repository context (built with Day 6)
 
 #### CP4.3 Scoring
 
@@ -196,40 +196,40 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 6: Repository context and the missing signals
 
-**Status:** Not started (0/17), target Nov 2  
+**Status:** Nearly done (16/17), target Nov 2, started Oct 31  
 **Blueprint:** Fetch repository metadata and contribution-guide links; distinguish unavailable context from inferred guidance. (Blueprint Day 7, moved earlier because the dossier and two signals need it.)
 
 #### CP6.1 Repository metadata client
 
-- [ ] `RepoContext` model: language, stars, last push, archived flag, topics, licence
-- [ ] Fetch and normalise `GET /repos/{owner}/{repo}`, keeping verified facts separate
-- [ ] 404, 403 and rate limits become "context unavailable", never a crash
-- [ ] Tests with real captured fixtures
+- [x] `RepoContext` model: language, stars, last push, archived flag, topics, licence (plus description)
+- [x] Fetch and normalise `GET /repos/{owner}/{repo}`, keeping verified facts separate (`Issue.repo_context`); names are validated before they reach the URL
+- [x] 404, 403 and rate limits become "context unavailable", never a crash; so do network failures and malformed answers
+- [x] Tests with real captured fixtures (`tests/fixtures/repositories.json`)
 
 #### CP6.2 Caching and rate-limit safety
 
-- [ ] In-memory cache with expiry, keyed by repository
-- [ ] One lookup per repository per page, with limited concurrency
-- [ ] Document `GITHUB_TOKEN` as practically required for deployment (20 issues can mean 20 lookups)
+- [x] In-memory cache with expiry, keyed by repository (30 minutes, 512 entries, case-insensitive names)
+- [x] One lookup per repository per page, with limited concurrency (at most 5 at once; tested)
+- [x] Document `GITHUB_TOKEN` as practically required for deployment (README and `.env.example`)
 
 #### CP6.3 Signals
 
-- [ ] Language match from repository language and profile languages
-- [ ] Maintenance from last push and archived flag
-- [ ] Tests including missing-data cases; breakdown labels updated
+- [x] Language match from repository language and profile languages
+- [x] Maintenance from last push and archived flag: 100 within a week, falling to 5 after a year; 0 when archived
+- [x] Tests including missing-data cases; breakdown labels updated (labels already matched; reasons now come from real data)
 
 #### CP6.4 Wire it through
 
-- [ ] `/issues` returns repository context per issue (null when unavailable)
-- [ ] Cards show real language and stars instead of "Unknown" and blank
-- [ ] Profile panel gets a languages field
+- [x] `/issues` returns repository context per issue (null when unavailable); checked against live GitHub on Oct 31 (10 issues, 7 repositories, about 3 seconds uncached)
+- [x] Cards show real language and stars instead of "Unknown" and blank
+- [x] Profile panel gets a languages field (saved profiles from before it still load; component tests)
 - [ ] Decide on a topic filter using verified repository topics: include or drop
 
 #### CP6.5 Contribution guide
 
-- [ ] Detect the repository's contributing guide
-- [ ] Result is found, not found or unknown, and is never guessed
-- [ ] Tests
+- [x] Detect the repository's contributing guide, via GitHub's community profile (it also finds guides outside the root, such as `docs/contributing.rst`); shown in the dossier on Day 7
+- [x] Result is found, not found or unknown, and is never guessed; a malformed answer is unknown, never "not found"
+- [x] Tests with real captured fixtures (`tests/fixtures/community_profiles.json`, including a repository with no guide)
 
 ### Day 7: Issue dossier
 
@@ -309,7 +309,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 #### CP10.1 Frontend tests
 
-- [ ] Component tests: profile panel, score breakdown, discovery states (loading, empty, error, rate limit) with mocked fetch *(score breakdown done)*
+- [ ] Component tests: profile panel, score breakdown, discovery states (loading, empty, error, rate limit) with mocked fetch *(score breakdown and profile panel done)*
 - [ ] Dossier and saved-list tests
 
 #### CP10.2 CI
@@ -428,10 +428,10 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ## Known limitations right now
 
-- Scores use 3 of 5 signals; language and maintenance are unavailable until Day 6.
+- Language match uses only the repository's main language as GitHub reports it.
+- Without `GITHUB_TOKEN`, repository lookups quickly hit GitHub's limit of 60 calls an hour, and affected cards show no repository details.
 - At most 100 issues load per search ("Load more", 20 at a time).
 - Task type comes from labels, which are inconsistent.
-- Cards show a language only when a language filter is selected, and no star counts yet.
 - The saved list is in memory only and is lost on refresh.
 - The search cache is per process: it is lost on restart and not shared between server instances.
 

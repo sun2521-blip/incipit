@@ -8,7 +8,7 @@ Incipit is an open-source contribution navigator that helps developers discover 
 
 The goal is to make finding a meaningful first contribution less overwhelming through searchable issues, explainable matching, and a personal shortlist.
 
-**Current status:** Early MVP. Discovery shows live open GitHub issues labelled `good first issue`, with language and task-type filters, "Load more" pagination, and a transparent fit score you can expand to see why. If the API is unreachable, the page falls back to clearly labelled sample issues. The issue dossier, repository context and a shortlist that survives a refresh are still to come; see [docs/checkpoints.md](docs/checkpoints.md) for the roadmap.
+**Current status:** Early MVP. Discovery shows live open GitHub issues labelled `good first issue`, with language and task-type filters, "Load more" pagination, and a transparent fit score you can expand to see why. Cards show each repository's main language and stars, and the score uses all five signals, including language match and repository activity. If the API is unreachable, the page falls back to clearly labelled sample issues. The issue dossier and a shortlist that survives a refresh are still to come; see [docs/checkpoints.md](docs/checkpoints.md) for the roadmap.
 
 ## Tech stack
 
@@ -66,6 +66,8 @@ Frontend: http://localhost:3000
 ## Environment variables
 
 See the root `.env.example` for the environment variables used across the project. Keep real credentials in local environment files; never commit secrets.
+
+`GITHUB_TOKEN` is optional for trying Incipit locally, but practically required for a deployment. Each page of results also looks up every repository on it, up to 20 extra GitHub calls, and without a token GitHub allows only 60 calls an hour (5,000 with one). Repository details are cached for 30 minutes. A fine-grained token with no extra permissions (read-only access to public repositories) is enough. It stays on the backend and is never sent to the browser.
 
 ## Project structure
 

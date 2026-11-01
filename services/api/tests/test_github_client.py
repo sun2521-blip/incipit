@@ -13,6 +13,7 @@ PAYLOAD: dict[str, Any] = {"total_count": 1, "items": [{"id": 1}]}
 def make_client(handler, **kwargs: Any) -> GitHubClient:
     """A client wired to a fake network. Caching is off unless a test asks."""
     kwargs.setdefault("cache", None)
+    kwargs.setdefault("repo_cache", None)
     return GitHubClient(transport=httpx.MockTransport(handler), **kwargs)
 
 
@@ -213,3 +214,98 @@ def test_cache_can_be_disabled():
     search(client)
 
     assert len(seen) == 2
+
+
+# ---- repositories -----------------------------------------------------------
+
+REPO: dict[str, Any] = {"full_name": "example/project", "language": "Python"}
+
+
+def repo_ok(request: httpx.Request) -> httpx.Response:
+    return httpx.Response(200, json=REPO)
+
+
+def get_repo(client: GitHubClient, full_name: str = "example/project"):
+    return asyncio.run(client.get_repository(full_name))
+
+
+def test_fetches_a_repository():
+    seen, handler = recording(repo_ok)
+
+    assert get_repo(make_client(handler)) == REPO
+    assert seen[0].url.path == "/repos/example/project"
+
+
+@pytest.mark.parametrize(
+    "name",
+    ["example", "example/project/issues", "../etc/passwd", "a/b?x=1", "", "a/b c"],
+)
+def test_rejects_names_that_are_not_owner_slash_repo(name):
+    seen, handler = recording(repo_ok)
+
+    with pytest.raises(ValueError):
+        get_repo(make_client(handler), name)
+    assert seen == []  # nothing was sent
+
+
+def test_accepts_dots_and_underscores_in_repository_names():
+    seen, handler = recording(repo_ok)
+
+    get_repo(make_client(handler), "some-org/my_repo.js")
+
+    assert seen[0].url.path == "/repos/some-org/my_repo.js"
+
+
+@pytest.mark.parametrize("status", [403, 404, 429, 500])
+def test_repository_errors_raise(status):
+    client = make_client(lambda request: httpx.Response(status))
+
+    with pytest.raises(httpx.HTTPStatusError):
+        get_repo(client)
+
+
+def test_repository_lookups_are_cached_ignoring_case():
+    seen, handler = recording(repo_ok)
+    client = make_client(handler, repo_cache=TTLCache(ttl_seconds=60))
+
+    get_repo(client, "example/project")
+    get_repo(client, "Example/Project")
+
+    assert len(seen) == 1
+
+
+def test_repository_and_search_caches_are_separate():
+    seen, handler = recording(
+        lambda request: (
+            repo_ok(request) if request.url.path.startswith("/repos/") else ok(request)
+        )
+    )
+    client = make_client(
+        handler, cache=TTLCache(ttl_seconds=60), repo_cache=TTLCache(ttl_seconds=60)
+    )
+
+    assert search(client, "example/project") == PAYLOAD
+    assert get_repo(client, "example/project") == REPO
+    assert len(seen) == 2
+
+
+def test_fetches_a_community_profile_and_caches_it_apart_from_the_repository():
+    seen, handler = recording(repo_ok)
+    client = make_client(handler, repo_cache=TTLCache(ttl_seconds=60))
+
+    asyncio.run(client.get_community_profile("example/project"))
+    asyncio.run(client.get_community_profile("Example/Project"))
+    get_repo(client, "example/project")
+
+    assert [request.url.path for request in seen] == [
+        "/repos/example/project/community/profile",
+        "/repos/example/project",
+    ]
+
+
+def test_community_profile_rejects_bad_names():
+    seen, handler = recording(repo_ok)
+
+    with pytest.raises(ValueError):
+        asyncio.run(make_client(handler).get_community_profile("../x"))
+    assert seen == []

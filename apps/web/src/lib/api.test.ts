@@ -46,6 +46,7 @@ function apiIssue(overrides: Partial<ApiIssue> = {}): ApiIssue {
     created_at: "2026-10-01T10:00:00Z",
     updated_at: "2026-10-29T08:30:00Z",
     inferred_task_type: null,
+    repo_context: null,
     ...overrides,
   };
 }
@@ -108,7 +109,11 @@ describe("fetchIssues", () => {
 });
 
 describe("rankIssues", () => {
-  const profile = { topics: ["api"], task_types: ["Bug" as const] };
+  const profile = {
+    languages: [],
+    topics: ["api"],
+    task_types: ["Bug" as const],
+  };
 
   it("posts the issues and profile as JSON", async () => {
     const calls = mockFetch(() => json({ items: [] }));

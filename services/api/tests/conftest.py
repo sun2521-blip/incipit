@@ -4,6 +4,7 @@ from typing import Any
 import pytest
 
 from api.schemas.issue import Issue
+from api.schemas.repository import RepoContext
 
 
 @pytest.fixture
@@ -28,6 +29,28 @@ def make_issue():
         }
         data.update(overrides)
         return Issue(**data)
+
+    return _make
+
+
+@pytest.fixture
+def make_repo():
+    """Build a RepoContext with sensible defaults; override any field by keyword."""
+
+    def _make(**overrides: Any) -> RepoContext:
+        data: dict[str, Any] = {
+            "full_name": "example/project",
+            "url": "https://github.com/example/project",
+            "description": None,
+            "language": "Python",
+            "stars": 100,
+            "pushed_at": datetime(2026, 10, 30, tzinfo=UTC),
+            "archived": False,
+            "topics": [],
+            "license": None,
+        }
+        data.update(overrides)
+        return RepoContext(**data)
 
     return _make
 

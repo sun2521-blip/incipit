@@ -1,4 +1,13 @@
-from api.ranking.signals import Signal, clarity, goal_match, task_match
+from datetime import UTC, datetime
+
+from api.ranking.signals import (
+    Signal,
+    clarity,
+    goal_match,
+    maintenance,
+    skill_match,
+    task_match,
+)
 from api.schemas.issue import Issue
 from api.schemas.profile import Profile
 from api.schemas.ranking import RankedIssue, SignalResult
@@ -28,13 +37,12 @@ def combine(breakdown: list[SignalResult]) -> int:
     return round(weighted / total_weight)
 
 
-def score_issue(issue: Issue, profile: Profile) -> RankedIssue:
+def score_issue(issue: Issue, profile: Profile, now: datetime) -> RankedIssue:
     signals: list[tuple[str, Signal]] = [
-        # Needs repository metadata, which is fetched in a later step.
-        ("skill_match", Signal(None, "Repository language is not fetched yet.")),
+        ("skill_match", skill_match(issue, profile)),
         ("task_match", task_match(issue, profile)),
         ("clarity", clarity(issue)),
-        ("maintenance", Signal(None, "Repository activity is not fetched yet.")),
+        ("maintenance", maintenance(issue, now)),
         ("goal_match", goal_match(issue, profile)),
     ]
     breakdown = [
@@ -49,12 +57,17 @@ def score_issue(issue: Issue, profile: Profile) -> RankedIssue:
     return RankedIssue(issue=issue, score=combine(breakdown), breakdown=breakdown)
 
 
-def rank_issues(issues: list[Issue], profile: Profile) -> list[RankedIssue]:
+def rank_issues(
+    issues: list[Issue], profile: Profile, now: datetime | None = None
+) -> list[RankedIssue]:
     """Highest score first. Ties: most recently updated, then lowest id.
 
     The tie-breaks make the order fully deterministic for any input order.
+    `now` is the time maintenance is measured from; pass it to make tests
+    independent of the clock.
     """
-    ranked = [score_issue(issue, profile) for issue in issues]
+    now = now or datetime.now(UTC)
+    ranked = [score_issue(issue, profile, now) for issue in issues]
     return sorted(
         ranked,
         key=lambda r: (-r.score, -r.issue.updated_at.timestamp(), r.issue.id),
