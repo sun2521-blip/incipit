@@ -199,3 +199,73 @@ def test_issues_without_repository_context_still_succeed(monkeypatch):
 
     assert response.status_code == 200
     assert response.json()["items"][0]["repo_context"] is None
+
+
+def test_owner_slash_repo_searches_that_repository(monkeypatch):
+    seen: list[str] = []
+    monkeypatch.setattr(
+        GitHubClient,
+        "search_issues",
+        fake_search({"total_count": 1, "items": [raw_issue()]}, seen),
+    )
+
+    response = client.get("/issues", params={"query": "example/project"})
+
+    assert response.status_code == 200
+    assert seen[0].startswith("repo:example/project ")
+    assert response.json()["notice"] is None
+
+
+def test_a_repository_with_no_beginner_issues_says_so(monkeypatch):
+    monkeypatch.setattr(GitHubClient, "search_issues", fake_search(EMPTY))
+
+    body = client.get("/issues", params={"query": "example/quiet-repo"}).json()
+
+    assert body["items"] == []
+    assert body["notice"] == (
+        'example/quiet-repo has no open issues labelled "good first issue" yet.'
+    )
+
+
+def test_the_notice_mentions_filters_when_they_are_set(monkeypatch):
+    monkeypatch.setattr(GitHubClient, "search_issues", fake_search(EMPTY))
+
+    body = client.get(
+        "/issues", params={"query": "pallets/flask", "task_type": "Bug"}
+    ).json()
+
+    assert "that match these filters" in body["notice"]
+
+
+def test_keyword_searches_with_no_results_have_no_notice(monkeypatch):
+    monkeypatch.setattr(GitHubClient, "search_issues", fake_search(EMPTY))
+
+    assert (
+        client.get("/issues", params={"query": "nothing-matches-this"}).json()["notice"]
+        is None
+    )
+
+
+def unsearchable() -> httpx.HTTPStatusError:
+    request = httpx.Request("GET", "https://api.github.com/search/issues")
+    response = httpx.Response(422, request=request)
+    return httpx.HTTPStatusError("422", request=request, response=response)
+
+
+def test_a_missing_or_private_repository_is_a_notice_not_an_error(monkeypatch):
+    monkeypatch.setattr(GitHubClient, "search_issues", failing_search(unsearchable()))
+
+    response = client.get("/issues", params={"query": "nobody-xyz/nothing"})
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "total_count": 0,
+        "items": [],
+        "notice": "GitHub has no public repository called nobody-xyz/nothing.",
+    }
+
+
+def test_a_422_on_a_keyword_search_is_still_an_upstream_error(monkeypatch):
+    monkeypatch.setattr(GitHubClient, "search_issues", failing_search(unsearchable()))
+
+    assert client.get("/issues", params={"query": "pandas"}).status_code == 502

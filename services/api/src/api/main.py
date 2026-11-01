@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.clients.github import GitHubClient, GitHubResponseError, is_repo_name
 from api.dossier import IssueDeleted, IssueNotFound, NotAnIssue, fetch_dossier
 from api.normalise import normalise_search_response
-from api.query import build_issue_query
+from api.query import build_issue_query, repo_filter
 from api.ranking.scorer import rank_issues
 from api.rate_limit import describe_wait, is_rate_limited, retry_after_seconds
 from api.repo_context import attach_repo_contexts, fetch_repo_contexts
@@ -91,14 +91,37 @@ async def get_issues(
     page: int = Query(default=1, ge=1),
 ) -> IssueSearchResult:
     search = build_issue_query(keywords=query, language=language, task_type=task_type)
+    repo = repo_filter(query)
     client = GitHubClient(token=settings.github_token)
 
     try:
         raw = await client.search_issues(search, per_page=per_page, page=page)
     except (httpx.HTTPError, GitHubResponseError) as exc:
+        # GitHub answers 422 when a repo: filter names a repository it cannot
+        # search: it does not exist, or it is private. That is not an outage.
+        if (
+            repo
+            and isinstance(exc, httpx.HTTPStatusError)
+            and exc.response.status_code == 422
+        ):
+            return IssueSearchResult(
+                total_count=0,
+                items=[],
+                notice=f"GitHub has no public repository called {repo}.",
+            )
         raise github_failure(exc) from exc
 
     result = normalise_search_response(raw)
+    if repo and not result.items:
+        filtered = " that match these filters" if language or task_type else ""
+        result = result.model_copy(
+            update={
+                "notice": (
+                    f'{repo} has no open issues labelled "good first issue"'
+                    f"{filtered} yet."
+                )
+            }
+        )
 
     # Repository facts are extra: a failed lookup leaves that issue's
     # repo_context as None instead of failing the whole search.

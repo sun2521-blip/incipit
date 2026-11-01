@@ -81,6 +81,8 @@ export type RankedIssue = z.infer<typeof rankedIssueSchema>;
 export type IssueSearchResult = {
   total_count: number;
   items: ApiIssue[];
+  /** A note for the person searching, such as why nothing matched. */
+  notice: string | null;
 };
 
 type SafeParse<T> = (
@@ -111,6 +113,8 @@ function keepValid<T>(
 const searchEnvelopeSchema = z.object({
   total_count: z.number().int().nonnegative(),
   items: z.array(z.unknown()),
+  // Optional and only ever shown as text; anything odd is simply dropped.
+  notice: z.string().max(300).nullable().optional().catch(null),
 });
 
 /** Throws if the response is not the expected shape; drops single bad issues. */
@@ -119,6 +123,7 @@ export function parseIssueSearchResponse(data: unknown): IssueSearchResult {
 
   return {
     total_count: envelope.total_count,
+    notice: envelope.notice ?? null,
     items: keepValid(
       envelope.items,
       (value) => apiIssueSchema.safeParse(value),

@@ -120,6 +120,32 @@ describe("parseIssueSearchResponse", () => {
     expect(result.items[0].repo_context).toBeNull();
   });
 
+  it("reads the notice that explains an empty result", () => {
+    const result = parseIssueSearchResponse({
+      total_count: 0,
+      items: [],
+      notice: "pallets/flask has no open issues labelled good first issue yet.",
+    });
+
+    expect(result.notice).toBe(
+      "pallets/flask has no open issues labelled good first issue yet.",
+    );
+  });
+
+  it("treats a missing or malformed notice as none", () => {
+    expect(parseIssueSearchResponse({ total_count: 0, items: [] }).notice).toBeNull();
+    expect(
+      parseIssueSearchResponse({ total_count: 0, items: [], notice: 42 }).notice,
+    ).toBeNull();
+    expect(
+      parseIssueSearchResponse({
+        total_count: 0,
+        items: [],
+        notice: "x".repeat(301),
+      }).notice,
+    ).toBeNull();
+  });
+
   it("treats an unknown task type as no task type", () => {
     const result = parseIssueSearchResponse({
       total_count: 1,
