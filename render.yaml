@@ -1,0 +1,23 @@
+# Render Blueprint for the Incipit API: https://render.com/docs/blueprint-spec
+# In Render: New > Blueprint, pick this repository, and fill in the two values it
+# asks for. The web app deploys to Vercel instead; see docs/deployment.md.
+services:
+  - type: web
+    name: incipit-api
+    runtime: python
+    plan: free
+    branch: main
+    rootDir: services/api
+    # --frozen: install exactly what uv.lock says. --no-dev: no test or lint tools.
+    buildCommand: pip install uv && uv sync --frozen --no-dev
+    # Render's proxy sets X-Forwarded-For; trusting it lets the rate limits see
+    # each visitor instead of the proxy.
+    startCommand: .venv/bin/uvicorn api.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips="*"
+    healthCheckPath: /health
+    envVars:
+      # The web app's address, e.g. https://incipit.vercel.app (no trailing slash).
+      - key: ALLOWED_ORIGINS
+        sync: false
+      # A fine-grained GitHub token with read-only access to public repositories.
+      - key: GITHUB_TOKEN
+        sync: false

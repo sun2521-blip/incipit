@@ -192,6 +192,64 @@ describe("IssueDossier", () => {
     expect(screen.getByText("Saved (0)")).toBeInTheDocument();
   });
 
+  it("restores the shortlist after a reload", async () => {
+    localStorage.setItem(
+      "incipit.saved.v1",
+      JSON.stringify([
+        {
+          id: 99,
+          number: 7,
+          title: "Fix the parser crash",
+          repository: "example/project",
+          url: "https://github.com/example/project/issues/7",
+          state: "open",
+          savedAt: "2026-11-01T12:00:00.000Z",
+        },
+      ]),
+    );
+    mockApi([{ status: 200, body: dossier() }]);
+
+    await renderDossier();
+
+    expect(screen.getByText("Saved (1)")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Saved ✓" })).toBeInTheDocument();
+  });
+
+  it("follows shortlist changes made in another tab", async () => {
+    mockApi([{ status: 200, body: dossier() }]);
+    await renderDossier();
+    expect(screen.getByText("Saved (0)")).toBeInTheDocument();
+
+    await act(async () => {
+      localStorage.setItem(
+        "incipit.saved.v1",
+        JSON.stringify([
+          {
+            id: 99,
+            number: 7,
+            title: "Fix the parser crash",
+            repository: "example/project",
+            url: "https://github.com/example/project/issues/7",
+            state: "open",
+            savedAt: "2026-11-01T12:00:00.000Z",
+          },
+        ]),
+      );
+      window.dispatchEvent(new StorageEvent("storage", { key: "incipit.saved.v1" }));
+    });
+
+    expect(screen.getByText("Saved (1)")).toBeInTheDocument();
+  });
+
+  it("ignores a corrupted shortlist instead of crashing", async () => {
+    localStorage.setItem("incipit.saved.v1", "{not json");
+    mockApi([{ status: 200, body: dossier() }]);
+
+    await renderDossier();
+
+    expect(screen.getByText("Saved (0)")).toBeInTheDocument();
+  });
+
   it("shows a not-found state with the API's explanation", async () => {
     mockApi([
       { status: 404, body: { detail: "GitHub has no issue #7 in example/project." } },

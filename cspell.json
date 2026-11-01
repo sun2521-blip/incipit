@@ -19,11 +19,14 @@
     "nosniff",
     "octo",
     "octocat",
+    "onrender",
     "personalise",
     "preflights",
     "prioritising",
     "pycache",
     "pydantic",
+    "pyright",
+    "pyrightconfig",
     "pytest",
     "recognised",
     "redoc",
@@ -36,9 +39,14 @@
     "unrecognised",
     "unscored",
     "uvicorn",
-    "venv"
+    "venv",
+    "vercel"
   ],
-  "ignoreWords": ["ject", "thon", "reproduc"],
+  "ignoreWords": [
+    "ject",
+    "thon",
+    "reproduc"
+  ],
   "ignorePaths": [
     "**/node_modules/**",
     "**/.venv/**",
