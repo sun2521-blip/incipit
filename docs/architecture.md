@@ -55,6 +55,8 @@ Each live issue opens a dossier at `/issues/[owner]/[repo]/[number]`. The page v
 
 Every API response is validated with Zod before the UI uses it; a single malformed issue is dropped instead of breaking the page.
 
+Code layout: pages in `src/app` (the home page keeps the search state; the dossier route reads its parameters inside Suspense, as Cache Components requires), presentational pieces in `src/components` (header, footer, issue card, score breakdown, profile panel, shortlist, loading placeholders), and logic in `src/lib` (API client and schemas, card shaping, pagination, saved-issue storage). While a search or dossier loads, the page shows placeholders shaped like the content and a spinner, tells screen readers it is searching, and after five seconds explains that the free API may be waking up.
+
 ## 4. Backend
 
 **Location:** `services/api`
@@ -74,6 +76,8 @@ Identical GitHub searches are cached in memory for 60 seconds, because the searc
 Each issue carries `repo_context`: verified facts from GitHub's `/repos` endpoint (main language, stars, last push, archived flag, topics, licence). `/issues` looks up each distinct repository on the page once, at most five at a time, and caches the answers for 30 minutes. A failed lookup (missing repository, rate limit, network error) leaves that issue's `repo_context` as null; it never fails the search.
 
 The contributing guide is read from GitHub's community profile and reported as found (with a link), not found, or unknown when the lookup failed. It is never guessed. The issue dossier shows it.
+
+`GET /issues` also accepts `owner/repo`, or a pasted github.com link to a repository, as the query; it becomes a `repo:` filter. A repository GitHub cannot search (missing or private), or one with no beginner issues, comes back as an empty result with a plain-language `notice` instead of an error. All of a request's GitHub calls share one connection pool.
 
 `GET /issues/{owner}/{repo}/{number}` builds the dossier. It validates the owner, repository and number before anything reaches GitHub, fetches the issue live (never cached) and records `checked_at`. A transferred issue (GitHub answers 301) is followed once, and only to another GitHub API issue address; the dossier then says where it moved from. Missing issues and pull-request numbers answer 404, deleted issues 410, each with a plain-language message. The dossier keeps GitHub's facts (`issue`, `contributing_guide`) apart from Incipit's own advice (`guidance`, marked `generic`).
 
