@@ -1,0 +1,7 @@
+version: 2
+updates:
+  # Keeps the pinned GitHub Actions in ci.yml up to date, one pull request a week.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
