@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
+import { DossierSkeleton, Spinner } from "@/components/loading";
 import { ScoreBreakdown } from "@/components/score-breakdown";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import {
   ApiError,
   fetchDossier,
@@ -37,7 +40,7 @@ function formatDateTime(value: string): string {
 function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="grid grid-cols-[130px_1fr] gap-3 py-2 text-sm">
-      <dt className="text-[#77766d]">{label}</dt>
+      <dt className="text-[#6b6a61]">{label}</dt>
       <dd className="min-w-0 break-words">{children}</dd>
     </div>
   );
@@ -57,32 +60,19 @@ function Notice({ children }: { children: ReactNode }) {
 function Shell({ saved, children }: { saved: number; children: ReactNode }) {
   return (
     <div className="min-h-screen bg-[#f8f6f0] text-[#24251f]">
-      <header className="border-b border-[#e5e0d5]">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-5">
-          <Link href="/" className="text-2xl font-black tracking-[-0.08em]">
-            incipit<span className="text-[#bd593b]">.</span>
-          </Link>
+      <SiteHeader saved={saved} />
 
-          <nav className="flex items-center gap-6 text-sm">
-            <Link href="/#discover" className="text-[#77766d] hover:text-[#24251f]">
-              Discover
-            </Link>
-            <Link href="/#saved" className="text-[#77766d] hover:text-[#24251f]">
-              Saved ({saved})
-            </Link>
-          </nav>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-4xl px-6 pb-20 pt-10">
+      <main id="main" className="mx-auto max-w-4xl px-4 pb-20 pt-10 sm:px-6">
         <Link
           href="/#discover"
-          className="text-sm text-[#77766d] underline-offset-4 hover:text-[#24251f] hover:underline"
+          className="text-sm text-[#6b6a61] underline-offset-4 hover:text-[#24251f] hover:underline"
         >
           ← Back to discovery
         </Link>
         {children}
       </main>
+
+      <SiteFooter />
     </div>
   );
 }
@@ -137,6 +127,11 @@ export function IssueDossier({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [owner, repo, number, attempt]);
 
+  // The tab shows which issue this is once it has loaded.
+  useEffect(() => {
+    if (dossier) document.title = `${dossier.issue.title} · Incipit`;
+  }, [dossier]);
+
   // The score needs the profile, which lives in this browser, so it comes from
   // POST /rank rather than the dossier itself.
   useEffect(() => {
@@ -169,9 +164,15 @@ export function IssueDossier({
   if (!current) {
     return (
       <Shell saved={saved.length}>
-        <p className="mt-10 text-sm text-[#77766d]" role="status">
-          Checking {key} on GitHub…
+        <p
+          className="mt-6 flex items-center gap-3 text-sm text-[#6b6a61]"
+          role="status"
+        >
+          <Spinner />
+          Checking {key} on GitHub… If the API was asleep, this can take up to
+          a minute.
         </p>
+        <DossierSkeleton />
       </Shell>
     );
   }
@@ -211,8 +212,8 @@ export function IssueDossier({
 
   return (
     <Shell saved={saved.length}>
-      <article className="mt-6">
-        <p className="text-sm text-[#77766d]">
+      <article className="mt-6 min-w-0 [overflow-wrap:anywhere]">
+        <p className="text-sm text-[#6b6a61]">
           {issue.repository} · #{issue.number}
         </p>
 
@@ -267,7 +268,7 @@ export function IssueDossier({
 
         <section className="mt-8 rounded-2xl border border-[#e5e0d5] bg-white/70 p-6">
           <h2 className="text-lg font-semibold">On GitHub</h2>
-          <p className="mt-1 text-xs text-[#77766d]">
+          <p className="mt-1 text-xs text-[#6b6a61]">
             Copied from GitHub, checked {formatDateTime(current.dossier.checked_at)}.
           </p>
 
@@ -328,13 +329,13 @@ export function IssueDossier({
               {issue.body}
             </div>
           ) : (
-            <p className="mt-2 text-sm text-[#77766d]">The issue has no description.</p>
+            <p className="mt-2 text-sm text-[#6b6a61]">The issue has no description.</p>
           )}
         </section>
 
         <section className="mt-6 rounded-2xl border border-[#e5e0d5] bg-white/70 p-6">
           <h2 className="text-lg font-semibold">How it may fit you</h2>
-          <p className="mt-1 text-xs text-[#77766d]">
+          <p className="mt-1 text-xs text-[#6b6a61]">
             Inferred by Incipit, not stated by the project.
           </p>
 
@@ -357,7 +358,7 @@ export function IssueDossier({
             <ScoreBreakdown breakdown={ranked.breakdown} penalties={ranked.penalties} />
           )}
 
-          <p className="mt-4 text-xs text-[#77766d]">
+          <p className="mt-4 text-xs text-[#6b6a61]">
             A score is a rough guide for prioritising, not a promise that the issue
             is easy or that a pull request will be accepted.
           </p>
@@ -365,17 +366,17 @@ export function IssueDossier({
 
         <section className="mt-6 rounded-2xl border border-[#e5e0d5] bg-white/70 p-6">
           <h2 className="text-lg font-semibold">A general checklist</h2>
-          <p className="mt-1 text-xs text-[#77766d]">{guidance.note}</p>
+          <p className="mt-1 text-xs text-[#6b6a61]">{guidance.note}</p>
 
           <ol className="mt-4 space-y-4">
             {guidance.steps.map((step, index) => (
               <li key={step.title} className="flex gap-4 text-sm">
-                <span className="font-serif text-[#b5aa99]">
+                <span aria-hidden="true" className="font-serif text-[#b5aa99]">
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <div>
                   <p className="font-semibold">{step.title}</p>
-                  <p className="mt-1 text-[#77766d]">{step.detail}</p>
+                  <p className="mt-1 text-[#6b6a61]">{step.detail}</p>
                   {step.link && (
                     <a
                       href={step.link}
@@ -400,7 +401,7 @@ function Missing({ message }: { message: string }) {
   return (
     <div className="mt-10 rounded-2xl border border-dashed border-[#d8d0c2] px-6 py-16 text-center">
       <h1 className="font-serif text-2xl">No issue here.</h1>
-      <p className="mt-2 text-sm text-[#77766d]">{message}</p>
+      <p className="mt-2 text-sm text-[#6b6a61]">{message}</p>
       <Link
         href="/#discover"
         className="mt-5 inline-block text-sm font-semibold text-[#a14e35] underline underline-offset-4"
