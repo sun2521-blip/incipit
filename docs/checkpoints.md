@@ -11,7 +11,7 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 
 ## Status
 
-**111 of 140 sub-checkpoints done (79%).** Days 1 to 4, 6 and 7 are complete, Days 5, 8 and 11 are nearly done, Days 10 and 12 are partly done, and Days 9, 13 and 14 have not started.
+**117 of 140 sub-checkpoints done (84%).** Days 1 to 4, 6, 7 and 9 are complete, Days 5, 8 and 11 are nearly done, Days 10 and 12 are partly done, and Days 13 and 14 have not started.
 
 **Live:** web app https://incipit-five.vercel.app · API https://incipit-api-blz7.onrender.com Dates are estimates at 3-4 hours a day; Day 1 was Oct 27.
 
@@ -25,7 +25,7 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 | 6 | Repository context and the missing signals | Done | 17/17 | Nov 2 (completed Nov 1) |
 | 7 | Issue dossier | Done | 13/13 | Nov 3 (completed Nov 1) |
 | 8 | Saved shortlist | Nearly done | 6/7 | Nov 4 |
-| 9 | Evaluation | Not started | 0/6 | Nov 5 |
+| 9 | Evaluation | Done | 6/6 | Nov 5 (completed Nov 1) |
 | 10 | Frontend tests and CI | Partial | 7/9 | Nov 6 |
 | 11 | First deployment | Nearly done | 6/8 | Nov 7 (deployed Nov 1) |
 | 12 | Failure cases | Partial | 5/8 | Nov 8 |
@@ -287,23 +287,23 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 9: Evaluation
 
-**Status:** Not started (0/6), target Nov 5\
+**Status:** Done (6/6), target Nov 5, completed Nov 1\
 **Blueprint:** Manually assess 30-50 real issues; document bad results, adjust weights and record limitations.
 
 #### CP9.1 Evaluation set
 
-- [ ] Script exports 30-50 real ranked issues across several profiles (no secrets committed)
-- [ ] Each issue labelled good, okay or poor, with a reason
+- [x] Script exports 30-50 real ranked issues across several profiles (no secrets committed): `scripts/evaluate_ranking.py` captured 33 issues, ranked for 3 profiles
+- [x] Each issue labelled good, okay or poor, with a reason (`docs/evaluation/ratings.csv`: 10 good, 15 okay, 8 poor; a first pass, open to review)
 
 #### CP9.2 Analysis and tuning
 
-- [ ] Systematic failures listed (label noise, empty templates, stale repositories, and so on)
-- [ ] One change at a time to weights or rules, with before and after recorded
+- [x] Systematic failures listed: assigned issues, crowded bounty threads, clarity mistaken for ease, one repository filling the list, issue language, label noise
+- [x] One change at a time to weights or rules, with before and after recorded: an assignee rule, then a busy-discussion rule; weights unchanged
 
 #### CP9.3 Documentation and guard
 
-- [ ] `docs/ranking-evaluation.md`: method, results, limits
-- [ ] Golden-ordering regression tests
+- [x] `docs/ranking-evaluation.md`: method, results, limits
+- [x] Golden-ordering regression tests, plus quality floors (`tests/test_ranking_evaluation.py`)
 
 ### Day 10: Frontend tests and CI
 
@@ -431,6 +431,7 @@ From the blueprint. Ticked only when true on the deployed product.
 | D11 | Score on the dossier | Decided | The dossier endpoint has no score; the browser ranks the issue with `POST /rank` and the stored profile, so profiles never appear in URLs or server logs |
 | D12 | API abuse limits | Decided | Per-client rate limits, a 4 MB body cap and security headers before going public. In memory and per process, which suits one free instance |
 | D13 | Searching one repository | Decided | Typing `owner/repo` or pasting a github.com link searches that repository's beginner issues. A missing or private repository, or one with no `good first issue` issues, gets a plain-language notice instead of an error |
+| D14 | Penalties after the weighted signals | Decided | Assigned issues and busy discussions lower the score as visible, explained rules rather than new weighted signals, so the blueprint's five signals keep their meaning |
 
 ## Known limitations right now
 

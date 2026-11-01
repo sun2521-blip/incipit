@@ -105,6 +105,8 @@ The ranking model uses these weights, which are hypotheses to evaluate rather th
 
 Skill/language match compares the repository's main language with the profile's languages. Maintenance falls as the last push ages, and is 0 for archived repositories. A signal that cannot be computed (for example, no languages in the profile, or no repository context) is left out and the remaining weights are rescaled, so missing data neither helps nor hurts an issue.
 
+After the weighted signals, two rules can lower a score, each from a verified GitHub fact and each shown with its reason: an assigned issue is halved, and a busy discussion (10 or more comments) lowers it by a quarter, or by half at 25 or more. Both came out of the evaluation of real issues in [ranking-evaluation.md](ranking-evaluation.md), which also lists the ranking's known weaknesses.
+
 The score is a heuristic for prioritization, not a probability that a contribution will be accepted or completed successfully.
 
 The system must not promise that an issue is easy, unclaimed, or guaranteed to result in an accepted pull request.

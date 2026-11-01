@@ -34,6 +34,7 @@
     "summarise",
     "summarises",
     "synchronised",
+    "timespec",
     "turbopack",
     "unranked",
     "unrecognised",
@@ -44,8 +45,9 @@
   ],
   "ignoreWords": [
     "ject",
-    "thon",
-    "reproduc"
+    "penalt",
+    "reproduc",
+    "thon"
   ],
   "ignorePaths": [
     "**/node_modules/**",
@@ -54,5 +56,8 @@
     "**/package-lock.json",
     "**/uv.lock",
     "**/tests/fixtures/**"
+  ],
+  "ignoreRegExpList": [
+    "[A-Za-z0-9-]+/[A-Za-z0-9._-]+#\\d+"
   ]
 }
