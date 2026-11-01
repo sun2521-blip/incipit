@@ -13,6 +13,13 @@ class Settings(BaseSettings):
     allowed_origins: str = "http://localhost:3000"
     github_token: str | None = None
 
+    # Requests per minute per client. Routes that call GitHub are tighter,
+    # because each request spends the server's GitHub quota.
+    github_requests_per_minute: int = 60
+    rank_requests_per_minute: int = 120
+    # Large enough for a full POST /rank (100 issues with 20,000-character bodies).
+    max_request_bytes: int = 4 * 1024 * 1024
+
     @property
     def cors_origins(self) -> list[str]:
         return [

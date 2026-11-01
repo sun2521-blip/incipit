@@ -3,8 +3,16 @@ from typing import Any
 
 import pytest
 
+from api.main import github_limiter, rank_limiter
 from api.schemas.issue import Issue
 from api.schemas.repository import RepoContext
+
+
+@pytest.fixture(autouse=True)
+def fresh_rate_limits():
+    """Every test starts with empty rate-limit windows."""
+    github_limiter.reset()
+    rank_limiter.reset()
 
 
 @pytest.fixture

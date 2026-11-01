@@ -309,3 +309,99 @@ def test_community_profile_rejects_bad_names():
     with pytest.raises(ValueError):
         asyncio.run(make_client(handler).get_community_profile("../x"))
     assert seen == []
+
+
+# ---- single issues ----------------------------------------------------------
+
+ISSUE: dict[str, Any] = {"number": 7, "title": "An issue"}
+
+
+def get_issue(client: GitHubClient, full_name="example/project", number=7):
+    return asyncio.run(client.get_issue(full_name, number))
+
+
+def test_fetches_one_issue_and_never_caches_it():
+    seen, handler = recording(lambda request: httpx.Response(200, json=ISSUE))
+    client = make_client(handler, repo_cache=TTLCache(ttl_seconds=60))
+
+    assert get_issue(client) == ISSUE
+    get_issue(client)
+
+    assert [r.url.path for r in seen] == ["/repos/example/project/issues/7"] * 2
+
+
+@pytest.mark.parametrize(
+    ("name", "number"),
+    [("example/..", 7), ("example/.", 7), ("../x", 7), ("example/project", 0)],
+)
+def test_get_issue_rejects_bad_identifiers_before_any_request(name, number):
+    seen, handler = recording(lambda request: httpx.Response(200, json=ISSUE))
+
+    with pytest.raises(ValueError):
+        get_issue(make_client(handler), name, number)
+    assert seen == []
+
+
+@pytest.mark.parametrize("name", ["example/..", "example/.", "example/../issues"])
+def test_repository_lookups_refuse_dot_segments(name):
+    seen, handler = recording(repo_ok)
+
+    with pytest.raises(ValueError):
+        get_repo(make_client(handler), name)
+    assert seen == []
+
+
+def test_dotted_but_valid_repository_names_are_allowed():
+    seen, handler = recording(repo_ok)
+
+    get_repo(make_client(handler), "example/.github")
+
+    assert seen[0].url.path == "/repos/example/.github"
+
+
+@pytest.mark.parametrize(
+    "location",
+    [
+        "https://api.github.com/repositories/42/issues/9",
+        "https://api.github.com/repos/new-owner/new.repo/issues/9",
+    ],
+)
+def test_follows_a_transferred_issue_to_its_new_home(location):
+    def handler(request):
+        if request.url.path == "/repos/example/project/issues/7":
+            return httpx.Response(301, headers={"location": location})
+        return httpx.Response(200, json={"followed": request.url.path})
+
+    seen, recorder = recording(handler)
+
+    result = get_issue(make_client(recorder))
+
+    assert result == {"followed": location.removeprefix("https://api.github.com")}
+    assert len(seen) == 2
+
+
+@pytest.mark.parametrize(
+    "location",
+    [
+        "https://evil.example/repos/a/b/issues/1",
+        "http://api.github.com/repositories/42/issues/9",
+        "https://api.github.com/repos/a/../user",
+        "https://api.github.com/user",
+        "https://api.github.com/repositories/42/issues/9?x=1",
+        "",
+    ],
+)
+def test_refuses_redirects_anywhere_else(location):
+    seen, handler = recording(
+        lambda request: httpx.Response(301, headers={"location": location})
+    )
+
+    with pytest.raises(httpx.HTTPStatusError):
+        get_issue(make_client(handler))
+    assert len(seen) == 1  # the redirect was not followed
+
+
+@pytest.mark.parametrize("status", [404, 410, 403])
+def test_issue_errors_raise(status):
+    with pytest.raises(httpx.HTTPStatusError):
+        get_issue(make_client(lambda request: httpx.Response(status)))
