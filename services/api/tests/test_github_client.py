@@ -405,3 +405,30 @@ def test_refuses_redirects_anywhere_else(location):
 def test_issue_errors_raise(status):
     with pytest.raises(httpx.HTTPStatusError):
         get_issue(make_client(lambda request: httpx.Response(status)))
+
+
+# ---- connection reuse ---------------------------------------------------------
+
+
+def test_calls_inside_async_with_share_one_connection_pool():
+    clients: list[int] = []
+
+    def handler(request):
+        return httpx.Response(200, json=REPO)
+
+    async def run():
+        async with make_client(handler) as client:
+            clients.append(id(client._http))
+            await client.get_repository("a/one")
+            await client.get_repository("a/two")
+            clients.append(id(client._http))
+        return client._http
+
+    closed = asyncio.run(run())
+
+    assert clients[0] == clients[1]  # the same pool for both calls
+    assert closed is None  # and it is closed afterwards
+
+
+def test_a_client_without_async_with_still_works():
+    assert get_repo(make_client(repo_ok)) == REPO

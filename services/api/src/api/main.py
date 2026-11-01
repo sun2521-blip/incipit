@@ -92,8 +92,19 @@ async def get_issues(
 ) -> IssueSearchResult:
     search = build_issue_query(keywords=query, language=language, task_type=task_type)
     repo = repo_filter(query)
-    client = GitHubClient(token=settings.github_token)
+    async with GitHubClient(token=settings.github_token) as client:
+        return await _search(client, search, repo, language, task_type, per_page, page)
 
+
+async def _search(
+    client: GitHubClient,
+    search: str,
+    repo: str | None,
+    language: str | None,
+    task_type: TaskType | None,
+    per_page: int,
+    page: int,
+) -> IssueSearchResult:
     try:
         raw = await client.search_issues(search, per_page=per_page, page=page)
     except (httpx.HTTPError, GitHubResponseError) as exc:
@@ -144,10 +155,9 @@ async def get_issue_dossier(
     # The patterns above cannot express "not . or .." (no look-ahead there).
     if not is_repo_name(full_name):
         raise HTTPException(status_code=422, detail="Not a GitHub repository name.")
-    client = GitHubClient(token=settings.github_token)
-
     try:
-        return await fetch_dossier(client, full_name, number)
+        async with GitHubClient(token=settings.github_token) as client:
+            return await fetch_dossier(client, full_name, number)
     except IssueNotFound as exc:
         raise HTTPException(
             status_code=404,

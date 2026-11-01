@@ -56,6 +56,19 @@ class GitHubClient:
         self.cache = cache  # pass None to disable caching
         self.repo_cache = repo_cache
         self.transport = transport  # lets tests replace the network
+        # Shared connections while used as `async with GitHubClient() as c:`.
+        self._http: httpx.AsyncClient | None = None
+
+    async def __aenter__(self) -> "GitHubClient":
+        # One connection pool for every call in a request, instead of a new
+        # TLS handshake per call (a search can make 21 calls).
+        self._http = httpx.AsyncClient(timeout=self.timeout, transport=self.transport)
+        return self
+
+    async def __aexit__(self, *exc_info: object) -> None:
+        if self._http is not None:
+            await self._http.aclose()
+            self._http = None
 
     async def search_issues(
         self,
@@ -153,13 +166,15 @@ class GitHubClient:
         if self.token:
             headers["Authorization"] = f"Bearer {self.token}"
 
-        async with httpx.AsyncClient(
-            timeout=self.timeout, transport=self.transport
-        ) as client:
-            response = await client.get(
-                f"{GITHUB_API_BASE}{path}", params=params, headers=headers
-            )
-            response.raise_for_status()
+        url = f"{GITHUB_API_BASE}{path}"
+        if self._http is not None:
+            response = await self._http.get(url, params=params, headers=headers)
+        else:
+            async with httpx.AsyncClient(
+                timeout=self.timeout, transport=self.transport
+            ) as client:
+                response = await client.get(url, params=params, headers=headers)
+        response.raise_for_status()
 
         try:
             data = response.json()
