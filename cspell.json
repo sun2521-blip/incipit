@@ -5,6 +5,8 @@
     "analysed",
     "autouse",
     "behaviour",
+    "colour",
+    "colours",
     "fastapi",
     "hivecommons",
     "httpx",
@@ -31,21 +33,25 @@
     "recognised",
     "redoc",
     "reweight",
+    "scrollbars",
     "summarise",
     "summarises",
     "synchronised",
+    "timespec",
     "turbopack",
     "unranked",
     "unrecognised",
     "unscored",
     "uvicorn",
     "venv",
-    "vercel"
+    "vercel",
+    "WCAG"
   ],
   "ignoreWords": [
     "ject",
-    "thon",
-    "reproduc"
+    "penalt",
+    "reproduc",
+    "thon"
   ],
   "ignorePaths": [
     "**/node_modules/**",
@@ -54,5 +60,8 @@
     "**/package-lock.json",
     "**/uv.lock",
     "**/tests/fixtures/**"
+  ],
+  "ignoreRegExpList": [
+    "[A-Za-z0-9-]+/[A-Za-z0-9._-]+#\\d+"
   ]
 }

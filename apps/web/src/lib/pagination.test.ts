@@ -84,7 +84,12 @@ describe("canLoadMore", () => {
 });
 
 function rankedAs(...ids: number[]): RankedIssue[] {
-  return ids.map((id) => ({ issue: issue(id), score: 50, breakdown: [] }));
+  return ids.map((id) => ({
+    issue: issue(id),
+    score: 50,
+    breakdown: [],
+    penalties: [],
+  }));
 }
 
 function idsOf(entries: { issue: ApiIssue }[]): number[] {

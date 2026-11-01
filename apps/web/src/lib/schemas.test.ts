@@ -187,6 +187,18 @@ describe("parseRankResponse", () => {
     expect(ranked.map((entry) => entry.score)).toEqual([50]);
   });
 
+  it("reads penalties, and treats a missing list as none", () => {
+    const [withPenalty, without] = parseRankResponse({
+      items: [
+        rawRanked({ penalties: [{ reason: "Assigned.", factor: 0.5 }] }),
+        rawRanked(),
+      ],
+    });
+
+    expect(withPenalty.penalties).toEqual([{ reason: "Assigned.", factor: 0.5 }]);
+    expect(without.penalties).toEqual([]);
+  });
+
   it("rejects a response without an items list", () => {
     expect(() => parseRankResponse({})).toThrow();
     expect(() => parseRankResponse("nope")).toThrow();

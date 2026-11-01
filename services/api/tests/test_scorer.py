@@ -137,3 +137,56 @@ def test_archived_repository_ranks_below_an_active_one(make_issue, make_repo):
     ranked = rank_issues([archived, active], profile, now=NOW)
 
     assert [r.issue.id for r in ranked] == [1, 2]
+
+
+# ---- penalties (Day 9) ----------------------------------------------------------
+
+
+def test_an_issue_with_no_warning_signs_has_no_penalties(make_issue):
+    assert score_issue(make_issue(), Profile(), NOW).penalties == []
+
+
+def test_an_assigned_issue_is_halved_and_says_who(make_issue, detailed_body):
+    plain = score_issue(make_issue(body=detailed_body), Profile(), NOW)
+    assigned = score_issue(
+        make_issue(body=detailed_body, assignees=["octocat"]), Profile(), NOW
+    )
+
+    assert assigned.score == round(plain.score * 0.5)
+    assert assigned.penalties[0].factor == 0.5
+    assert "octocat" in assigned.penalties[0].reason
+    assert assigned.breakdown == plain.breakdown  # the signals themselves are untouched
+
+
+@pytest.mark.parametrize(
+    ("comments", "factor"),
+    [(0, None), (9, None), (10, 0.75), (24, 0.75), (25, 0.5), (59, 0.5)],
+)
+def test_busy_discussions_are_lowered(make_issue, detailed_body, comments, factor):
+    ranked = score_issue(
+        make_issue(body=detailed_body, comments=comments), Profile(), NOW
+    )
+
+    if factor is None:
+        assert ranked.penalties == []
+    else:
+        assert [p.factor for p in ranked.penalties] == [factor]
+        assert f"{comments} comments" in ranked.penalties[0].reason
+
+
+def test_penalties_multiply(make_issue, detailed_body):
+    plain = score_issue(make_issue(body=detailed_body), Profile(), NOW)
+    both = score_issue(
+        make_issue(body=detailed_body, assignees=["a"], comments=30), Profile(), NOW
+    )
+
+    assert both.score == round(plain.score * 0.5 * 0.5)
+
+
+def test_assigned_issues_rank_below_otherwise_equal_ones(make_issue):
+    free = make_issue(id=1)
+    taken = make_issue(id=2, assignees=["someone"])
+
+    ranked = rank_issues([taken, free], Profile(), now=NOW)
+
+    assert [r.issue.id for r in ranked] == [1, 2]

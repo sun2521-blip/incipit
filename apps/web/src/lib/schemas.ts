@@ -70,10 +70,19 @@ export const signalResultSchema = z.object({
 
 export type SignalResult = z.infer<typeof signalResultSchema>;
 
+export const penaltySchema = z.object({
+  reason: z.string(),
+  factor: z.number().min(0).max(1),
+});
+
+export type Penalty = z.infer<typeof penaltySchema>;
+
 export const rankedIssueSchema = z.object({
   issue: apiIssueSchema,
   score: z.number().int().min(0).max(100),
   breakdown: z.array(signalResultSchema),
+  // Rules that lowered the score; an older API sends none.
+  penalties: z.array(penaltySchema).catch([]),
 });
 
 export type RankedIssue = z.infer<typeof rankedIssueSchema>;

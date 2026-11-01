@@ -1,0 +1,34 @@
+issue,rating,reason
+ISTA-PLV/nael#30,good,Small docs task with three concrete suggestions; no code needed.
+trustflow-protocol/trustflow-sdk#772,good,Clear bug with reproduction steps; the fix is a check in one helper.
+ZAFU-PCHospital/zafu-pchospital-web#333,poor,"Assigned on GitHub, and the description is only a link to another issue."
+ApexForge-cz/Pelagos-eye#62,poor,Assigned to a named team member as an internal phase task; not open to newcomers.
+lakehq/sail#1281,poor,"The description is only a link, and adding a file format is a large feature."
+slayerlabs/benchmarks-fabryka-ai#54,okay,"Clear template, but written in Polish and needs research reading; suits Polish speakers only."
+slayerlabs/benchmarks-fabryka-ai#53,okay,"Clear template, but written in Polish and needs research reading; suits Polish speakers only."
+slayerlabs/benchmarks-fabryka-ai#52,okay,"Clear template, but written in Polish and needs research reading; suits Polish speakers only."
+slayerlabs/benchmarks-fabryka-ai#51,okay,"Clear template, but written in Polish and needs research reading; suits Polish speakers only."
+slayerlabs/benchmarks-fabryka-ai#50,okay,"Clear template, but written in Polish and needs research reading; suits Polish speakers only."
+slayerlabs/benchmarks-fabryka-ai#49,okay,"Clear template, but written in Polish and needs research reading; suits Polish speakers only."
+slayerlabs/benchmarks-fabryka-ai#48,okay,"Clear template, but written in Polish and needs research reading; suits Polish speakers only."
+slayerlabs/benchmarks-fabryka-ai#47,okay,"Clear template, but written in Polish and needs research reading; suits Polish speakers only."
+slayerlabs/benchmarks-fabryka-ai#46,poor,"Already assigned on GitHub, and written in Polish."
+slayerlabs/benchmarks-fabryka-ai#45,poor,"Already assigned on GitHub, and written in Polish."
+neo4jrb/activegraph#1170,okay,"Popular project, but the description is one line and leaves the fix to you."
+codepiyusss/open_source_issue_contribution#101,good,"Step-by-step spec: one function, one CLI subcommand, defined behaviour."
+layer8labs8/ci-agent-audit#23,okay,"Clear steps to try the tool, but open-ended and may not end in a pull request."
+layer8labs8/ci-agent-audit#22,okay,"Clear steps to try the tool, but open-ended and may not end in a pull request."
+layer8labs8/ci-agent-audit#9,good,Add one YAML file modelled on an existing one; every field is listed.
+JExcellence/privalint#76,good,"Two small, precise fixes in one named file."
+JExcellence/privalint#71,okay,"Clear rules, but research across six vendors' documentation rather than a code change."
+reticlehq/reticle#1682,good,"Clear reproduction in an active, popular project; scoped to one inspector function."
+wylan24/mockgen#20,okay,"Well specified, but a multi-part feature in a brand-new repository with no stars."
+wylan24/mockgen#18,okay,"Well specified, but brings in a converter library; a bigger change in a brand-new repository."
+wylan24/mockgen#17,good,"Small, precise change in two named files, with the exact behaviour described."
+toasty-kj/docusaurus-plugin-pagefind#37,poor,Migration work against a canary bundler release; needs deep Docusaurus and Rspack knowledge.
+Nexussyn/ai-growth-engine#4,poor,"Bounty aimed at AI agents with 59 comments, so it is heavily contested."
+VaibhavBansa1/coding-contest-platform#31,good,Clear refactor using an existing Tabs component; the file and tab names are given.
+VaibhavBansa1/coding-contest-platform#25,okay,"Clear goal, but touches the database, an admin form and a page; bigger than it looks."
+weilixiong/TentOfTrials#1,poor,Bounty with 24 comments in a repository untouched for over four months.
+desplega-ai/agent-swarm#2623,good,"Small, well-described help-text fix in an active project (size:S)."
+reticlehq/reticle#1851,good,"Clear reproduction and a small, local fix in an active project."
