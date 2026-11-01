@@ -1,15 +1,35 @@
 import { PAGE_SIZE } from "@/lib/pagination";
 import {
+  parseDossierResponse,
   parseIssueSearchResponse,
   parseRankResponse,
   type ApiIssue,
+  type Dossier,
   type IssueSearchResult,
   type RankedIssue,
   type SignalResult,
   type TaskType,
 } from "@/lib/schemas";
 
-export type { ApiIssue, IssueSearchResult, RankedIssue, SignalResult, TaskType };
+export type {
+  ApiIssue,
+  Dossier,
+  IssueSearchResult,
+  RankedIssue,
+  SignalResult,
+  TaskType,
+};
+
+/** An error answer from the API, with its HTTP status (0 when unreachable). */
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8001";
@@ -133,4 +153,41 @@ export async function rankIssues({
   }
 
   return readValidated(response, parseRankResponse, "ranking");
+}
+
+export async function fetchDossier({
+  owner,
+  repo,
+  number,
+  signal,
+}: {
+  owner: string;
+  repo: string;
+  number: number;
+  signal?: AbortSignal;
+}): Promise<Dossier> {
+  const path = [owner, repo, String(number)].map(encodeURIComponent).join("/");
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/issues/${path}`, {
+      cache: "no-store",
+      signal,
+    });
+  } catch (error) {
+    if (signal?.aborted) throw error;
+    throw new ApiError(
+      "Couldn't reach the Incipit API. If it was asleep it may need a minute to start; try again shortly.",
+      0,
+    );
+  }
+
+  if (!response.ok) {
+    throw new ApiError(
+      await errorMessage(response, "Could not load this issue"),
+      response.status,
+    );
+  }
+
+  return readValidated(response, parseDossierResponse, "issue");
 }
