@@ -11,7 +11,7 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 
 ## Status
 
-**129 of 140 sub-checkpoints done (92%).** Days 1 to 4, 6, 7, 9, 10 and 13 are complete, Days 5, 8 and 11 are nearly done, and Days 12 and 14 are partly done. What is left needs a merge, a click-through on the live site, or a recording (see Day 14).
+**131 of 140 sub-checkpoints done (94%).** v0.1.0 is tagged and live. Days 1 to 4, 6, 7, 9, 10 and 13 are complete, Days 5, 8, 11 and 14 are nearly done, and Day 12 is partly done. What is left is a click-through on the live site, the demo recording, and a few small items on Days 5, 8 and 12.
 
 **Live:** web app https://incipit-five.vercel.app · API https://incipit-api-blz7.onrender.com Dates are estimates at 3-4 hours a day; Day 1 was Oct 27.
 
@@ -30,7 +30,7 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 | 11 | First deployment | Nearly done | 6/8 | Nov 7 (deployed Nov 1) |
 | 12 | Failure cases | Partial | 5/8 | Nov 8 |
 | 13 | Product polish | Done | 8/8 | Nov 9 (completed Nov 1) |
-| 14 | Documentation and release | Partial | 2/6 | Nov 10 |
+| 14 | Documentation and release | Partial | 4/6 | Nov 10 |
 
 ### How the order differs from the blueprint
 
@@ -396,7 +396,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 14: Documentation and release
 
-**Status:** Partial (2/6), target Nov 10\
+**Status:** Partial (4/6), target Nov 10\
 **Blueprint:** Run release gate, verify live URL, record demo, document known limitations and create a release tag if desired. (Blueprint Days 13 and 14.)
 
 #### CP14.1 Docs
@@ -406,13 +406,13 @@ From the blueprint. Ticked only when true on the deployed product.
 
 #### CP14.2 Release gate
 
-- [ ] Every item in the Definition of done passes on the live URL *(after this release is merged and deployed: the saved-list refresh, the loading states and the demo remain)*
-- [ ] CI green on `main`; third-party Actions pinned to commit SHAs *(pinned and verified, with Dependabot to keep them current; green on `main` once merged)*
+- [ ] Every item in the Definition of done passes on the live URL *(v0.1.0 is live and the smoke test passes on Nov 1, penalties and loading states included; a click-through of the saved-list refresh and the demo remain)*
+- [x] CI green on `main`; third-party Actions pinned to commit SHAs (green on the merge commit `b24dd31`, Nov 1; Dependabot keeps the pins current)
 
 #### CP14.3 Ship
 
 - [ ] 2-3 minute demo of the deployed app *(script ready in `docs/demo-script.md`; needs recording)*
-- [ ] Tag `v0.1.0` with the known limitations written down *(release notes and limitations in `CHANGELOG.md`; tag once merged to `main`)*
+- [x] Tag `v0.1.0` with the known limitations written down (tagged on `b24dd31`, Nov 1; release notes and limitations in `CHANGELOG.md`)
 
 ## Decisions and deliberate differences
 
