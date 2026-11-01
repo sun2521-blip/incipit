@@ -8,13 +8,14 @@ Incipit is an open-source contribution navigator that helps developers discover 
 
 The goal is to make finding a meaningful first contribution less overwhelming through searchable issues, explainable matching, and a personal shortlist.
 
-**Current status:** Early MVP. The Discovery interface currently uses sample issue data. Live GitHub discovery and ranking are still being developed.
+**Current status:** Early MVP. Discovery shows live open GitHub issues labelled `good first issue`, with language and task-type filters, "Load more" pagination, and a transparent fit score you can expand to see why. If the API is unreachable, the page falls back to clearly labelled sample issues. The issue dossier, repository context and a shortlist that survives a refresh are still to come; see [docs/checkpoints.md](docs/checkpoints.md) for the roadmap.
 
 ## Tech stack
 
 - **Frontend:** Next.js, TypeScript, Tailwind CSS
 - **Backend:** FastAPI, Python, HTTPX, Pydantic Settings
-- **Testing:** Vitest, pytest
+- **Testing:** Vitest + Testing Library, pytest
+- **CI:** GitHub Actions (lint, type checks, tests and build on every pull request)
 - **Deployment:** Vercel (frontend), Render (backend)
 
 ## Getting started
@@ -73,7 +74,7 @@ apps/
   web/       Next.js frontend
 services/
   api/       FastAPI backend
-docs/        Architecture and project documentation
+docs/        Architecture, roadmap and project documentation
 ```
 
 ## Project principles

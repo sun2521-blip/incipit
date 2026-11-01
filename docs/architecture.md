@@ -33,7 +33,7 @@ The MVP uses deterministic, explainable matching. An AI service is optional and 
 └────────────────────────────┘
 ```
 
-The diagram describes the intended architecture. The current Discovery interface still uses sample issue data; live issue discovery and ranking are not yet complete.
+The diagram describes the intended architecture. Live discovery and ranking work end to end today; the issue dossier and repository context are not built yet.
 
 ## 3. Frontend
 
@@ -49,7 +49,9 @@ Responsibilities:
 - Allow users to save issues to a local shortlist.
 - Communicate with the backend through HTTP requests.
 
-The local shortlist initially uses browser storage rather than a database.
+The shortlist will use browser storage rather than a database. For now it is kept in memory and is lost on refresh. The contributor profile is already saved in browser storage.
+
+Every API response is validated with Zod before the UI uses it; a single malformed issue is dropped instead of breaking the page.
 
 ## 4. Backend
 
@@ -63,7 +65,9 @@ Responsibilities:
 - Fetch public issue and repository metadata from GitHub.
 - Normalize upstream data into consistent internal models.
 - Rank candidate issues using deterministic rules.
-- Produce an issue dossier with metadata and contribution guidance.
+- Produce an issue dossier with metadata and contribution guidance (planned).
+
+Identical GitHub searches are cached in memory for 60 seconds, because the search API has the tightest rate limit. When GitHub rate-limits a request, the API answers 503 and says how long to wait.
 
 Route handlers should remain thin. GitHub communication, normalization, ranking, and dossier generation should be separate modules.
 
@@ -77,11 +81,11 @@ Route handlers should remain thin. GitHub communication, normalization, ranking,
 6. The API returns structured results and matching explanations.
 7. The frontend displays the results and lets the user save a shortlist.
 
-This flow is the target design; it is not yet fully implemented.
+Steps 1 to 6 work today. Step 7 works only for the current session until the shortlist is saved in browser storage.
 
 ## 6. Ranking model
 
-The planned ranking model uses these illustrative weights:
+The ranking model uses these weights, which are hypotheses to evaluate rather than settled values:
 
 | Signal | Weight |
 | --- | ---: |
@@ -90,6 +94,8 @@ The planned ranking model uses these illustrative weights:
 | Issue clarity | 20% |
 | Repository maintenance signals | 15% |
 | Contributor goal relevance | 10% |
+
+Skill/language match and maintenance need repository metadata, which is not fetched yet, so today's scores use the other three signals. A signal that cannot be computed is left out and the remaining weights are rescaled, so missing data neither helps nor hurts an issue.
 
 The score is a heuristic for prioritization, not a probability that a contribution will be accepted or completed successfully.
 
@@ -109,6 +115,7 @@ The system must not promise that an issue is easy, unclaimed, or guaranteed to r
 - Backend tests: pytest.
 - Frontend tests: Vitest.
 - Linting: Ruff and the configured frontend ESLint setup.
+- CI: GitHub Actions runs Ruff, pytest with coverage, ESLint, the TypeScript check, Vitest and the production build on every pull request and on pushes to `main`.
 - Frontend deployment target: Vercel.
 - Backend deployment target: Render.
 
@@ -116,7 +123,9 @@ The project prioritizes free tiers and should not require a paid AI provider for
 
 ## 9. Current limitations
 
-- Discovery cards currently use sample data.
-- Live GitHub discovery and ranking remain to be completed.
-- Issue normalization and rate-limit handling need dedicated implementation and tests.
-- The shortlist is local to the browser and is not synchronized across devices.
+- Scores use 3 of 5 signals until repository metadata is fetched.
+- At most 100 issues are loaded and ranked per search.
+- Task type is inferred from labels, which are inconsistent between repositories.
+- Cards show a language only when a language filter is selected, and no star counts yet.
+- The issue dossier and repository context are not built yet.
+- The shortlist is kept in memory and is lost on refresh; once saved, it will be local to the browser and not synchronised across devices.
