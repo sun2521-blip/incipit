@@ -1,3 +1,4 @@
+from api.clients.github import is_repo_name
 from api.schemas.issue import TaskType
 
 # Every Incipit search is scoped to beginner-friendly issues.
@@ -11,6 +12,27 @@ TASK_LABELS: dict[TaskType, tuple[str, ...]] = {
     TaskType.TESTING: ("tests", "testing"),
     TaskType.UI_UX: ("ui", "ux", "design", "accessibility"),
 }
+
+
+_GITHUB_PREFIXES = ("https://github.com/", "http://github.com/", "github.com/")
+
+
+def repo_filter(keywords: str | None) -> str | None:
+    """ "owner/repo", or a pasted github.com link to one, as "owner/repo".
+
+    Anything else (ordinary keywords, an issue link, a bad name) is None.
+    """
+    if not keywords:
+        return None
+
+    text = keywords.strip()
+    for prefix in _GITHUB_PREFIXES:
+        if text.casefold().startswith(prefix):
+            text = text[len(prefix) :]
+            break
+    text = text.rstrip("/").removesuffix(".git")
+
+    return text if is_repo_name(text) else None
 
 
 def _strip_quotes(value: str) -> str:
@@ -27,8 +49,12 @@ def build_issue_query(
     """Build the GitHub search string for a discovery request."""
     parts: list[str] = []
 
+    repo = repo_filter(keywords)
     cleaned_keywords = _strip_quotes(keywords) if keywords else ""
-    if cleaned_keywords:
+    if repo:
+        # One repository's issues, instead of a keyword search.
+        parts.append(f"repo:{repo}")
+    elif cleaned_keywords:
         parts.append(f"{cleaned_keywords} in:title,body")
 
     parts.append(f'label:"{BASE_LABEL}"')

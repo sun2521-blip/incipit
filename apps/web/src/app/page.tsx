@@ -166,6 +166,7 @@ type SearchState = {
   pageStarts: number[]; // index in `items` where each loaded page begins
   exhausted: boolean; // a page came back with nothing new
   moreError: string | null; // error from the last "Load more"
+  notice: string | null; // from the API, e.g. why nothing matched
 };
 
 type RankState = {
@@ -323,6 +324,7 @@ export default function Home() {
           pageStarts: [0],
           exhausted: false,
           moreError: null,
+          notice: data.notice,
         });
       })
       .catch((error: unknown) => {
@@ -338,6 +340,7 @@ export default function Home() {
           pageStarts: [0],
           exhausted: false,
           moreError: null,
+          notice: null,
           error:
             error instanceof Error
               ? error.message
@@ -534,7 +537,9 @@ export default function Home() {
               {liveIssues !== null
                 ? loadingIssues
                   ? "Updating results…"
-                  : `${liveIssues.length} live issues loaded from GitHub · ${rankingNote}`
+                  : liveIssues.length === 0
+                    ? "No live issues match this search"
+                    : `${liveIssues.length} live issues loaded from GitHub · ${rankingNote}`
                 : issueError
                   ? `Showing sample data · ${issueError}`
                   : loadingIssues
@@ -580,7 +585,7 @@ export default function Home() {
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search issues, repos, or keywords..."
+              placeholder="Search keywords, or owner/repo for one project…"
               className="w-full bg-transparent text-sm outline-none placeholder:text-[#a09b90]"
               aria-label="Search issues"
             />
@@ -616,7 +621,14 @@ export default function Home() {
             </p>
 
             <p className="mt-2 text-sm text-[#77766d]">
-              Try another search or loosen your filters.
+              {result?.key === requestKey && result.notice
+                ? result.notice
+                : "Try another search or loosen your filters."}
+            </p>
+
+            <p className="mt-1 text-xs text-[#a09b90]">
+              Tip: type owner/repo, such as pallets/flask, to see one
+              project&apos;s beginner issues.
             </p>
 
             <button

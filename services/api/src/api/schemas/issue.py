@@ -48,3 +48,5 @@ class Issue(BaseModel):
 class IssueSearchResult(BaseModel):
     total_count: int
     items: list[Issue]
+    # A plain-language note for the person searching, e.g. why nothing matched.
+    notice: str | None = None
