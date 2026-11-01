@@ -24,7 +24,9 @@ def check(name: str, ok: bool, detail: str = "") -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(
+        description="Check a running Incipit API end to end."
+    )
     parser.add_argument(
         "api", help="API base URL, e.g. https://incipit-api.onrender.com"
     )
