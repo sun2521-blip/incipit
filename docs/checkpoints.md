@@ -11,7 +11,7 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 
 ## Status
 
-**127 of 140 sub-checkpoints done (91%).** Days 1 to 4, 6, 7, 9, 10 and 13 are complete, Days 5, 8 and 11 are nearly done, Day 12 is partly done, and Day 14 has started.
+**129 of 140 sub-checkpoints done (92%).** Days 1 to 4, 6, 7, 9, 10 and 13 are complete, Days 5, 8 and 11 are nearly done, and Days 12 and 14 are partly done. What is left needs a merge, a click-through on the live site, or a recording (see Day 14).
 
 **Live:** web app https://incipit-five.vercel.app · API https://incipit-api-blz7.onrender.com Dates are estimates at 3-4 hours a day; Day 1 was Oct 27.
 
@@ -30,7 +30,7 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 | 11 | First deployment | Nearly done | 6/8 | Nov 7 (deployed Nov 1) |
 | 12 | Failure cases | Partial | 5/8 | Nov 8 |
 | 13 | Product polish | Done | 8/8 | Nov 9 (completed Nov 1) |
-| 14 | Documentation and release | Not started | 0/6 | Nov 10 |
+| 14 | Documentation and release | Partial | 2/6 | Nov 10 |
 
 ### How the order differs from the blueprint
 
@@ -52,7 +52,7 @@ From the blueprint. Ticked only when true on the deployed product.
 - [ ] Loading, empty, failure and rate-limit states are present. *(all present, and the rate-limit message says when to retry; confirm on the live URL)*
 - [x] Backend tests, frontend tests, lint and type checks, and the production build pass in CI. *(green on PR #4 and on `main`, which is what is deployed)*
 - [x] The public deployment works without a paid AI API key. *(no AI key is configured anywhere)*
-- [ ] README includes features, screenshots, architecture, local setup, environment variables, limitations and deployment notes.
+- [x] README includes features, screenshots, architecture, local setup, environment variables, limitations and deployment notes.
 - [ ] A short demo shows the deployed product rather than only mockups.
 
 ## Day-by-day checkpoints
@@ -396,23 +396,23 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 14: Documentation and release
 
-**Status:** Not started (0/6), target Nov 10\
+**Status:** Partial (2/6), target Nov 10\
 **Blueprint:** Run release gate, verify live URL, record demo, document known limitations and create a release tag if desired. (Blueprint Days 13 and 14.)
 
 #### CP14.1 Docs
 
-- [ ] README: features, screenshots, architecture diagram, local setup, environment variables, limitations, deployment notes
-- [ ] `docs/architecture.md` matches the code, and the README claims only what exists
+- [x] README: features, screenshots, architecture diagram, local setup, environment variables, limitations, deployment notes (screenshots from the production build in `docs/screenshots/`, a Mermaid diagram, security and testing sections)
+- [x] `docs/architecture.md` matches the code, and the README claims only what exists (reviewed Nov 1: code layout, repository search, connection pooling and penalties added)
 
 #### CP14.2 Release gate
 
-- [ ] Every item in the Definition of done passes on the live URL
-- [ ] CI green on `main`; third-party Actions pinned to commit SHAs
+- [ ] Every item in the Definition of done passes on the live URL *(after this release is merged and deployed: the saved-list refresh, the loading states and the demo remain)*
+- [ ] CI green on `main`; third-party Actions pinned to commit SHAs *(pinned and verified, with Dependabot to keep them current; green on `main` once merged)*
 
 #### CP14.3 Ship
 
-- [ ] 2-3 minute demo of the deployed app
-- [ ] Tag `v0.1.0` with the known limitations written down
+- [ ] 2-3 minute demo of the deployed app *(script ready in `docs/demo-script.md`; needs recording)*
+- [ ] Tag `v0.1.0` with the known limitations written down *(release notes and limitations in `CHANGELOG.md`; tag once merged to `main`)*
 
 ## Decisions and deliberate differences
 
