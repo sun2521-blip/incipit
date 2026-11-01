@@ -1,6 +1,7 @@
 
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProfilePanel } from "@/components/profile-panel";
 import { ScoreBreakdown } from "@/components/score-breakdown";
@@ -21,8 +22,10 @@ import {
   orderWithinPages,
 } from "@/lib/pagination";
 import { formatCount } from "@/lib/format";
+import { dossierPath } from "@/lib/issue-path";
 import { isProfileEmpty, toApiProfile } from "@/lib/profile";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
+import { useSavedIssues } from "@/lib/use-saved-issues";
 import { useStoredProfile } from "@/lib/use-stored-profile";
 
 type Issue = {
@@ -36,6 +39,8 @@ type Issue = {
   stars: string;
   updated: string;
   url?: string;
+  dossierHref?: string; // live issues only
+  source?: ApiIssue; // live issues only: what the shortlist saves
   isSample?: boolean;
   score?: number;
   breakdown?: SignalResult[];
@@ -206,6 +211,8 @@ function toCard(
     stars: issue.repo_context ? formatCount(issue.repo_context.stars) : "",
     updated: new Date(issue.updated_at).toLocaleDateString(),
     url: issue.url,
+    dossierHref: dossierPath(issue.repository, issue.number) ?? undefined,
+    source: issue,
     isSample: false,
     score: ranked?.score,
     breakdown: ranked?.breakdown,
@@ -216,7 +223,12 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [language, setLanguage] = useState("All languages");
   const [task, setTask] = useState("All tasks");
-  const [saved, setSaved] = useState<number[]>([]);
+  const {
+    saved,
+    savedIds,
+    toggle: toggleSaved,
+    remove: removeSaved,
+  } = useSavedIssues();
   const [apiHealthy, setApiHealthy] = useState<boolean | null>(null);
   const [result, setResult] = useState<SearchState | null>(null);
   const [ranking, setRanking] = useState<RankState | null>(null);
@@ -444,14 +456,6 @@ export default function Home() {
     }
   }
 
-  function toggleSaved(id: number) {
-    setSaved((current) =>
-      current.includes(id)
-        ? current.filter((savedId) => savedId !== id)
-        : [...current, id],
-    );
-  }
-
   return (
     <main className="min-h-screen bg-[#f8f6f0] text-[#24251f]">
       <header className="border-b border-[#e5e0d5]">
@@ -652,21 +656,22 @@ export default function Home() {
                     )}
                   </div>
 
-                  <button
-                    onClick={() => toggleSaved(issue.id)}
-                    aria-label={
-                      saved.includes(issue.id)
-                        ? "Unsave issue"
-                        : "Save issue"
-                    }
-                    className={`shrink-0 rounded-full border px-3 py-1.5 text-xs transition ${
-                      saved.includes(issue.id)
-                        ? "border-[#a14e35] bg-[#a14e35] text-white"
-                        : "border-[#e5e0d5] hover:border-[#a14e35]"
-                    }`}
-                  >
-                    {saved.includes(issue.id) ? "Saved ✓" : "+ Save"}
-                  </button>
+                  {issue.source && (
+                    <button
+                      onClick={() => issue.source && toggleSaved(issue.source)}
+                      aria-pressed={savedIds.has(issue.id)}
+                      aria-label={
+                        savedIds.has(issue.id) ? "Unsave issue" : "Save issue"
+                      }
+                      className={`shrink-0 rounded-full border px-3 py-1.5 text-xs transition ${
+                        savedIds.has(issue.id)
+                          ? "border-[#a14e35] bg-[#a14e35] text-white"
+                          : "border-[#e5e0d5] hover:border-[#a14e35]"
+                      }`}
+                    >
+                      {savedIds.has(issue.id) ? "Saved ✓" : "+ Save"}
+                    </button>
+                  )}
                 </div>
 
                 <div className="mt-6 flex gap-4">
@@ -682,14 +687,8 @@ export default function Home() {
                     )}
 
                     <h3 className="text-lg font-semibold leading-snug tracking-tight group-hover:text-[#a14e35]">
-                      {issue.url ? (
-                        <a
-                          href={issue.url}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {issue.title}
-                        </a>
+                      {issue.dossierHref ? (
+                        <Link href={issue.dossierHref}>{issue.title}</Link>
                       ) : (
                         issue.title
                       )}
@@ -723,7 +722,19 @@ export default function Home() {
                     <span>{issue.type}</span>
                   </div>
 
-                  {issue.stars && <span>{issue.stars} stars</span>}
+                  <div className="flex flex-wrap items-center gap-3">
+                    {issue.stars && <span>{issue.stars} stars</span>}
+                    {issue.url && (
+                      <a
+                        href={issue.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline-offset-4 hover:text-[#24251f] hover:underline"
+                      >
+                        GitHub ↗
+                      </a>
+                    )}
+                  </div>
                 </div>
               </article>
             ))}
@@ -763,16 +774,58 @@ export default function Home() {
           id="saved"
           className="mt-12 border-t border-[#e5e0d5] pt-6"
         >
-          <p className="text-sm text-[#77766d]">
-            <span className="font-semibold text-[#24251f]">
-              Your shortlist:
-            </span>{" "}
+          <h2 className="text-xl font-semibold tracking-tight">
+            Your shortlist
+          </h2>
+          <p className="mt-1 text-sm text-[#77766d]">
             {saved.length === 0
-              ? "Save an issue to keep it in your shortlist during this session."
-              : `${saved.length} ${
+              ? "Save an issue to keep it here. Your shortlist stays in this browser."
+              : `${saved.length} saved ${
                   saved.length === 1 ? "issue" : "issues"
-                } saved in this session.`}
+                }, kept in this browser. State is as it was when you saved it.`}
           </p>
+
+          {saved.length > 0 && (
+            <ul className="mt-4 divide-y divide-[#eee9df] rounded-2xl border border-[#e5e0d5] bg-white/70">
+              {saved.map((item) => (
+                <li
+                  key={item.id}
+                  className="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="min-w-0">
+                    <p className="text-xs text-[#77766d]">
+                      {item.repository} · #{item.number} · {item.state} when
+                      saved {new Date(item.savedAt).toLocaleDateString()}
+                    </p>
+                    <Link
+                      href={dossierPath(item.repository, item.number) ?? "/"}
+                      className="mt-1 block truncate font-semibold hover:text-[#a14e35]"
+                    >
+                      {item.title}
+                    </Link>
+                  </div>
+
+                  <div className="flex shrink-0 items-center gap-3 text-xs">
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#77766d] hover:text-[#24251f]"
+                    >
+                      GitHub ↗
+                    </a>
+                    <button
+                      onClick={() => removeSaved(item.id)}
+                      aria-label={`Remove ${item.title} from your shortlist`}
+                      className="rounded-full border border-[#e5e0d5] px-3 py-1.5 hover:border-[#a14e35]"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </section>
 

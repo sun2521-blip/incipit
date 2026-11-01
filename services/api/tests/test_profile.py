@@ -1,7 +1,7 @@
 import pytest
 
 from api.schemas.issue import TaskType
-from api.schemas.profile import ExperienceLevel, Profile
+from api.schemas.profile import Profile
 
 
 def test_empty_profile_is_valid():
@@ -10,7 +10,6 @@ def test_empty_profile_is_valid():
     assert profile.languages == []
     assert profile.topics == []
     assert profile.task_types == []
-    assert profile.experience == ExperienceLevel.BEGINNER
 
 
 def test_words_are_trimmed_and_deduplicated_ignoring_case():
@@ -29,6 +28,14 @@ def test_overlong_entry_is_rejected():
 
 
 def test_task_types_accept_enum_values():
-    profile = Profile(task_types=[TaskType.BUG, "Documentation"])
+    # Plain strings arrive from JSON, so validate a dict as the API does.
+    profile = Profile.model_validate({"task_types": [TaskType.BUG, "Documentation"]})
 
     assert profile.task_types == [TaskType.BUG, TaskType.DOCUMENTATION]
+
+
+def test_unknown_fields_such_as_the_old_experience_are_ignored():
+    profile = Profile.model_validate({"experience": "advanced", "topics": ["api"]})
+
+    assert profile.topics == ["api"]
+    assert not hasattr(profile, "experience")

@@ -16,8 +16,23 @@ SEARCH_CACHE = TTLCache(ttl_seconds=60, max_entries=128)
 REPO_CACHE = TTLCache(ttl_seconds=30 * 60, max_entries=512)
 
 # GitHub owner and repository names: letters, digits, '-', and for repository
-# names also '.' and '_'. Anything else never reaches the URL.
-_REPO_NAME = re.compile(r"^[A-Za-z0-9-]{1,39}/[A-Za-z0-9._-]{1,100}$")
+# names also '.' and '_'. Anything else never reaches the URL. "." and ".." are
+# refused because httpx collapses them ("/repos/a/../x" becomes "/repos/x").
+OWNER_PATTERN = r"[A-Za-z0-9-]{1,39}"
+REPO_PATTERN = r"(?!\.{1,2}(?:/|$))[A-Za-z0-9._-]{1,100}"
+_REPO_NAME = re.compile(rf"^{OWNER_PATTERN}/{REPO_PATTERN}$")
+
+# Where GitHub may redirect a transferred issue. Any other target is refused.
+_MOVED_ISSUE = re.compile(
+    r"^https://api\.github\.com"
+    rf"(/repositories/\d+/issues/\d+|/repos/{OWNER_PATTERN}/{REPO_PATTERN}/issues/\d+)$"
+)
+_REDIRECTS = {301, 302, 307, 308}
+
+
+def is_repo_name(full_name: str) -> bool:
+    """True for "owner/name" in GitHub's allowed characters, never "." or ".."."""
+    return _REPO_NAME.match(full_name) is not None
 
 
 class GitHubResponseError(Exception):
@@ -76,6 +91,29 @@ class GitHubClient:
     async def get_repository(self, full_name: str) -> dict[str, Any]:
         """Fetch one repository's metadata, e.g. full_name="owner/name"."""
         return await self._get_repo_json(full_name, "")
+
+    async def get_issue(self, full_name: str, number: int) -> dict[str, Any]:
+        """Fetch one issue live. Never cached: the dossier says when it was checked.
+
+        GitHub answers 301 for an issue transferred to another repository; that
+        redirect is followed once, and only to another GitHub API issue URL.
+        """
+        if not _REPO_NAME.match(full_name):
+            raise ValueError(f"Not a GitHub repository name: {full_name!r}")
+        if number < 1:
+            raise ValueError(f"Not an issue number: {number!r}")
+
+        try:
+            return await self._get_json(f"/repos/{full_name}/issues/{number}")
+        except httpx.HTTPStatusError as exc:
+            moved = (
+                _MOVED_ISSUE.match(exc.response.headers.get("location", ""))
+                if exc.response.status_code in _REDIRECTS
+                else None
+            )
+            if moved is None:
+                raise
+            return await self._get_json(moved.group(1))
 
     async def get_community_profile(self, full_name: str) -> dict[str, Any]:
         """Fetch a repository's community profile, which lists its contributing

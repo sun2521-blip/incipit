@@ -8,7 +8,8 @@ Run it from services/api, then commit the files it writes:
 The search response is captured only when it is missing or --refresh-search is
 given, so refreshing repositories never churns the search fixture. The
 repositories captured are the ones behind the issues in that search fixture,
-with their community profiles (which say where the contributing guide is).
+with their community profiles (which say where the contributing guide is),
+plus one open and one closed issue as the single-issue endpoint returns them.
 
 Needs network access. If GITHUB_TOKEN is set in your environment it is used
 (only to raise the rate limit); the token is never written to a fixture.
@@ -27,6 +28,7 @@ FIXTURES_DIR = Path(__file__).resolve().parents[1] / "tests" / "fixtures"
 SEARCH_FIXTURE = FIXTURES_DIR / "search_issues.json"
 REPOS_FIXTURE = FIXTURES_DIR / "repositories.json"
 COMMUNITY_FIXTURE = FIXTURES_DIR / "community_profiles.json"
+ISSUES_FIXTURE = FIXTURES_DIR / "issues.json"
 # A real repository with no contributing guide, for the not-found case.
 NO_GUIDE_REPO = "octocat/Hello-World"
 MAX_BODY_CHARS = 300
@@ -114,10 +116,47 @@ def capture_repositories() -> None:
     print(f"Saved {len(profiles)} community profiles to {COMMUNITY_FIXTURE}")
 
 
+def trim_body(issue: dict[str, Any]) -> dict[str, Any]:
+    if isinstance(issue.get("body"), str):
+        issue["body"] = issue["body"][:MAX_BODY_CHARS]
+    return issue
+
+
+def first_search_hit(state: str) -> dict[str, Any]:
+    """The most recently updated good-first-issue in `state`, fetched exactly as
+    GET /repos/{owner}/{repo}/issues/{number} returns it."""
+    response = httpx.get(
+        "https://api.github.com/search/issues",
+        params={
+            "q": f'label:"good first issue" is:issue is:{state}',
+            "per_page": 1,
+            "sort": "updated",
+        },
+        headers=headers(),
+        timeout=20,
+    )
+    response.raise_for_status()
+    item = response.json()["items"][0]
+
+    response = httpx.get(item["url"], headers=headers(), timeout=20)
+    response.raise_for_status()
+    return trim_body(response.json())
+
+
+def capture_issues() -> None:
+    """One open and one closed issue, as the single-issue endpoint returns them."""
+    save(
+        ISSUES_FIXTURE,
+        {"open": first_search_hit("open"), "closed": first_search_hit("closed")},
+    )
+    print(f"Saved an open and a closed issue to {ISSUES_FIXTURE}")
+
+
 def main() -> None:
     if "--refresh-search" in sys.argv or not SEARCH_FIXTURE.exists():
         capture_search()
     capture_repositories()
+    capture_issues()
 
 
 if __name__ == "__main__":

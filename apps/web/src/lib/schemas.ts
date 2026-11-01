@@ -18,7 +18,7 @@ export type TaskType = z.infer<typeof taskTypeSchema>;
 
 // Rendered as links, so only real GitHub URLs are accepted (this rules out
 // "javascript:" and similar).
-const githubUrl = z
+export const githubUrl = z
   .string()
   .refine((value) => value.startsWith("https://github.com/"), {
     message: "must be a GitHub URL",
@@ -137,4 +137,44 @@ export function parseRankResponse(data: unknown): RankedIssue[] {
     (value) => rankedIssueSchema.safeParse(value),
     "ranked issues",
   );
+}
+
+// ---- issue dossier -----------------------------------------------------------
+
+export const contributingGuideSchema = z.object({
+  status: z.enum(["found", "not_found", "unknown"]),
+  url: githubUrl.nullable(),
+});
+
+export type ContributingGuide = z.infer<typeof contributingGuideSchema>;
+
+const checklistStepSchema = z.object({
+  title: z.string(),
+  detail: z.string(),
+  link: githubUrl.nullable().catch(null),
+});
+
+export type ChecklistStep = z.infer<typeof checklistStepSchema>;
+
+export const dossierSchema = z.object({
+  checked_at: z.string(),
+  moved_from: z.string().nullable(),
+  issue: apiIssueSchema,
+  // A malformed guide is reported as unknown, never as found or missing.
+  contributing_guide: contributingGuideSchema.catch({
+    status: "unknown",
+    url: null,
+  }),
+  guidance: z.object({
+    kind: z.literal("generic"),
+    note: z.string(),
+    steps: z.array(checklistStepSchema),
+  }),
+});
+
+export type Dossier = z.infer<typeof dossierSchema>;
+
+/** Throws if the response is not a dossier. */
+export function parseDossierResponse(data: unknown): Dossier {
+  return dossierSchema.parse(data);
 }

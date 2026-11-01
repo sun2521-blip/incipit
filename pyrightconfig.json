@@ -1,0 +1,8 @@
+{
+  "venvPath": "services/api",
+  "venv": ".venv",
+  "extraPaths": ["services/api/src"],
+  "pythonVersion": "3.12",
+  "include": ["services/api"],
+  "exclude": ["**/.venv", "**/__pycache__", "**/node_modules"]
+}

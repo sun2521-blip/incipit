@@ -8,7 +8,7 @@ Incipit is an open-source contribution navigator that helps developers discover 
 
 The goal is to make finding a meaningful first contribution less overwhelming through searchable issues, explainable matching, and a personal shortlist.
 
-**Current status:** Early MVP. Discovery shows live open GitHub issues labelled `good first issue`, with language and task-type filters, "Load more" pagination, and a transparent fit score you can expand to see why. Cards show each repository's main language and stars, and the score uses all five signals, including language match and repository activity. If the API is unreachable, the page falls back to clearly labelled sample issues. The issue dossier and a shortlist that survives a refresh are still to come; see [docs/checkpoints.md](docs/checkpoints.md) for the roadmap.
+**Current status:** Early MVP. Discovery shows live open GitHub issues labelled `good first issue`, with language and task-type filters, "Load more" pagination, and a transparent fit score you can expand to see why. Cards show each repository's main language and stars, and the score uses all five signals, including language match and repository activity. Each issue opens a dossier: verified facts from GitHub (checked live), why it may fit you, the repository's contributing guide when GitHub reports one, and a clearly labelled general checklist. Saved issues stay in your browser's shortlist across refreshes and tabs. If the API is unreachable, the page falls back to clearly labelled sample issues. See [docs/checkpoints.md](docs/checkpoints.md) for the roadmap.
 
 ## Tech stack
 
@@ -68,6 +68,10 @@ Frontend: http://localhost:3000
 See the root `.env.example` for the environment variables used across the project. Keep real credentials in local environment files; never commit secrets.
 
 `GITHUB_TOKEN` is optional for trying Incipit locally, but practically required for a deployment. Each page of results also looks up every repository on it, up to 20 extra GitHub calls, and without a token GitHub allows only 60 calls an hour (5,000 with one). Repository details are cached for 30 minutes. A fine-grained token with no extra permissions (read-only access to public repositories) is enough. It stays on the backend and is never sent to the browser.
+
+## Deployment
+
+The API deploys to Render from [`render.yaml`](render.yaml) and the web app to Vercel. [docs/deployment.md](docs/deployment.md) walks through it step by step, including the GitHub token, CORS and a smoke test for the live URLs.
 
 ## Project structure
 

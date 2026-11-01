@@ -1,15 +1,35 @@
 import { PAGE_SIZE } from "@/lib/pagination";
 import {
+  parseDossierResponse,
   parseIssueSearchResponse,
   parseRankResponse,
   type ApiIssue,
+  type Dossier,
   type IssueSearchResult,
   type RankedIssue,
   type SignalResult,
   type TaskType,
 } from "@/lib/schemas";
 
-export type { ApiIssue, IssueSearchResult, RankedIssue, SignalResult, TaskType };
+export type {
+  ApiIssue,
+  Dossier,
+  IssueSearchResult,
+  RankedIssue,
+  SignalResult,
+  TaskType,
+};
+
+/** An error answer from the API, with its HTTP status (0 when unreachable). */
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8001";
@@ -42,6 +62,20 @@ async function errorMessage(
   return typeof payload?.detail === "string"
     ? payload.detail
     : `${fallback} (${response.status})`;
+}
+
+const UNREACHABLE =
+  "Couldn't reach the Incipit API. If it was asleep it may need a minute to start; try again shortly.";
+
+/** fetch, but an unreachable API becomes an ApiError with status 0 and a
+ * message people can act on, instead of the browser's "Failed to fetch". */
+async function request(url: string, init: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, init);
+  } catch (error) {
+    if (init.signal?.aborted) throw error;
+    throw new ApiError(UNREACHABLE, 0);
+  }
 }
 
 /** Read a JSON body and validate it; errors never expose raw server data. */
@@ -93,13 +127,16 @@ export async function fetchIssues({
   if (language) params.set("language", language);
   if (taskType) params.set("task_type", taskType);
 
-  const response = await fetch(`${API_BASE_URL}/issues?${params}`, {
+  const response = await request(`${API_BASE_URL}/issues?${params}`, {
     cache: "no-store",
     signal,
   });
 
   if (!response.ok) {
-    throw new Error(await errorMessage(response, "Issue search failed"));
+    throw new ApiError(
+      await errorMessage(response, "Issue search failed"),
+      response.status,
+    );
   }
 
   return readValidated(response, parseIssueSearchResponse, "search");
@@ -114,7 +151,7 @@ export async function rankIssues({
   profile: ApiProfile;
   signal?: AbortSignal;
 }): Promise<RankedIssue[]> {
-  const response = await fetch(`${API_BASE_URL}/rank`, {
+  const response = await request(`${API_BASE_URL}/rank`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     cache: "no-store",
@@ -129,8 +166,39 @@ export async function rankIssues({
   });
 
   if (!response.ok) {
-    throw new Error(await errorMessage(response, "Ranking failed"));
+    throw new ApiError(
+      await errorMessage(response, "Ranking failed"),
+      response.status,
+    );
   }
 
   return readValidated(response, parseRankResponse, "ranking");
+}
+
+export async function fetchDossier({
+  owner,
+  repo,
+  number,
+  signal,
+}: {
+  owner: string;
+  repo: string;
+  number: number;
+  signal?: AbortSignal;
+}): Promise<Dossier> {
+  const path = [owner, repo, String(number)].map(encodeURIComponent).join("/");
+
+  const response = await request(`${API_BASE_URL}/issues/${path}`, {
+    cache: "no-store",
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new ApiError(
+      await errorMessage(response, "Could not load this issue"),
+      response.status,
+    );
+  }
+
+  return readValidated(response, parseDossierResponse, "issue");
 }

@@ -33,7 +33,7 @@ The MVP uses deterministic, explainable matching. An AI service is optional and 
 └────────────────────────────┘
 ```
 
-The diagram describes the intended architecture. Live discovery, repository context and ranking work end to end today; the issue dossier is not built yet.
+The diagram describes the intended architecture. Live discovery, repository context, ranking and the issue dossier work end to end today.
 
 ## 3. Frontend
 
@@ -49,7 +49,9 @@ Responsibilities:
 - Allow users to save issues to a local shortlist.
 - Communicate with the backend through HTTP requests.
 
-The shortlist will use browser storage rather than a database. For now it is kept in memory and is lost on refresh. The contributor profile is already saved in browser storage.
+The shortlist and the contributor profile are saved in browser storage (localStorage) rather than a database. The shortlist keeps a validated snapshot of each issue (title, repository, number, link, state and when it was saved), stays in step across tabs, and falls back to memory when the browser blocks storage.
+
+Each live issue opens a dossier at `/issues/[owner]/[repo]/[number]`. The page validates the address before calling the API, renders the issue text as plain text, and only links to `https://github.com/` addresses. Its fit score comes from `POST /rank` with the profile stored in the browser, so the profile never appears in a URL.
 
 Every API response is validated with Zod before the UI uses it; a single malformed issue is dropped instead of breaking the page.
 
@@ -65,13 +67,15 @@ Responsibilities:
 - Fetch public issue and repository metadata from GitHub.
 - Normalize upstream data into consistent internal models.
 - Rank candidate issues using deterministic rules.
-- Produce an issue dossier with metadata and contribution guidance (planned).
+- Produce an issue dossier with metadata and contribution guidance.
 
 Identical GitHub searches are cached in memory for 60 seconds, because the search API has the tightest rate limit. When GitHub rate-limits a request, the API answers 503 and says how long to wait.
 
 Each issue carries `repo_context`: verified facts from GitHub's `/repos` endpoint (main language, stars, last push, archived flag, topics, licence). `/issues` looks up each distinct repository on the page once, at most five at a time, and caches the answers for 30 minutes. A failed lookup (missing repository, rate limit, network error) leaves that issue's `repo_context` as null; it never fails the search.
 
-The contributing guide is read from GitHub's community profile and reported as found (with a link), not found, or unknown when the lookup failed. It is never guessed. The issue dossier will show it.
+The contributing guide is read from GitHub's community profile and reported as found (with a link), not found, or unknown when the lookup failed. It is never guessed. The issue dossier shows it.
+
+`GET /issues/{owner}/{repo}/{number}` builds the dossier. It validates the owner, repository and number before anything reaches GitHub, fetches the issue live (never cached) and records `checked_at`. A transferred issue (GitHub answers 301) is followed once, and only to another GitHub API issue address; the dossier then says where it moved from. Missing issues and pull-request numbers answer 404, deleted issues 410, each with a plain-language message. The dossier keeps GitHub's facts (`issue`, `contributing_guide`) apart from Incipit's own advice (`guidance`, marked `generic`).
 
 Route handlers should remain thin. GitHub communication, normalization, ranking, and dossier generation should be separate modules.
 
@@ -85,7 +89,7 @@ Route handlers should remain thin. GitHub communication, normalization, ranking,
 6. The API returns structured results and matching explanations.
 7. The frontend displays the results and lets the user save a shortlist.
 
-Steps 1 to 6 work today. Step 7 works only for the current session until the shortlist is saved in browser storage.
+All seven steps work today. From step 7, any issue can be opened as a dossier.
 
 ## 6. Ranking model
 
@@ -113,13 +117,19 @@ The system must not promise that an issue is easy, unclaimed, or guaranteed to r
 - Local secrets belong in ignored environment files.
 - `.env.example` documents configuration without containing real credentials.
 - CORS should allow only explicitly configured frontend origins.
+- The API sends `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer` and, outside the API docs, a `default-src 'none'` Content-Security-Policy.
+- Request bodies over 4 MB are refused with 413, counted as they arrive. Each client gets 60 requests a minute to GitHub-backed routes and 120 to `/rank` (`GITHUB_REQUESTS_PER_MINUTE`, `RANK_REQUESTS_PER_MINUTE`); limits live in memory per process and are a fairness guard, with GitHub's own limit as the backstop.
+- Repository names are checked against GitHub's rules before they reach a URL, and `.` and `..` are refused, because HTTP clients collapse them into a different path.
+- The web app sends a Content-Security-Policy that only lets the browser call itself and the configured API, plus `nosniff`, `DENY` framing, a strict referrer policy and a restrictive Permissions-Policy.
 
 ## 8. Testing and deployment
 
 - Backend tests: pytest.
 - Frontend tests: Vitest.
 - Linting: Ruff and the configured frontend ESLint setup.
-- CI: GitHub Actions runs Ruff, pytest with coverage, ESLint, the TypeScript check, Vitest and the production build on every pull request and on pushes to `main`.
+- Type checks: Pyright (configured in `pyrightconfig.json` at the repository root, which also points VS Code at the API's virtual environment) and the TypeScript compiler.
+- CI: GitHub Actions runs Ruff, Pyright, pytest with coverage, ESLint, the TypeScript check, Vitest and the production build on every pull request and on pushes to `main`.
+- Deployment: [deployment.md](deployment.md) and the Render blueprint in `render.yaml`; `services/api/scripts/smoke_test.py` checks a live API.
 - Frontend deployment target: Vercel.
 - Backend deployment target: Render.
 
@@ -131,5 +141,6 @@ The project prioritizes free tiers and should not require a paid AI provider for
 - Without `GITHUB_TOKEN`, repository lookups hit GitHub's limit of 60 calls an hour quickly; affected issues then show no repository details.
 - At most 100 issues are loaded and ranked per search.
 - Task type is inferred from labels, which are inconsistent between repositories.
-- The issue dossier is not built yet.
-- The shortlist is kept in memory and is lost on refresh; once saved, it will be local to the browser and not synchronised across devices.
+- The dossier's checklist is generic: it is not checked against each repository.
+- The shortlist is local to one browser, not synchronised across devices, and shows each issue's state as it was when saved.
+- Rate limits and caches live in memory: they reset when the API restarts, and free hosting restarts it after it sleeps.

@@ -1,6 +1,6 @@
 # Incipit: roadmap and checkpoints
 
-The living checklist for the 14-day plan in the original project blueprint (written when the project was still called FirstPR). Last updated: 2026-10-31.
+The living checklist for the 14-day plan in the original project blueprint (written when the project was still called FirstPR). Last updated: 2026-11-01.
 
 ## Rules for this file
 
@@ -11,22 +11,22 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 
 ## Status
 
-**81 of 140 sub-checkpoints done (58%).** Days 1 to 3 are complete, Day 6 is nearly done, Days 4, 5, 10 and 12 are partly done, and the rest have not started. Dates are estimates at 3-4 hours a day; Day 1 was Oct 27.
+**105 of 140 sub-checkpoints done (75%).** Days 1 to 4, 6 and 7 are complete, Days 5 and 8 are nearly done, Days 10 and 12 are partly done, and Days 9, 11, 13 and 14 have not started. Dates are estimates at 3-4 hours a day; Day 1 was Oct 27.
 
 | Day | Goal | Status | Done | Target |
 | --- | --- | --- | --- | --- |
 | 1 | Foundation | Done | 10/10 | Oct 27 |
 | 2 | UI shell | Done | 6/6 | Oct 28 |
 | 3 | GitHub client | Done | 21/21 | Oct 29 (completed Oct 31) |
-| 4 | Ranking core | Partial | 10/11 | Oct 30 (completion: Nov 2) |
+| 4 | Ranking core | Done | 11/11 | Oct 30 (completion: Nov 2) |
 | 5 | Real ranked results | Mostly done | 9/10 | Oct 31 (completion: Nov 2) |
-| 6 | Repository context and the missing signals | Nearly done | 16/17 | Nov 2 (ahead, Oct 31) |
-| 7 | Issue dossier | Not started | 0/13 | Nov 3 |
-| 8 | Saved shortlist | Not started | 0/7 | Nov 4 |
+| 6 | Repository context and the missing signals | Done | 17/17 | Nov 2 (completed Nov 1) |
+| 7 | Issue dossier | Done | 13/13 | Nov 3 (completed Nov 1) |
+| 8 | Saved shortlist | Nearly done | 6/7 | Nov 4 |
 | 9 | Evaluation | Not started | 0/6 | Nov 5 |
-| 10 | Frontend tests and CI | Partial | 6/9 | Nov 6 |
+| 10 | Frontend tests and CI | Partial | 7/9 | Nov 6 |
 | 11 | First deployment | Not started | 0/8 | Nov 7 |
-| 12 | Failure cases | Partial | 3/8 | Nov 8 |
+| 12 | Failure cases | Partial | 5/8 | Nov 8 |
 | 13 | Product polish | Not started | 0/8 | Nov 9 |
 | 14 | Documentation and release | Not started | 0/6 | Nov 10 |
 
@@ -34,7 +34,8 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 
 - **Repository context comes before the dossier** (blueprint Days 7 and 6). The dossier needs the contribution-guide lookup, and two ranking signals (language and maintenance) need repository data.
 - **Frontend tests start in Day 3 and CI moves before deployment** (blueprint Day 13 CI). The first deployment should be a green build.
-- **Day 4 is not closed yet.** The language signal landed with Day 6; only the `experience` decision (D3) is left.
+- **Day 8's shortlist landed with Day 7**, because the dossier's Save button needs a shortlist that outlives the page.
+- **Deployment is prepared but not live.** `render.yaml`, Vercel settings and a smoke test are ready (docs/deployment.md); Day 11 is ticked once the public URLs pass it.
 - **Some Day 10 and Day 12 work landed early**, with the Day 3 branch: the CI workflow, and the rate-limit, timeout and malformed-response handling.
 
 ## Definition of done
@@ -44,8 +45,8 @@ From the blueprint. Ticked only when true on the deployed product.
 - [ ] A user can discover real open GitHub issues and navigate to the canonical issue URL. *(works locally; confirm on the live URL)*
 - [ ] Ranking is deterministic, explainable, tested and tied to the user's profile. *(all 5 signals; confirm on the live URL)*
 - [ ] Closed issues are filtered appropriately and errors do not crash the application. *(closed issues are filtered and malformed responses are handled; confirm on the live URL)*
-- [ ] The dossier separates verified source facts from generated or inferred guidance.
-- [ ] Saved issues survive a refresh in the same browser.
+- [ ] The dossier separates verified source facts from generated or inferred guidance. *(built and tested; confirm on the live URL)*
+- [ ] Saved issues survive a refresh in the same browser. *(works locally; confirm on the live URL)*
 - [ ] Loading, empty, failure and rate-limit states are present. *(all present, and the rate-limit message says when to retry; confirm on the live URL)*
 - [ ] Backend tests, frontend tests, lint and type checks, and the production build pass in CI. *(green on PR #1 and `main`; tick at release)*
 - [ ] The public deployment works without a paid AI API key.
@@ -144,13 +145,13 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 4: Ranking core
 
-**Status:** Partial (10/11), target Oct 30 (completion: Nov 2)  
+**Status:** Done (11/11), target Oct 30, completed Nov 1  
 **Blueprint:** Write pure scoring functions and tests for language/task match, clarity, missing signals and deterministic ordering.
 
 #### CP4.1 Profile
 
 - [x] `Profile` model: languages, topics, experience, task types; input trimmed, de-duplicated and length-capped
-- [ ] Decide what `experience` does: use it in scoring or remove it
+- [x] Decide what `experience` does: removed (D3)
 
 #### CP4.2 Signals
 
@@ -196,7 +197,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 6: Repository context and the missing signals
 
-**Status:** Nearly done (16/17), target Nov 2, started Oct 31  
+**Status:** Done (17/17), target Nov 2, completed Nov 1  
 **Blueprint:** Fetch repository metadata and contribution-guide links; distinguish unavailable context from inferred guidance. (Blueprint Day 7, moved earlier because the dossier and two signals need it.)
 
 #### CP6.1 Repository metadata client
@@ -223,7 +224,7 @@ From the blueprint. Ticked only when true on the deployed product.
 - [x] `/issues` returns repository context per issue (null when unavailable); checked against live GitHub on Oct 31 (10 issues, 7 repositories, about 3 seconds uncached)
 - [x] Cards show real language and stars instead of "Unknown" and blank
 - [x] Profile panel gets a languages field (saved profiles from before it still load; component tests)
-- [ ] Decide on a topic filter using verified repository topics: include or drop
+- [x] Decide on a topic filter using verified repository topics: dropped for the MVP (D4)
 
 #### CP6.5 Contribution guide
 
@@ -233,54 +234,54 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 7: Issue dossier
 
-**Status:** Not started (0/13), target Nov 3  
+**Status:** Done (13/13), target Nov 3, completed Nov 1  
 **Blueprint:** Build dossier page with canonical links, metadata and contribution checklist. (Blueprint Day 6.)
 
 #### CP7.1 Backend
 
-- [ ] `GET /issues/{owner}/{repo}/{number}` validates identifiers and fetches the live issue
-- [ ] Closed, deleted, transferred and missing issues return clear states
-- [ ] Response includes a "checked at" timestamp
+- [x] `GET /issues/{owner}/{repo}/{number}` validates identifiers and fetches the live issue (never cached); `.` and `..` refused
+- [x] Closed, deleted, transferred and missing issues return clear states: closed is a dossier with a warning, deleted 410, missing and pull requests 404, transferred followed once to GitHub's new address and reported as `moved_from`
+- [x] Response includes a "checked at" timestamp
 
 #### CP7.2 Content
 
-- [ ] Verified facts (title, state, labels, timestamps, repository, assignees, comment count) kept apart from inferred guidance
-- [ ] Never says "unclaimed" or "easy" without evidence; assignees and comments shown as facts
-- [ ] Score breakdown reused with its reasons
-- [ ] Generic investigation checklist, labelled as generic: read the guide, set up, reproduce, inspect tests, make a focused change, run tests
+- [x] Verified facts (title, state, labels, timestamps, repository, assignees, comment count) kept apart from inferred guidance (`issue` and `contributing_guide` versus `guidance`; separate "On GitHub" and "How it may fit you" sections)
+- [x] Never says "unclaimed" or "easy" without evidence; assignees and comments shown as facts (a test checks the guidance text)
+- [x] Score breakdown reused with its reasons (via `POST /rank` with the stored profile)
+- [x] Generic investigation checklist, labelled as generic: read the guide, check nobody is on it, set up, reproduce, read the tests, make a focused change, run tests
 
 #### CP7.3 Frontend
 
-- [ ] Route `/issues/[owner]/[repo]/[number]`
-- [ ] Cards link to the dossier; clear link to continue on GitHub
-- [ ] Loading, not-found and error states; issue text rendered as plain text
-- [ ] Save button on the dossier
+- [x] Route `/issues/[owner]/[repo]/[number]` (params read inside Suspense, as Cache Components requires); checked in headless Edge on Nov 1 against live GitHub
+- [x] Cards link to the dossier; clear link to continue on GitHub
+- [x] Loading, not-found and error states (with retry); issue text rendered as plain text
+- [x] Save button on the dossier
 
 #### CP7.4 Tests
 
-- [ ] Dossier builder unit tests
-- [ ] Route tests: open issue, closed issue, missing issue, no contributing guide
+- [x] Dossier builder unit tests (real captured open and closed issues in `tests/fixtures/issues.json`)
+- [x] Route tests: open issue, closed issue, missing issue, no contributing guide, plus deleted, pull request, transferred, invalid identifiers, rate limit and timeout
 
 ### Day 8: Saved shortlist
 
-**Status:** Not started (0/7), target Nov 4  
+**Status:** Nearly done (6/7), target Nov 4  
 **Blueprint:** Persist saved issues in localStorage; avoid accounts/database unless truly necessary.
 
 #### CP8.1 Persistence
 
-- [ ] Save a full issue snapshot and the saved time in localStorage, using the profile's safe pattern
-- [ ] Validate stored data, cap the list, survive blocked or full storage
+- [x] Save an issue snapshot and the saved time in localStorage, using the profile's safe pattern (title, repository, number, link and state; the body is left out to keep storage small)
+- [x] Validate stored data, cap the list (100), survive blocked or full storage (falls back to memory)
 
 #### CP8.2 UI
 
-- [ ] Saved list with remove, working from the snapshot
-- [ ] Cross-tab sync
+- [x] Saved list with remove, working from the snapshot
+- [x] Cross-tab sync
 - [ ] "Refresh status" re-checks whether saved issues are still open and shows when
-- [ ] Header count and card buttons reflect saved state after a refresh
+- [x] Header count and card buttons reflect saved state after a refresh
 
 #### CP8.3 Tests
 
-- [ ] Storage validation, and save, remove and restore after reload
+- [x] Storage validation, and save, remove and restore after reload
 
 ### Day 9: Evaluation
 
@@ -304,13 +305,13 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 10: Frontend tests and CI
 
-**Status:** Partial (6/9), target Nov 6  
+**Status:** Partial (7/9), target Nov 6  
 **Blueprint:** (Blueprint Day 13 CI, moved before deployment so the first deploy is a green build.)
 
 #### CP10.1 Frontend tests
 
 - [ ] Component tests: profile panel, score breakdown, discovery states (loading, empty, error, rate limit) with mocked fetch *(score breakdown and profile panel done)*
-- [ ] Dossier and saved-list tests
+- [x] Dossier and saved-list tests
 
 #### CP10.2 CI
 
@@ -332,7 +333,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 #### CP11.1 API on Render
 
-- [ ] Build `uv sync --frozen`; start `uv run uvicorn api.main:app --host 0.0.0.0 --port $PORT` (the blueprint says `app.main:app`, our package is `api`)
+- [ ] Build `uv sync --frozen`; start `uv run uvicorn api.main:app --host 0.0.0.0 --port $PORT` (the blueprint says `app.main:app`, our package is `api`) *(in `render.yaml` as `uv sync --frozen --no-dev` and `.venv/bin/uvicorn ... --proxy-headers`; verified locally from a clean checkout)*
 - [ ] Environment: allowed origin set to the frontend URL; `GITHUB_TOKEN` server-side only
 - [ ] `/health` and `/issues` work on the public URL
 
@@ -349,7 +350,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 12: Failure cases
 
-**Status:** Partial (3/8), target Nov 8  
+**Status:** Partial (5/8), target Nov 8  
 **Blueprint:** Test closed/deleted issues, malformed input, timeouts, rate limits, empty results and API downtime. (Blueprint Day 11.)
 
 #### CP12.1 GitHub failures
@@ -360,13 +361,13 @@ From the blueprint. Ticked only when true on the deployed product.
 
 #### CP12.2 Bad input and stale data
 
-- [ ] Malformed or oversized input rejected cleanly, with 422s handled in the UI
-- [ ] Closed and deleted issues handled in the dossier and shortlist
+- [x] Malformed or oversized input rejected cleanly, with 422s handled in the UI (422 for bad parameters, 413 for bodies over 4 MB, 429 for too many requests; the UI shows the API's message)
+- [ ] Closed and deleted issues handled in the dossier and shortlist *(dossier done; the shortlist shows the state when saved until "Refresh status" exists)*
 - [x] Malformed API responses handled (Zod in the frontend, `GitHubResponseError` in the API)
 
 #### CP12.3 Downtime
 
-- [ ] Friendly message instead of "Failed to fetch"
+- [x] Friendly message instead of "Failed to fetch" (every API call; mentions that free hosting may be waking up)
 - [ ] A test for every failure path above
 
 ### Day 13: Product polish
@@ -417,14 +418,16 @@ From the blueprint. Ticked only when true on the deployed product.
 | --- | --- | --- | --- |
 | D1 | Separate `/discover` route (blueprint structure) | Open | Currently one page; decide on Day 13 |
 | D2 | TanStack Query, shadcn/ui, lucide-react | Open | Not installed; the UI uses hand-written state and Tailwind. Adopt or drop on Day 13 |
-| D3 | `experience` field in the profile | Open | Stored but unused; decide in CP4.1 |
-| D4 | Topic filter from repository topics | Open | Decide in CP6.4 |
+| D3 | `experience` field in the profile | Decided: removed | Incipit has no verified difficulty signal, so experience could only reweight guesses. Revisit after the Day 9 evaluation |
+| D4 | Topic filter from repository topics | Decided: dropped | Repository topics are often missing or noisy, and profile topics already boost matching issues |
 | D5 | Score breakdown shape | Decided | A list of signals with weight and reason, richer than the blueprint's flat object |
 | D6 | Ports and package name | Decided | API on port 8001; Python package `api` under `src/`. The blueprint's `app.main:app` and port 8000 do not apply |
 | D7 | Optional LLM adapter | Out of scope | Optional and off by default in the blueprint; the product must work without an AI key |
 | D8 | `GET /saved` endpoint | Out of scope | The blueprint keeps saved issues in localStorage |
 | D9 | Ranking across pages | Decided | All loaded issues (up to 100) are ranked together, but ranking only reorders within each page, so cards already on screen never move. Trade-off: a strong match on page 2 stays below page 1 |
 | D10 | 100-issue cap | Decided | Keeps the `/rank` request bounded and is far below GitHub's 1,000-result limit, so the UI explains the cap rather than GitHub's limit |
+| D11 | Score on the dossier | Decided | The dossier endpoint has no score; the browser ranks the issue with `POST /rank` and the stored profile, so profiles never appear in URLs or server logs |
+| D12 | API abuse limits | Decided | Per-client rate limits, a 4 MB body cap and security headers before going public. In memory and per process, which suits one free instance |
 
 ## Known limitations right now
 
@@ -432,7 +435,8 @@ From the blueprint. Ticked only when true on the deployed product.
 - Without `GITHUB_TOKEN`, repository lookups quickly hit GitHub's limit of 60 calls an hour, and affected cards show no repository details.
 - At most 100 issues load per search ("Load more", 20 at a time).
 - Task type comes from labels, which are inconsistent.
-- The saved list is in memory only and is lost on refresh.
+- The shortlist shows each issue's state as it was when saved; it does not re-check GitHub yet.
+- The dossier's checklist is generic, not checked against each repository.
 - The search cache is per process: it is lost on restart and not shared between server instances.
 
 ## If time runs short

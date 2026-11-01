@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { fetchIssues, rankIssues } from "@/lib/api";
+import { ApiError, fetchDossier, fetchIssues, rankIssues } from "@/lib/api";
 import type { ApiIssue } from "@/lib/schemas";
 
 const originalFetch = globalThis.fetch;
@@ -166,5 +166,136 @@ describe("rankIssues", () => {
     await expect(rankIssues({ issues: [], profile })).rejects.toThrow(
       /unexpected ranking response/,
     );
+  });
+});
+
+function dossier(overrides: Record<string, unknown> = {}) {
+  return {
+    checked_at: "2026-11-01T12:00:00Z",
+    moved_from: null,
+    issue: apiIssue(),
+    contributing_guide: {
+      status: "found",
+      url: "https://github.com/example/project/blob/main/CONTRIBUTING.md",
+    },
+    guidance: {
+      kind: "generic",
+      note: "General steps.",
+      steps: [{ title: "Read the guide", detail: "It helps.", link: null }],
+    },
+    ...overrides,
+  };
+}
+
+describe("fetchDossier", () => {
+  it("asks for the issue's address, each part encoded", async () => {
+    const calls = mockFetch(() => json(dossier()));
+
+    await fetchDossier({ owner: "example", repo: "my.repo", number: 7 });
+
+    expect(calls[0].url).toBe("http://localhost:8001/issues/example/my.repo/7");
+  });
+
+  it("returns a validated dossier", async () => {
+    mockFetch(() => json(dossier()));
+
+    const result = await fetchDossier({ owner: "a", repo: "b", number: 1 });
+
+    expect(result.issue.title).toBe("Fix parser crash");
+    expect(result.contributing_guide.status).toBe("found");
+  });
+
+  it("reports a malformed guide as unknown instead of failing", async () => {
+    mockFetch(() =>
+      json(dossier({ contributing_guide: { status: "found", url: "javascript:x" } })),
+    );
+
+    const result = await fetchDossier({ owner: "a", repo: "b", number: 1 });
+
+    expect(result.contributing_guide).toEqual({ status: "unknown", url: null });
+  });
+
+  it("drops step links that are not GitHub links", async () => {
+    mockFetch(() =>
+      json(
+        dossier({
+          guidance: {
+            kind: "generic",
+            note: "n",
+            steps: [{ title: "t", detail: "d", link: "https://evil.example" }],
+          },
+        }),
+      ),
+    );
+
+    const result = await fetchDossier({ owner: "a", repo: "b", number: 1 });
+
+    expect(result.guidance.steps[0].link).toBeNull();
+  });
+
+  it("carries the API's status and message on errors", async () => {
+    mockFetch(() => json({ detail: "GitHub has no issue #1 in a/b." }, 404));
+
+    const error = await fetchDossier({ owner: "a", repo: "b", number: 1 }).catch(
+      (caught: unknown) => caught,
+    );
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({ status: 404, message: "GitHub has no issue #1 in a/b." });
+  });
+
+  it("explains an unreachable API, which may be asleep", async () => {
+    globalThis.fetch = (async () => {
+      throw new TypeError("Failed to fetch");
+    }) as typeof fetch;
+
+    const error = await fetchDossier({ owner: "a", repo: "b", number: 1 }).catch(
+      (caught: unknown) => caught,
+    );
+
+    expect(error).toMatchObject({ status: 0 });
+    expect((error as Error).message).toMatch(/Couldn't reach the Incipit API/);
+  });
+
+  it("rejects a response that is not a dossier", async () => {
+    mockFetch(() => json({ issue: "nope" }));
+
+    await expect(
+      fetchDossier({ owner: "a", repo: "b", number: 1 }),
+    ).rejects.toThrow("The API returned an unexpected issue response.");
+  });
+});
+
+describe("an unreachable API", () => {
+  it("gives every call the same message people can act on", async () => {
+    globalThis.fetch = (async () => {
+      throw new TypeError("Failed to fetch");
+    }) as typeof fetch;
+
+    for (const call of [
+      () => fetchIssues(),
+      () =>
+        rankIssues({
+          issues: [],
+          profile: { languages: [], topics: [], task_types: [] },
+        }),
+    ]) {
+      const error = await call().catch((caught: unknown) => caught);
+      expect(error).toBeInstanceOf(ApiError);
+      expect(error).toMatchObject({ status: 0 });
+      expect((error as Error).message).not.toContain("Failed to fetch");
+    }
+  });
+
+  it("lets a cancelled request stay cancelled", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    globalThis.fetch = (async () => {
+      throw new DOMException("Aborted", "AbortError");
+    }) as typeof fetch;
+
+    await expect(fetchIssues({ signal: controller.signal })).rejects.toMatchObject({
+      name: "AbortError",
+    });
   });
 });
