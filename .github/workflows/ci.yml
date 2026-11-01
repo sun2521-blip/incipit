@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   api:
-    name: api (ruff + pytest)
+    name: api (ruff + pyright + pytest)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -28,6 +28,8 @@ jobs:
       - run: uv sync --locked
       - run: uv run ruff check .
       - run: uv run ruff format --check .
+      # Same type checks VS Code shows; the config sits at the repository root.
+      - run: npx --yes pyright@1.1.390 -p ../../pyrightconfig.json
       - run: uv run pytest -q --cov=api --cov-report=term-missing
 
   web:

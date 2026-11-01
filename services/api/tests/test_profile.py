@@ -28,7 +28,8 @@ def test_overlong_entry_is_rejected():
 
 
 def test_task_types_accept_enum_values():
-    profile = Profile(task_types=[TaskType.BUG, "Documentation"])
+    # Plain strings arrive from JSON, so validate a dict as the API does.
+    profile = Profile.model_validate({"task_types": [TaskType.BUG, "Documentation"]})
 
     assert profile.task_types == [TaskType.BUG, TaskType.DOCUMENTATION]
 

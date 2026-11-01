@@ -85,7 +85,9 @@ def test_changing_a_returned_value_does_not_change_the_cache():
     cache, _ = make_cache()
     cache.set("key", {"items": [1]})
 
-    cache.get("key")["items"].append(2)
+    returned = cache.get("key")
+    assert returned is not None
+    returned["items"].append(2)
 
     assert cache.get("key") == {"items": [1]}
 

@@ -159,6 +159,7 @@ def test_guide_found():
     guide = guide_for(real_community, "hivecommons/hive")
 
     assert guide.status == GuideStatus.FOUND
+    assert guide.url is not None
     assert guide.url.endswith("/CONTRIBUTING.md")
 
 
