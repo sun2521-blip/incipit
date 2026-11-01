@@ -5,6 +5,8 @@
     "analysed",
     "autouse",
     "behaviour",
+    "colour",
+    "colours",
     "fastapi",
     "hivecommons",
     "httpx",
@@ -31,6 +33,7 @@
     "recognised",
     "redoc",
     "reweight",
+    "scrollbars",
     "summarise",
     "summarises",
     "synchronised",
@@ -41,7 +44,8 @@
     "unscored",
     "uvicorn",
     "venv",
-    "vercel"
+    "vercel",
+    "WCAG"
   ],
   "ignoreWords": [
     "ject",

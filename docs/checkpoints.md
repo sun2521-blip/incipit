@@ -11,7 +11,7 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 
 ## Status
 
-**117 of 140 sub-checkpoints done (84%).** Days 1 to 4, 6, 7 and 9 are complete, Days 5, 8 and 11 are nearly done, Days 10 and 12 are partly done, and Days 13 and 14 have not started.
+**127 of 140 sub-checkpoints done (91%).** Days 1 to 4, 6, 7, 9, 10 and 13 are complete, Days 5, 8 and 11 are nearly done, Day 12 is partly done, and Day 14 has started.
 
 **Live:** web app https://incipit-five.vercel.app · API https://incipit-api-blz7.onrender.com Dates are estimates at 3-4 hours a day; Day 1 was Oct 27.
 
@@ -26,10 +26,10 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 | 7 | Issue dossier | Done | 13/13 | Nov 3 (completed Nov 1) |
 | 8 | Saved shortlist | Nearly done | 6/7 | Nov 4 |
 | 9 | Evaluation | Done | 6/6 | Nov 5 (completed Nov 1) |
-| 10 | Frontend tests and CI | Partial | 7/9 | Nov 6 |
+| 10 | Frontend tests and CI | Done | 9/9 | Nov 6 |
 | 11 | First deployment | Nearly done | 6/8 | Nov 7 (deployed Nov 1) |
 | 12 | Failure cases | Partial | 5/8 | Nov 8 |
-| 13 | Product polish | Not started | 0/8 | Nov 9 |
+| 13 | Product polish | Done | 8/8 | Nov 9 (completed Nov 1) |
 | 14 | Documentation and release | Not started | 0/6 | Nov 10 |
 
 ### How the order differs from the blueprint
@@ -307,12 +307,12 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 10: Frontend tests and CI
 
-**Status:** Partial (7/9), target Nov 6\
+**Status:** Done (9/9), target Nov 6, completed Nov 1\
 **Blueprint:** (Blueprint Day 13 CI, moved before deployment so the first deploy is a green build.)
 
 #### CP10.1 Frontend tests
 
-- [ ] Component tests: profile panel, score breakdown, discovery states (loading, empty, error, rate limit) with mocked fetch *(score breakdown and profile panel done)*
+- [x] Component tests: profile panel, score breakdown, discovery states (loading, empty, error, rate limit) with mocked fetch (`src/app/home.test.tsx`)
 - [x] Dossier and saved-list tests
 
 #### CP10.2 CI
@@ -326,7 +326,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 - [x] Stop tracking the generated `next-env.d.ts` (ignored; `next typegen` recreates it)
 - [x] Confirm `.gitattributes` (`* text=auto eol=lf`) is committed
-- [ ] Branch-and-pull-request habit; optionally require CI on `main`
+- [x] Branch-and-pull-request habit (every change since PR #1 went through a pull request with CI); requiring CI on `main` stays optional
 
 ### Day 11: First deployment
 
@@ -374,25 +374,25 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 13: Product polish
 
-**Status:** Not started (0/8), target Nov 9\
+**Status:** Done (8/8), target Nov 9, completed Nov 1\
 **Blueprint:** Improve responsive layout, keyboard accessibility, typography, feedback states and interaction details. (Blueprint Day 12.)
 
 #### CP13.1 Structure and decisions
 
-- [ ] Split `page.tsx` into `components/` and `features/`
-- [ ] Decide: separate `/discover` route or the current single page
-- [ ] Decide: adopt or drop TanStack Query, shadcn/ui and lucide-react, and make the docs match
+- [x] Split `page.tsx` into `components/` and `lib/` (856 to 564 lines: header, footer, card, loading placeholders and shortlist are components; samples and card shaping are in `lib/cards.ts`). A `features/` folder isn't needed at this size
+- [x] Decide: separate `/discover` route or the current single page: single page (D1)
+- [x] Decide: adopt or drop TanStack Query, shadcn/ui and lucide-react, and make the docs match: dropped (D2); the docs never claimed them
 
 #### CP13.2 Responsive and accessible
 
-- [ ] Mobile layout checked at about 375 px
-- [ ] Keyboard navigation, visible focus, labels, and `details`/`summary` behaviour
-- [ ] Contrast and reduced-motion check
+- [x] Mobile layout checked at about 375 px, with real phone emulation: a long link in one issue made cards 1,085px wide; cards now shrink and long words wrap
+- [x] Keyboard navigation, visible focus, labels, and `details`/`summary` behaviour: a skip link, a focus ring everywhere, and a Tab walk-through in a real browser
+- [x] Contrast and reduced-motion check: two text colours failed WCAG AA (4.23:1 and 2.56:1) and were replaced (at least 4.65:1 on every background); animations and transitions stop under "reduce motion"
 
 #### CP13.3 Visual details
 
-- [ ] Use the loaded Geist font and settle dark mode
-- [ ] Page titles, metadata and favicon
+- [x] Use the loaded Geist font (Arial had been overriding it) and settle dark mode: light only for now (D15)
+- [x] Page titles, metadata and favicon: a title template, the issue's title on its dossier tab, sharing metadata, theme colour and an "i." icon
 
 ### Day 14: Documentation and release
 
@@ -418,8 +418,8 @@ From the blueprint. Ticked only when true on the deployed product.
 
 | # | Item | State | Reason or next step |
 | --- | --- | --- | --- |
-| D1 | Separate `/discover` route (blueprint structure) | Open | Currently one page; decide on Day 13 |
-| D2 | TanStack Query, shadcn/ui, lucide-react | Open | Not installed; the UI uses hand-written state and Tailwind. Adopt or drop on Day 13 |
+| D1 | Separate `/discover` route (blueprint structure) | Decided: single page | The landing section and discovery work well as one scrolling page; a second route would only split them |
+| D2 | TanStack Query, shadcn/ui, lucide-react | Decided: dropped | The hand-written state is small, tested and handles cancellation; Tailwind covers the styling; fewer dependencies is less to update and secure |
 | D3 | `experience` field in the profile | Decided: removed | Incipit has no verified difficulty signal, so experience could only reweight guesses. Revisit after the Day 9 evaluation |
 | D4 | Topic filter from repository topics | Decided: dropped | Repository topics are often missing or noisy, and profile topics already boost matching issues |
 | D5 | Score breakdown shape | Decided | A list of signals with weight and reason, richer than the blueprint's flat object |
@@ -432,6 +432,7 @@ From the blueprint. Ticked only when true on the deployed product.
 | D12 | API abuse limits | Decided | Per-client rate limits, a 4 MB body cap and security headers before going public. In memory and per process, which suits one free instance |
 | D13 | Searching one repository | Decided | Typing `owner/repo` or pasting a github.com link searches that repository's beginner issues. A missing or private repository, or one with no `good first issue` issues, gets a plain-language notice instead of an error |
 | D14 | Penalties after the weighted signals | Decided | Assigned issues and busy discussions lower the score as visible, explained rules rather than new weighted signals, so the blueprint's five signals keep their meaning |
+| D15 | Dark mode | Decided: light only for now | The palette is light-only; declaring it keeps browser controls consistent. A dark theme can come later without changing structure |
 
 ## Known limitations right now
 
