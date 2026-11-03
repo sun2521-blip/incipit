@@ -14,7 +14,7 @@ The fit score is hand-written rules with hand-set weights, not a trained model. 
 | okay | Plausible, but something weakens it: vague, bigger than it looks, research rather than code, or a brand-new repository with nobody to review. |
 | poor | Should not be recommended: assigned, empty or only a link, a crowded bounty, or not a beginner's task. |
 
-Result: 10 good, 15 okay, 8 poor. **Who rated them:** these are a first pass written on 2026-11-01 by an AI assistant, not a person, from each issue's text and facts. No person has rated the pool independently yet, so they are a consistent baseline, not ground truth. `rate` (below) is how a person replaces or checks them.
+Result: 10 good, 15 okay, 8 poor. **What they are:** one unreviewed first pass, made on 2026-11-01 from each issue's text and facts. They have not been rated by a person yet, so they are a consistent baseline, not ground truth. `rate` (below) is how a person replaces or checks them.
 
 **Fit is not rated.** Whether an issue suits a profile comes from verified facts: with languages set, the repository's main language must be one of them. That keeps one rating per issue valid for every profile and for any future change to the scorer.
 
@@ -79,7 +79,7 @@ The weights themselves were not changed: no failure traced back to a weight, and
 - **The rules were tested on the data they came from.** Both penalties were written after looking at failures in these 33 issues, then measured on the same 33. That shows they fix those failures; it cannot show they help on issues nobody has looked at. This pool is a development set, not a test set.
 - **The rubric and the rules overlap.** "Good" includes "unassigned", and every good issue happens to have 0 to 2 comments, while the penalties act on assignees and comment counts. Part of their gain is agreeing with how the ratings were defined.
 - **The gains are one issue wide.** With 5 issues in a top 5, one issue moves P@5 by 0.20, and P@10 0.50 → 0.60 for TypeScript is one issue. The numbers show direction, not precision.
-- **One rater, and not a person.** The ratings are one AI-written first pass (see [Method](#method)), with no second opinion and no agreement figure.
+- **One unreviewed set of ratings.** The ratings are a single first pass that no person has rated yet (see [Method](#method)), with no second opinion and no agreement figure.
 - **One snapshot.** One day's `good first issue` results lean towards small, new repositories and bounty programmes, which may not be typical.
 
 ### What a fair test would look like

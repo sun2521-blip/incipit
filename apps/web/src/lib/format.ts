@@ -1,3 +1,9 @@
+/** A date and time in the reader's own format, or "unknown" if unreadable. */
+export function formatDateTime(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "unknown" : date.toLocaleString();
+}
+
 /** 950 -> "950", 1234 -> "1.2k", 128000 -> "128k", 2500000 -> "2.5M". */
 export function formatCount(value: number): string {
   if (value < 1000) return String(value);

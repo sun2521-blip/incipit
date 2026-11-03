@@ -2,19 +2,19 @@
 
 open source is cool until you spend 3 hours looking for one issue you can actually solve. incipit finds `good first issue`s, tells you which ones fit *you*, and shows its working. minus the existential crisis.
 
-**try it →** https://incipit-five.vercel.app
+**try it:** https://incipit-five.vercel.app
 
-<sub>first visit after a quiet spell? give it up to a minute. the free server is a heavy sleeper 😴 and the page will tell you it's waking up.</sub>
+<sub>first visit after a quiet spell? give it up to a minute. the free server is a heavy sleeper, and the page will tell you it's waking up.</sub>
 
 ![The Incipit home page: live good-first-issue results, each with a fit score](docs/screenshots/home.png)
 
 ## what it does
 
-- 🔎 **finds the issues.** Live `good first issue`s from GitHub. Search by keyword, filter by language or task type, or type `owner/repo` (or paste a GitHub link) to see one project's beginner issues. Up to 100 results, 20 at a time.
-- 🧮 **scores them, and shows its working.** Five signals (language match, task type, how clear the write-up is, whether the repo is alive, your topics), combined with published weights. Click "Why this score" for every signal's points and reason. Assigned issues and pile-on threads get marked down, and it says so. Missing data is left out, never guessed: unknown ≠ bad.
-- 📋 **gives every issue a dossier.** Checked live on GitHub with a timestamp: state, labels, assignees, comments, the repo's language, stars, last push, licence and contributing guide. Incipit's own advice sits in a separate, clearly labelled checklist. Closed, deleted, transferred and missing issues each get a clear message.
-- 💾 **remembers you, not your data.** Your languages, topics and task types personalise the ranking, and your shortlist survives refreshes and syncs across tabs. It all lives in your browser. No account, no tracking.
-- 🙅 **makes no promises it can't keep.** Incipit never calls an issue easy, unclaimed or likely to be merged. No paid AI anywhere.
+- **finds the issues.** Live `good first issue`s from GitHub. Search by keyword, filter by language or task type, or type `owner/repo` (or paste a GitHub link) to see one project's beginner issues. Up to 100 results, 20 at a time.
+- **scores them, and shows its working.** Five signals (language match, task type, how clear the write-up is, whether the repo is alive, your topics), combined with published weights. Click "Why this score" for every signal's points and reason. Assigned issues and pile-on threads get marked down, and it says so. Missing data is left out, never guessed: unknown never counts as bad.
+- **gives every issue a dossier.** Checked live on GitHub with a timestamp: state, labels, assignees, comments, the repo's language, stars, last push, licence and contributing guide. Incipit's own advice sits in a separate, clearly labelled checklist. Closed, deleted, transferred and missing issues each get a clear message.
+- **remembers you, not your data.** Your languages, topics and task types personalise the ranking, and your shortlist survives refreshes and syncs across tabs. Hit "Refresh status" and it re-checks every saved issue on GitHub, so you find out an issue was closed before you've spent an evening on it. It all lives in your browser. No account, no tracking.
+- **makes no promises it can't keep.** Incipit never calls an issue easy, unclaimed or likely to be merged. No paid AI anywhere.
 
 | the dossier | on your phone | while it thinks |
 | --- | --- | --- |
@@ -43,7 +43,7 @@ More detail: [architecture](docs/architecture.md), [how the ranking was evaluate
 
 Honest answer: it's a sensible heuristic, not machine learning. Hand-written rules with hand-set weights, every one of them explained on screen.
 
-It was checked against 33 real issues, and that check found two real problems: assigned issues and crowded bounty threads ranked as if they were free. Both now get marked down. But the ratings are a first pass by an AI assistant, not by a person, and the two rules were measured on the same issues they came from. So treat the numbers as a sanity check, not a benchmark. [The evaluation write-up](docs/ranking-evaluation.md) has the details, the known weak spots, and how to run a fair test. Want to help? `evaluate_ranking.py rate --rater your-name` lets you rate issues blind, with no scores in sight.
+It was checked against 33 real issues, and that check found two real problems: assigned issues and crowded bounty threads ranked as if they were free. Both now get marked down. But the ratings are an unreviewed first pass that no person has rated yet, and the two rules were measured on the same issues they came from. So treat the numbers as a sanity check, not a benchmark. [The evaluation write-up](docs/ranking-evaluation.md) has the details, the known weak spots, and how to run a fair test. Want to help? `evaluate_ranking.py rate --rater your-name` lets you rate issues blind, with no scores in sight.
 
 ## run it locally
 
@@ -104,7 +104,7 @@ The API tests include golden-ordering tests on those 33 real issues: change the 
 
 ## deploying
 
-The API deploys to Render from [`render.yaml`](render.yaml) and the web app to Vercel. [docs/deployment.md](docs/deployment.md) walks through it, including the GitHub token, CORS and a smoke test for the live URLs. After that, every merge to `main` redeploys both. Ship it. 🚀
+The API deploys to Render from [`render.yaml`](render.yaml) and the web app to Vercel. [docs/deployment.md](docs/deployment.md) walks through it, including the GitHub token, CORS and a smoke test for the live URLs. After that, every merge to `main` redeploys both. Ship it.
 
 ## security
 
@@ -121,7 +121,7 @@ The API deploys to Render from [`render.yaml`](render.yaml) and the web app to V
 - Language match only knows the repository's main language, and task types come from labels, which are… creative.
 - One repository can take several spots in the results.
 - At most 100 issues per search.
-- Your shortlist lives in one browser, doesn't sync across devices, and shows each issue as it was when you saved it.
+- Your shortlist lives in one browser and doesn't sync across devices. It only knows what GitHub said at the last "Refresh status".
 - On the free plan the API naps after 15 minutes without visitors, so the first search afterwards can take up to a minute. The page tells you when that's happening.
 - Rate limits and caches live in memory, so they reset when the API restarts.
 
@@ -137,6 +137,6 @@ pyrightconfig.json   Type-checking settings (also points VS Code at the API's vi
 
 ## license
 
-MIT. Go forth and contribute. ✨
+MIT. Go forth and contribute.
 
-<sub>found your first issue with incipit? a ⭐ makes my day.</sub>
+<sub>found your first issue with incipit? a star on the repo makes my day.</sub>

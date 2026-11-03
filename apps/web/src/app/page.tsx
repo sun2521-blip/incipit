@@ -73,6 +73,7 @@ export default function Home() {
     savedIds,
     toggle: toggleSaved,
     remove: removeSaved,
+    recordChecks,
   } = useSavedIssues();
   const [apiHealthy, setApiHealthy] = useState<boolean | null>(null);
   const [result, setResult] = useState<SearchState | null>(null);
@@ -554,7 +555,11 @@ export default function Home() {
             </div>
           )}
 
-          <SavedList saved={saved} onRemove={removeSaved} />
+          <SavedList
+            saved={saved}
+            onRemove={removeSaved}
+            onChecked={recordChecks}
+          />
         </section>
       </main>
 
