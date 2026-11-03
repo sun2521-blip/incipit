@@ -71,7 +71,7 @@ def test_guidance_is_labelled_generic():
     assert "not checked against this repository" in guidance.note
 
 
-def test_guidance_covers_the_blueprint_checklist():
+def test_guidance_covers_the_first_contribution_basics():
     titles = " / ".join(step.title for step in build_guidance(FOUND).steps).lower()
 
     for words in ["contributing guide", "set up", "reproduce", "tests", "focused"]:

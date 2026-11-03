@@ -10,7 +10,7 @@ class Profile(BaseModel):
     """What a contributor tells Incipit about themselves. Every field is optional.
 
     There is no experience level: Incipit has no verified difficulty signal, so
-    it could only reweight guesses (decision D3 in docs/checkpoints.md).
+    it could only reweight guesses.
     """
 
     languages: list[str] = Field(default_factory=list, max_length=MAX_ITEMS)

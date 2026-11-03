@@ -12,8 +12,9 @@ from api.schemas.issue import Issue
 from api.schemas.profile import Profile
 from api.schemas.ranking import Penalty, RankedIssue, SignalResult
 
-# Blueprint formula: S = 0.30L + 0.25T + 0.20C + 0.15M + 0.10R
-# These weights are hypotheses to evaluate on Day 9, not scientific truth.
+# S = 0.30L + 0.25T + 0.20C + 0.15M + 0.10R. Hand-set, not learned: they say
+# what should matter most for a first contribution. docs/ranking-evaluation.md
+# has how they were checked and what that check cannot show.
 WEIGHTS: dict[str, float] = {
     "skill_match": 0.30,
     "task_match": 0.25,
@@ -38,7 +39,8 @@ def combine(breakdown: list[SignalResult]) -> int:
 
 
 # Rules applied after the weighted signals, each from a verified GitHub fact.
-# Added on Day 9 from the evaluation in docs/ranking-evaluation.md.
+# Both came from failures seen in the evaluation pool, so that pool cannot also
+# prove they help in general (docs/ranking-evaluation.md).
 ASSIGNED_FACTOR = 0.5
 # (at least this many comments, factor). A long thread on a "good first issue"
 # usually means it is being claimed or argued over.

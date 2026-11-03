@@ -1,6 +1,6 @@
 # Ranking evaluation
 
-The fit score's weights started as the blueprint's hypotheses. This page records how they were checked against real issues judged by a person, what was found, what changed, and what is still known to be weak.
+The fit score is hand-written rules with hand-set weights, not a trained model. This page records how they were checked against real, rated issues, what was found, what changed, what is still known to be weak, and how much the check can actually prove (less than the table suggests; see [Limits](#limits-of-this-evaluation)).
 
 ## Method
 
@@ -14,7 +14,7 @@ The fit score's weights started as the blueprint's hypotheses. This page records
 | okay | Plausible, but something weakens it: vague, bigger than it looks, research rather than code, or a brand-new repository with nobody to review. |
 | poor | Should not be recommended: assigned, empty or only a link, a crowded bounty, or not a beginner's task. |
 
-Result: 10 good, 15 okay, 8 poor. These are a first pass made on 2026-11-01; anyone can change a rating in the CSV and re-run the report.
+Result: 10 good, 15 okay, 8 poor. **Who rated them:** these are a first pass written on 2026-11-01 by an AI assistant, not a person, from each issue's text and facts. No person has rated the pool independently yet, so they are a consistent baseline, not ground truth. `rate` (below) is how a person replaces or checks them.
 
 **Fit is not rated.** Whether an issue suits a profile comes from verified facts: with languages set, the repository's main language must be one of them. That keeps one rating per issue valid for every profile and for any future change to the scorer.
 
@@ -29,10 +29,14 @@ Result: 10 good, 15 okay, 8 poor. These are a first pass made on 2026-11-01; any
 Reproduce it from `services/api`:
 
 ```bash
-uv run python scripts/evaluate_ranking.py report   # the table below
-uv run python scripts/evaluate_ranking.py review   # every issue with its facts and ranks
-uv run python scripts/evaluate_ranking.py capture  # a new pool (needs new ratings)
+uv run python scripts/evaluate_ranking.py report                 # the table below
+uv run python scripts/evaluate_ranking.py rate --rater your-name  # rate the pool yourself, blind
+uv run python scripts/evaluate_ranking.py agree ../../docs/evaluation/ratings.csv ../../docs/evaluation/ratings-your-name.csv
+uv run python scripts/evaluate_ranking.py review                 # every issue with its facts and ranks
+uv run python scripts/evaluate_ranking.py capture --pool FILE --per-search 40  # a new pool
 ```
+
+`rate` shows the issues one at a time in a shuffled order, with their facts and text but no scores or ranks, and saves after every answer. `agree` reports how often two raters gave the same rating and Cohen's kappa, which discounts the agreement chance alone would produce.
 
 ## Results
 
@@ -53,7 +57,7 @@ One change at a time, on the same pool and ratings:
 | | poor@5 | 1 | 1 | 1 |
 | | mean@10 | 1.10 | **1.20** | 1.20 |
 
-Nothing got worse, and both changes moved a poor issue out of a top list.
+Nothing got worse, and both changes moved a poor issue out of a top list. Read the bold numbers as "the rules fixed the cases they were written for", not as a measured improvement: each gain is a single issue, on the same pool the rules came from.
 
 ## What was wrong, and what changed
 
@@ -72,7 +76,17 @@ The weights themselves were not changed: no failure traced back to a weight, and
 
 ## Limits of this evaluation
 
-33 issues, one snapshot, one day, one rater. With 5 issues in a top 5, one issue moves P@5 by 0.20, so the numbers show direction, not precision. The day's `good first issue` search results lean towards small, new repositories and bounty programmes, which may not be typical. Capture a fresh pool and re-rate it every few weeks; the old pool stays as a regression set.
+- **The rules were tested on the data they came from.** Both penalties were written after looking at failures in these 33 issues, then measured on the same 33. That shows they fix those failures; it cannot show they help on issues nobody has looked at. This pool is a development set, not a test set.
+- **The rubric and the rules overlap.** "Good" includes "unassigned", and every good issue happens to have 0 to 2 comments, while the penalties act on assignees and comment counts. Part of their gain is agreeing with how the ratings were defined.
+- **The gains are one issue wide.** With 5 issues in a top 5, one issue moves P@5 by 0.20, and P@10 0.50 → 0.60 for TypeScript is one issue. The numbers show direction, not precision.
+- **One rater, and not a person.** The ratings are one AI-written first pass (see [Method](#method)), with no second opinion and no agreement figure.
+- **One snapshot.** One day's `good first issue` results lean towards small, new repositories and bounty programmes, which may not be typical.
+
+### What a fair test would look like
+
+1. Capture a fresh pool of 100 or more issues (`capture --pool … --per-search 40`) and do not look at how Incipit ranks it.
+2. Have a person rate all of it with `rate`, and a second person rate a subset; report `agree`'s kappa before trusting either.
+3. Run `report` on that pool once, with no changes to the scorer in between, and publish whatever comes out. Keep these 33 as the development set for future changes.
 
 ## How it is guarded
 
