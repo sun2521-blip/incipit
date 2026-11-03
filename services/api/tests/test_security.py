@@ -1,8 +1,10 @@
+import asyncio
+
 import pytest
 from fastapi.testclient import TestClient
 
 from api.main import app, github_limiter, rank_limiter
-from api.security import RateLimiter
+from api.security import ClientAddressMiddleware, RateLimiter, client_address
 from api.settings import settings
 
 client = TestClient(app)
@@ -160,3 +162,69 @@ def test_github_routes_have_their_own_budget(monkeypatch):
 
 def test_limiter_with_a_zero_limit_blocks_without_crashing():
     assert RateLimiter(0).hit("a") == pytest.approx(60)
+
+
+# ---- the visitor's address ------------------------------------------------------
+
+
+def scope_with(*forwarded: str, client=("10.0.0.9", 1234)):
+    headers = [(b"x-forwarded-for", value.encode()) for value in forwarded]
+    return {"type": "http", "headers": headers, "client": client}
+
+
+@pytest.mark.parametrize(
+    ("forwarded", "hops", "expected"),
+    [
+        # No trusted proxies: the header is ignored, whatever it says.
+        (["203.0.113.7"], 0, None),
+        # One proxy: its entry, the last one, is the visitor.
+        (["198.51.100.4"], 1, "198.51.100.4"),
+        # A visitor's made-up entries sit in front of the proxy's.
+        (["203.0.113.7, 198.51.100.4"], 1, "198.51.100.4"),
+        (["1.1.1.1, 2.2.2.2, 198.51.100.4"], 1, "198.51.100.4"),
+        # Two proxies: the first of the last two.
+        (["203.0.113.7, 198.51.100.4, 10.1.2.3"], 2, "198.51.100.4"),
+        # Repeated headers read as one list, in order.
+        (["203.0.113.7", "198.51.100.4"], 1, "198.51.100.4"),
+        # Too short to have passed through the proxies, or missing: not trusted.
+        (["198.51.100.4"], 2, None),
+        ([], 1, None),
+        ([" , "], 1, None),
+    ],
+)
+def test_client_address_trusts_only_what_the_proxies_added(forwarded, hops, expected):
+    assert client_address(scope_with(*forwarded), hops) == expected
+
+
+def seen_client(trusted_hops: int, *forwarded: str):
+    seen = {}
+
+    async def app(scope, receive, send):
+        seen["client"] = scope["client"]
+
+    scope = scope_with(*forwarded)
+    asyncio.run(ClientAddressMiddleware(app, trusted_hops)(scope, None, None))  # type: ignore[arg-type]
+    return seen["client"]
+
+
+def test_middleware_replaces_the_connection_address_with_the_visitors():
+    assert seen_client(1, "203.0.113.7, 198.51.100.4") == ("198.51.100.4", 0)
+
+
+def test_middleware_keeps_the_connection_address_without_a_usable_header():
+    assert seen_client(1) == ("10.0.0.9", 1234)
+    assert seen_client(0, "203.0.113.7") == ("10.0.0.9", 1234)
+
+
+def test_a_made_up_header_no_longer_buys_a_fresh_rate_limit():
+    limiter = RateLimiter(1)
+
+    def key(*forwarded):
+        return client_address(scope_with(*forwarded), 1) or "peer"
+
+    assert limiter.hit(key("198.51.100.4")) is None
+    # The same visitor, now pretending to be someone else each time.
+    assert limiter.hit(key("203.0.113.7, 198.51.100.4")) is not None
+    assert limiter.hit(key("203.0.113.8, 198.51.100.4")) is not None
+    # A different visitor still has their own budget.
+    assert limiter.hit(key("198.51.100.5")) is None

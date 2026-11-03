@@ -14,6 +14,7 @@ from api.schemas.issue import IssueSearchResult, TaskType
 from api.schemas.ranking import RankRequest, RankResponse
 from api.security import (
     BodySizeLimitMiddleware,
+    ClientAddressMiddleware,
     RateLimiter,
     RateLimitMiddleware,
     SecurityHeadersMiddleware,
@@ -30,9 +31,11 @@ github_limiter = RateLimiter(settings.github_requests_per_minute)
 rank_limiter = RateLimiter(settings.rank_requests_per_minute)
 
 # Starlette runs the middleware added last first. CORS goes last so that it
-# wraps everything else: even a 413 or 429 reaches the browser readable.
+# wraps everything else: even a 413 or 429 reaches the browser readable. The
+# visitor's address is settled before either rate limiter looks at it.
 app.add_middleware(RateLimitMiddleware, limiter=rank_limiter, prefixes=("/rank",))
 app.add_middleware(RateLimitMiddleware, limiter=github_limiter, prefixes=("/issues",))
+app.add_middleware(ClientAddressMiddleware, trusted_hops=settings.trusted_proxy_hops)
 app.add_middleware(BodySizeLimitMiddleware, max_bytes=settings.max_request_bytes)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(

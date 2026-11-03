@@ -2,8 +2,8 @@
 
 A signal's score is 0-100, or None when the data needed to compute it is
 missing. None means "unknown", never "bad": the scorer leaves it out instead
-of guessing a number. All point values here are hypotheses to evaluate on
-real issues (blueprint, Day 9), not facts.
+of guessing a number. The point values are hand-set judgments, not fitted to
+data: docs/ranking-evaluation.md has how they were checked.
 """
 
 import re

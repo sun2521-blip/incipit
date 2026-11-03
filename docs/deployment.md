@@ -57,6 +57,6 @@ It checks health, search, repository context, a dossier, ranking, CORS for your 
 
 - **Secrets:** `GITHUB_TOKEN` lives only in Render. The browser never sees it, and nothing in the web app is secret.
 - **CORS:** only the origins in `ALLOWED_ORIGINS` can call the API from a browser.
-- **Abuse limits:** each visitor gets 60 requests a minute to GitHub-backed routes and 120 to `/rank`, and request bodies are capped at 4 MB. The limits live in memory, so they reset on restart. Behind a proxy, a determined client can spoof its address, so they are a fairness guard; GitHub's own rate limit, which the API reports politely, is the backstop.
+- **Abuse limits:** each visitor gets 60 requests a minute to GitHub-backed routes and 120 to `/rank`, and request bodies are capped at 4 MB. The limits live in memory, so they reset on restart. Visitors are told apart by the address Cloudflare appends to `X-Forwarded-For` (`TRUSTED_PROXY_HOPS=1` in `render.yaml`), not by anything the visitor sends, so a made-up header does not buy a fresh limit. They are still a fairness guard for one free instance, not protection against a botnet; GitHub's own rate limit, which the API reports politely, is the backstop.
 - **Headers:** the API sends `nosniff`, `DENY` framing and a no-content CSP; the web app sends a CSP that only allows itself and the API.
 - **Rotating the token:** create a new one, paste it into Render, then delete the old one on GitHub.

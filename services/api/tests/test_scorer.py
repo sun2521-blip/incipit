@@ -139,7 +139,7 @@ def test_archived_repository_ranks_below_an_active_one(make_issue, make_repo):
     assert [r.issue.id for r in ranked] == [1, 2]
 
 
-# ---- penalties (Day 9) ----------------------------------------------------------
+# ---- penalties ------------------------------------------------------------------
 
 
 def test_an_issue_with_no_warning_signs_has_no_penalties(make_issue):
