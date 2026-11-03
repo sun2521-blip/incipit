@@ -10,11 +10,16 @@ services:
     rootDir: services/api
     # --frozen: install exactly what uv.lock says. --no-dev: no test or lint tools.
     buildCommand: pip install uv && uv sync --frozen --no-dev
-    # Render's proxy sets X-Forwarded-For; trusting it lets the rate limits see
-    # each visitor instead of the proxy.
+    # --proxy-headers lets the app see that visitors used https. uvicorn would
+    # also take the visitor's address from the first X-Forwarded-For entry,
+    # which anyone can fake, so the app works that out itself: TRUSTED_PROXY_HOPS.
     startCommand: .venv/bin/uvicorn api.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips="*"
     healthCheckPath: /health
     envVars:
+      # Cloudflare, in front of Render, appends the visitor's real address to
+      # X-Forwarded-For; everything before that entry came from the visitor.
+      - key: TRUSTED_PROXY_HOPS
+        value: "1"
       # The web app's address, e.g. https://incipit.vercel.app (no trailing slash).
       - key: ALLOWED_ORIGINS
         sync: false

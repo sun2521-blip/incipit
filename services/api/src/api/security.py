@@ -118,12 +118,51 @@ class BodySizeLimitMiddleware:
             pass  # already answered with 413
 
 
+def client_address(scope: Scope, trusted_hops: int) -> str | None:
+    """The visitor's address, or None to keep the connection's own.
+
+    Each proxy appends the address it saw to X-Forwarded-For, but keeps whatever
+    the visitor sent in front of it. So only the last `trusted_hops` entries come
+    from proxies we trust, and the first of those is the visitor. A header too
+    short to have passed through them all is ignored.
+    """
+    if trusted_hops < 1:
+        return None
+    entries = [
+        entry.strip()
+        for name, value in scope.get("headers", [])
+        if name == b"x-forwarded-for"
+        for entry in value.decode("latin-1").split(",")
+        if entry.strip()
+    ]
+    return entries[-trusted_hops] if len(entries) >= trusted_hops else None
+
+
+class ClientAddressMiddleware:
+    """Put the visitor's real address in `scope["client"]` before anything reads it.
+
+    uvicorn's own proxy support takes the first X-Forwarded-For entry, which the
+    visitor controls; with it, a made-up header bought a fresh rate limit.
+    """
+
+    def __init__(self, app: ASGIApp, trusted_hops: int) -> None:
+        self.app = app
+        self.trusted_hops = trusted_hops
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] == "http":
+            address = client_address(scope, self.trusted_hops)
+            if address is not None:
+                # In place, so uvicorn's access log shows the same address.
+                scope["client"] = (address, 0)
+        await self.app(scope, receive, send)
+
+
 class RateLimiter:
     """Sliding-window limit: at most `limit` hits per `window` seconds per key.
 
     In memory and per process: it resets on restart and is not shared between
-    instances. Keys come from the client address, which behind a proxy is
-    whatever the proxy reports, so this is a fairness guard, not a wall.
+    instances. Keys are visitor addresses from ClientAddressMiddleware.
     """
 
     def __init__(
