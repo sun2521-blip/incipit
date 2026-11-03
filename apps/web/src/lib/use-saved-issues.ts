@@ -2,9 +2,11 @@ import { useCallback, useMemo, useSyncExternalStore } from "react";
 import type { ApiIssue } from "@/lib/schemas";
 import {
   addSaved,
+  applyChecks,
   parseSaved,
   removeSaved,
   snapshotOf,
+  type CheckOutcome,
   type SavedIssue,
 } from "@/lib/saved";
 
@@ -70,5 +72,10 @@ export function useSavedIssues() {
     write(removeSaved(parseSaved(getSnapshot()), id));
   }, []);
 
-  return { saved, savedIds, toggle, remove };
+  // Read the list again first: it may have changed in another tab meanwhile.
+  const recordChecks = useCallback((outcomes: Map<number, CheckOutcome>) => {
+    write(applyChecks(parseSaved(getSnapshot()), outcomes));
+  }, []);
+
+  return { saved, savedIds, toggle, remove, recordChecks };
 }

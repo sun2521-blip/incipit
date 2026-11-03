@@ -13,7 +13,7 @@ import {
   type Dossier,
   type RankedIssue,
 } from "@/lib/api";
-import { formatCount } from "@/lib/format";
+import { formatCount, formatDateTime } from "@/lib/format";
 import { parseIssueRoute } from "@/lib/issue-path";
 import { isProfileEmpty, toApiProfile } from "@/lib/profile";
 import { useSavedIssues } from "@/lib/use-saved-issues";
@@ -30,11 +30,6 @@ function formatDate(value: string | null): string {
   if (!value) return "unknown";
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "unknown" : date.toLocaleDateString();
-}
-
-function formatDateTime(value: string): string {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "unknown" : date.toLocaleString();
 }
 
 function Fact({ label, children }: { label: string; children: ReactNode }) {
