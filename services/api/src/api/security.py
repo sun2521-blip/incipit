@@ -4,6 +4,7 @@ Plain ASGI rather than BaseHTTPMiddleware, so the body limit can count bytes
 as they arrive and nothing buffers a whole oversized request.
 """
 
+import ipaddress
 import json
 import math
 import time
@@ -118,14 +119,37 @@ class BodySizeLimitMiddleware:
             pass  # already answered with 413
 
 
-def client_address(scope: Scope, trusted_hops: int) -> str | None:
+def _address_from_header(scope: Scope, name: bytes) -> str | None:
+    """A single IP address from `name`, or None if it is missing or not an IP."""
+    values = [value for key, value in scope.get("headers", []) if key == name]
+    if not values:
+        return None
+    # The edge proxy's copy is the one it added last, if a visitor's slipped by.
+    candidate = values[-1].decode("latin-1").split(",")[-1].strip()
+    try:
+        return str(ipaddress.ip_address(candidate))
+    except ValueError:
+        return None
+
+
+def client_address(
+    scope: Scope, trusted_hops: int, address_header: bytes | None = None
+) -> str | None:
     """The visitor's address, or None to keep the connection's own.
 
-    Each proxy appends the address it saw to X-Forwarded-For, but keeps whatever
-    the visitor sent in front of it. So only the last `trusted_hops` entries come
-    from proxies we trust, and the first of those is the visitor. A header too
-    short to have passed through them all is ignored.
+    `address_header` is one the edge proxy sets to the visitor's address,
+    replacing any the visitor sent, such as Cloudflare's CF-Connecting-IP. It
+    wins whenever it holds a valid address.
+
+    Otherwise, X-Forwarded-For: each proxy appends the address it saw but keeps
+    whatever the visitor sent in front of it, so only the last `trusted_hops`
+    entries come from proxies we trust, and the first of those is the visitor.
+    A header too short to have passed through them all is ignored.
     """
+    if address_header:
+        address = _address_from_header(scope, address_header)
+        if address is not None:
+            return address
     if trusted_hops < 1:
         return None
     entries = [
@@ -145,13 +169,19 @@ class ClientAddressMiddleware:
     visitor controls; with it, a made-up header bought a fresh rate limit.
     """
 
-    def __init__(self, app: ASGIApp, trusted_hops: int) -> None:
+    def __init__(
+        self, app: ASGIApp, trusted_hops: int, address_header: str | None = None
+    ) -> None:
         self.app = app
         self.trusted_hops = trusted_hops
+        # ASGI header names are lowercase bytes.
+        self.address_header = (
+            address_header.lower().encode() if address_header else None
+        )
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] == "http":
-            address = client_address(scope, self.trusted_hops)
+            address = client_address(scope, self.trusted_hops, self.address_header)
             if address is not None:
                 # In place, so uvicorn's access log shows the same address.
                 scope["client"] = (address, 0)

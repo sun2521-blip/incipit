@@ -12,14 +12,17 @@ services:
     buildCommand: pip install uv && uv sync --frozen --no-dev
     # --proxy-headers lets the app see that visitors used https. uvicorn would
     # also take the visitor's address from the first X-Forwarded-For entry,
-    # which anyone can fake, so the app works that out itself: TRUSTED_PROXY_HOPS.
+    # which anyone can fake, so the app works that out itself: CLIENT_IP_HEADER.
     startCommand: .venv/bin/uvicorn api.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips="*"
     healthCheckPath: /health
     envVars:
-      # Cloudflare, in front of Render, appends the visitor's real address to
-      # X-Forwarded-For; everything before that entry came from the visitor.
+      # Cloudflare, in front of Render, sets this to the visitor's address.
+      - key: CLIENT_IP_HEADER
+        value: cf-connecting-ip
+      # Not X-Forwarded-For counting: Render adds its own entries after
+      # Cloudflare's, and the last one changes on every request (measured Nov 3).
       - key: TRUSTED_PROXY_HOPS
-        value: "1"
+        value: "0"
       # The web app's address, e.g. https://incipit.vercel.app (no trailing slash).
       - key: ALLOWED_ORIGINS
         sync: false

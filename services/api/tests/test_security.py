@@ -2,10 +2,11 @@ import asyncio
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 
 from api.main import app, github_limiter, rank_limiter
 from api.security import ClientAddressMiddleware, RateLimiter, client_address
-from api.settings import settings
+from api.settings import Settings, settings
 
 client = TestClient(app)
 
@@ -228,3 +229,79 @@ def test_a_made_up_header_no_longer_buys_a_fresh_rate_limit():
     assert limiter.hit(key("203.0.113.8, 198.51.100.4")) is not None
     # A different visitor still has their own budget.
     assert limiter.hit(key("198.51.100.5")) is None
+
+
+# ---- the edge proxy's address header (Cloudflare's CF-Connecting-IP) ---------------
+
+CF = b"cf-connecting-ip"
+
+
+def scope_with_headers(*headers: tuple[str, str]):
+    return {
+        "type": "http",
+        "headers": [(name.encode(), value.encode()) for name, value in headers],
+        "client": ("10.0.0.9", 1234),
+    }
+
+
+@pytest.mark.parametrize(
+    ("headers", "expected"),
+    [
+        # It wins over whatever X-Forwarded-For holds.
+        (
+            [
+                ("x-forwarded-for", "203.0.113.7, 198.51.100.4, 10.1.2.3"),
+                ("cf-connecting-ip", "198.51.100.4"),
+            ],
+            "198.51.100.4",
+        ),
+        ([("cf-connecting-ip", " 2001:DB8::1 ")], "2001:db8::1"),  # tidied
+        # If a visitor's copy ever slipped through, the proxy's, added last, counts.
+        (
+            [("cf-connecting-ip", "203.0.113.7"), ("cf-connecting-ip", "198.51.100.4")],
+            "198.51.100.4",
+        ),
+        # Not an address, or missing: ignored, so the fallback decides (none here).
+        ([("cf-connecting-ip", "not-an-ip")], None),
+        ([("cf-connecting-ip", "")], None),
+        ([("x-forwarded-for", "203.0.113.7")], None),
+    ],
+)
+def test_the_address_header_wins_whenever_it_holds_an_address(headers, expected):
+    assert client_address(scope_with_headers(*headers), 0, CF) == expected
+
+
+def test_without_the_address_header_the_forwarded_count_still_applies():
+    scope = scope_with_headers(("x-forwarded-for", "203.0.113.7, 198.51.100.4"))
+
+    assert client_address(scope, 1, CF) == "198.51.100.4"
+
+
+def test_middleware_matches_the_configured_header_in_any_case():
+    seen = {}
+
+    async def app(scope, receive, send):
+        seen["client"] = scope["client"]
+
+    scope = scope_with_headers(("cf-connecting-ip", "198.51.100.4"))
+    asyncio.run(ClientAddressMiddleware(app, 0, "CF-Connecting-IP")(scope, None, None))  # type: ignore[arg-type]
+
+    assert seen["client"] == ("198.51.100.4", 0)
+
+
+def test_made_up_forwarded_headers_cannot_move_a_visitor_to_a_fresh_limit():
+    limiter = RateLimiter(1)
+
+    def key(forwarded: str):
+        scope = scope_with_headers(
+            ("x-forwarded-for", forwarded), ("cf-connecting-ip", "198.51.100.4")
+        )
+        return client_address(scope, 0, CF) or "peer"
+
+    assert limiter.hit(key("203.0.113.7")) is None
+    assert limiter.hit(key("203.0.113.8")) is not None
+
+
+def test_the_address_header_setting_must_be_a_plain_header_name():
+    with pytest.raises(ValidationError):
+        Settings(client_ip_header="cf-connecting-ip\r\nx-evil")

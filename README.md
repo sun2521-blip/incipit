@@ -84,7 +84,8 @@ The root [`.env.example`](.env.example) lists every variable. Real values go in 
 | `GITHUB_TOKEN` | API only | Optional locally, practically required when deployed: without it GitHub allows 60 calls an hour, and one page of results can use 21. A fine-grained, read-only token for public repositories is plenty. |
 | `ALLOWED_ORIGINS` | API | The web app addresses allowed to call the API from a browser, separated by commas. |
 | `GITHUB_REQUESTS_PER_MINUTE`, `RANK_REQUESTS_PER_MINUTE` | API | Per-visitor rate limits (default 60 and 120). |
-| `TRUSTED_PROXY_HOPS` | API | How many proxies in front of the API add to `X-Forwarded-For`. 0 locally; `render.yaml` sets 1, so visitors can't fake their way to a fresh rate limit. |
+| `CLIENT_IP_HEADER` | API | A header the edge proxy fills with each visitor's address. `render.yaml` sets `cf-connecting-ip` (Cloudflare), so visitors can't fake their way to a fresh rate limit. Unset locally. |
+| `TRUSTED_PROXY_HOPS` | API | The fallback for other hosts: how many proxies append to `X-Forwarded-For`. 0 locally and on Render. |
 
 ## tests and checks
 

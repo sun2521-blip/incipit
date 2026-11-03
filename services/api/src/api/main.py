@@ -35,7 +35,11 @@ rank_limiter = RateLimiter(settings.rank_requests_per_minute)
 # visitor's address is settled before either rate limiter looks at it.
 app.add_middleware(RateLimitMiddleware, limiter=rank_limiter, prefixes=("/rank",))
 app.add_middleware(RateLimitMiddleware, limiter=github_limiter, prefixes=("/issues",))
-app.add_middleware(ClientAddressMiddleware, trusted_hops=settings.trusted_proxy_hops)
+app.add_middleware(
+    ClientAddressMiddleware,
+    trusted_hops=settings.trusted_proxy_hops,
+    address_header=settings.client_ip_header,
+)
 app.add_middleware(BodySizeLimitMiddleware, max_bytes=settings.max_request_bytes)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(

@@ -3,7 +3,7 @@
 ## Unreleased
 
 - **Shortlist:** "Refresh status" re-checks saved issues on GitHub, three at a time, and shows when each was checked. Closed, deleted and missing issues are flagged, transferred ones follow their new address, and a rate limit or a sleeping API stops the check politely with a reason.
-- **Security:** the rate limits could be dodged by sending a made-up `X-Forwarded-For` header, because uvicorn trusted its first entry, which the visitor controls. The API now uses only the entry Cloudflare appends (`TRUSTED_PROXY_HOPS`). Found from a code review, confirmed against the live API, and covered by tests.
+- **Security:** the rate limits could be dodged by sending a made-up `X-Forwarded-For` header, because uvicorn trusted its first entry, which the visitor controls. The API now takes each visitor's address from Cloudflare's `CF-Connecting-IP` (`CLIENT_IP_HEADER`). A first fix that counted `X-Forwarded-For` entries switched the limits off instead, because Render adds an entry of its own that changes on every request; testing against the live API caught it the same day. Found from a code review and covered by tests.
 - **Evaluation:** `rate` lets a person rate a pool blind (shuffled, no scores) and `agree` reports agreement between two raters with Cohen's kappa. `capture` now needs `--pool`, so it can't overwrite the development set. The evaluation write-up now says plainly that the 33 ratings are an unreviewed first pass, not yet rated by a person, and that the penalty rules were measured on the issues they came from.
 - **Fixes:** CI's web job had two checkouts and two Node setups after a Dependabot merge; it has one of each again. The author email is out of `pyproject.toml`.
 

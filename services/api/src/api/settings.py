@@ -20,9 +20,11 @@ class Settings(BaseSettings):
     rank_requests_per_minute: int = 120
     # Large enough for a full POST /rank (100 issues with 20,000-character bodies).
     max_request_bytes: int = 4 * 1024 * 1024
-    # How many proxies in front of the API append to X-Forwarded-For. 0 (local)
-    # uses the connection's own address. Render is 1: Cloudflare appends the
-    # visitor's real address, after anything the visitor sent.
+    # A header the edge proxy sets to the visitor's address, replacing any the
+    # visitor sent. On Render: cf-connecting-ip, from Cloudflare. Checked first.
+    client_ip_header: str | None = Field(default=None, pattern=r"^[A-Za-z0-9-]{1,64}$")
+    # Otherwise: how many proxies in front of the API append to X-Forwarded-For.
+    # 0 (local) uses the connection's own address.
     trusted_proxy_hops: int = Field(default=0, ge=0, le=5)
 
     @property
