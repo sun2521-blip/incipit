@@ -1,22 +1,26 @@
-"""Golden ordering and quality floors on real issues (roadmap Day 9).
+"""Golden ordering and quality floors on real, rated issues.
 
 If one of these fails after a deliberate change to the scorer, run
 `uv run python scripts/evaluate_ranking.py report`, record the before and after
 in docs/ranking-evaluation.md, and only then update GOLDEN and FLOORS.
 """
 
+import io
 from pathlib import Path
 
 import pytest
 
 from api.ranking.evaluation import (
     PROFILES,
+    agreement,
+    blind_order,
     evaluate,
     fits,
     issue_key,
     load_pool,
     load_ratings,
     parse_ratings,
+    write_rating,
 )
 from api.ranking.scorer import rank_issues
 from api.schemas.profile import Profile
@@ -126,3 +130,79 @@ def test_ratings_with_a_typo_are_refused():
 def test_an_unrated_issue_in_the_pool_is_reported():
     with pytest.raises(ValueError, match="Unrated"):
         evaluate(POOL, {}, "no-profile")
+
+
+# ---- rating tools ---------------------------------------------------------------
+
+
+def test_blind_order_is_the_same_on_every_visit_and_new_for_each_rater():
+    keys = [issue_key(i) for i in blind_order(POOL.issues, "rater-one")]
+
+    assert keys == [issue_key(i) for i in blind_order(POOL.issues[::-1], "rater-one")]
+    assert keys != [issue_key(i) for i in blind_order(POOL.issues, "rater-two")]
+    assert sorted(keys) == sorted(issue_key(i) for i in POOL.issues)
+
+
+def test_written_ratings_read_back_with_one_header():
+    handle = io.StringIO()
+    write_rating(handle, "a/b#1", "good", "Clear, small, with steps")
+    write_rating(handle, "a/b#2", "poor", 'Says "assigned" on GitHub')
+
+    assert handle.getvalue().count("issue,rating,reason") == 1
+    assert parse_ratings(handle.getvalue().splitlines()) == {
+        "a/b#1": ("good", "Clear, small, with steps"),
+        "a/b#2": ("poor", 'Says "assigned" on GitHub'),
+    }
+
+
+def test_writing_an_unknown_rating_is_refused():
+    with pytest.raises(ValueError, match="great"):
+        write_rating(io.StringIO(), "a/b#1", "great", "")
+
+
+def rated(*ratings: str) -> dict[str, tuple[str, str]]:
+    return {f"a/b#{n}": (rating, "") for n, rating in enumerate(ratings, start=1)}
+
+
+def test_identical_ratings_agree_perfectly():
+    result = agreement(rated("good", "okay", "poor"), rated("good", "okay", "poor"))
+
+    assert (result.shared, result.exact, result.kappa) == (3, 1.0, 1.0)
+
+
+def test_kappa_gives_no_credit_for_agreement_chance_would_give():
+    # Same on 2 of 4, and each rater split good/poor evenly, so chance alone
+    # agrees 0.5 * 0.5 + 0.5 * 0.5 = 0.5 of the time: kappa (0.5 - 0.5) / 0.5 = 0.
+    result = agreement(
+        rated("good", "good", "poor", "poor"), rated("good", "poor", "good", "poor")
+    )
+
+    assert result.exact == 0.5
+    assert result.kappa == pytest.approx(0.0)
+
+
+def test_kappa_on_partial_agreement():
+    # Same on 4 of 6. First rater: 3 good, 2 okay, 1 poor; second: 2 of each.
+    # Chance: 3/6 * 2/6 + 2/6 * 2/6 + 1/6 * 2/6 = 1/3, so kappa = (2/3 - 1/3) / (2/3).
+    result = agreement(
+        rated("good", "good", "good", "okay", "okay", "poor"),
+        rated("good", "good", "okay", "okay", "poor", "poor"),
+    )
+
+    assert result.exact == pytest.approx(2 / 3)
+    assert result.kappa == pytest.approx(0.5)
+
+
+def test_agreement_counts_only_issues_both_raters_rated():
+    result = agreement(rated("good", "poor", "okay"), rated("good", "poor"))
+
+    assert result.shared == 2
+
+
+def test_agreement_with_nothing_in_common_is_an_error():
+    with pytest.raises(ValueError, match="both"):
+        agreement(rated("good"), {"c/d#9": ("good", "")})
+
+
+def test_raters_who_both_used_one_rating_for_everything_agree():
+    assert agreement(rated("good", "good"), rated("good", "good")).kappa == 1.0

@@ -1,4 +1,4 @@
-"""Tools for checking the ranking against real issues rated by a person.
+"""Tools for checking the ranking against real, rated issues.
 
 The pool is a frozen snapshot of real GitHub issues (with repository context),
 so every run ranks exactly the same data. Each issue carries one rating for how
@@ -8,11 +8,13 @@ work for every profile and for any future change to the scorer.
 """
 
 import csv
+import hashlib
 import json
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import TextIO
 
 from api.ranking.scorer import rank_issues
 from api.schemas.issue import Issue, TaskType
@@ -68,6 +70,54 @@ def parse_ratings(lines: Iterable[str]) -> dict[str, tuple[str, str]]:
 def load_ratings(path: Path) -> dict[str, tuple[str, str]]:
     with path.open(encoding="utf-8", newline="") as handle:
         return parse_ratings(handle)
+
+
+def write_rating(handle: TextIO, key: str, rating: str, reason: str) -> None:
+    """Append one rating, starting the file with its header if it is empty."""
+    if rating not in RATING_VALUES:
+        raise ValueError(f"Unknown rating {rating!r}")
+    writer = csv.writer(handle, lineterminator="\n")
+    if handle.tell() == 0:
+        writer.writerow(["issue", "rating", "reason"])
+    writer.writerow([key, rating, reason])
+
+
+def blind_order(issues: list[Issue], rater: str) -> list[Issue]:
+    """A shuffle that depends only on the rater's name and the issues.
+
+    Rating in the scorer's order would hint at its answer. Each rater gets their
+    own order, and the same one again when they come back to finish.
+    """
+
+    def position(issue: Issue) -> str:
+        return hashlib.sha256(f"{rater}\n{issue_key(issue)}".encode()).hexdigest()
+
+    return sorted(issues, key=position)
+
+
+@dataclass(frozen=True)
+class Agreement:
+    shared: int  # issues both raters rated
+    exact: float  # share of those given the same rating
+    kappa: float  # Cohen's kappa: 1 is perfect, 0 is what chance alone gives
+
+
+def agreement(
+    first: dict[str, tuple[str, str]], second: dict[str, tuple[str, str]]
+) -> Agreement:
+    """How far two raters agree, on the issues both of them rated."""
+    keys = sorted(first.keys() & second.keys())
+    if not keys:
+        raise ValueError("No issue was rated by both")
+    a = [first[key][0] for key in keys]
+    b = [second[key][0] for key in keys]
+    n = len(keys)
+
+    exact = sum(x == y for x, y in zip(a, b, strict=True)) / n
+    by_chance = sum((a.count(r) / n) * (b.count(r) / n) for r in RATING_VALUES)
+    # Both raters gave every issue the same single rating: nothing to separate.
+    kappa = 1.0 if by_chance == 1 else (exact - by_chance) / (1 - by_chance)
+    return Agreement(shared=n, exact=exact, kappa=kappa)
 
 
 def fits(issue: Issue, profile: Profile) -> bool:
