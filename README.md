@@ -13,7 +13,7 @@ open source is cool until you spend 3 hours looking for one issue you can actual
 - **finds the issues.** Live `good first issue`s from GitHub. Search by keyword, filter by language or task type, or type `owner/repo` (or paste a GitHub link) to see one project's beginner issues. Up to 100 results, 20 at a time.
 - **scores them, and shows its working.** Five signals (language match, task type, how clear the write-up is, whether the repo is alive, your topics), combined with published weights. Click "Why this score" for every signal's points and reason. Assigned issues and pile-on threads get marked down, and it says so. Missing data is left out, never guessed: unknown never counts as bad.
 - **gives every issue a dossier.** Checked live on GitHub with a timestamp: state, labels, assignees, comments, the repo's language, stars, last push, licence and contributing guide. Incipit's own advice sits in a separate, clearly labelled checklist. Closed, deleted, transferred and missing issues each get a clear message.
-- **remembers you, not your data.** Your languages, topics and task types personalise the ranking, and your shortlist survives refreshes and syncs across tabs. It all lives in your browser. No account, no tracking.
+- **remembers you, not your data.** Your languages, topics and task types personalise the ranking, and your shortlist survives refreshes and syncs across tabs. Hit "Refresh status" and it re-checks every saved issue on GitHub, so you find out an issue was closed before you've spent an evening on it. It all lives in your browser. No account, no tracking.
 - **makes no promises it can't keep.** Incipit never calls an issue easy, unclaimed or likely to be merged. No paid AI anywhere.
 
 | the dossier | on your phone | while it thinks |
@@ -121,7 +121,7 @@ The API deploys to Render from [`render.yaml`](render.yaml) and the web app to V
 - Language match only knows the repository's main language, and task types come from labels, which are… creative.
 - One repository can take several spots in the results.
 - At most 100 issues per search.
-- Your shortlist lives in one browser, doesn't sync across devices, and shows each issue as it was when you saved it.
+- Your shortlist lives in one browser and doesn't sync across devices. It only knows what GitHub said at the last "Refresh status".
 - On the free plan the API naps after 15 minutes without visitors, so the first search afterwards can take up to a minute. The page tells you when that's happening.
 - Rate limits and caches live in memory, so they reset when the API restarts.
 

@@ -11,7 +11,7 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 
 ## Status
 
-**131 of 140 sub-checkpoints done (94%).** v0.1.0 is tagged and live. Days 1 to 4, 6, 7, 9, 10 and 13 are complete, Days 5, 8, 11 and 14 are nearly done, and Day 12 is partly done. What is left is a click-through on the live site, the demo recording, and a few small items on Days 5, 8 and 12.
+**135 of 140 sub-checkpoints done (96%).** v0.1.0 is tagged and live. Days 1 to 4, 6 to 10, 12 and 13 are complete, and Days 5, 11 and 14 are nearly done. Everything left is a check by hand on the live site or the demo recording: nothing left to build.
 
 **Live:** web app https://incipit-five.vercel.app · API https://incipit-api-blz7.onrender.com Dates are estimates at 3-4 hours a day; Day 1 was Oct 27.
 
@@ -24,11 +24,11 @@ The living checklist for the 14-day plan in the original project blueprint (writ
 | 5 | Real ranked results | Mostly done | 9/10 | Oct 31 (completion: Nov 2) |
 | 6 | Repository context and the missing signals | Done | 17/17 | Nov 2 (completed Nov 1) |
 | 7 | Issue dossier | Done | 13/13 | Nov 3 (completed Nov 1) |
-| 8 | Saved shortlist | Nearly done | 6/7 | Nov 4 |
+| 8 | Saved shortlist | Done | 7/7 | Nov 4 (completed Nov 3) |
 | 9 | Evaluation | Done | 6/6 | Nov 5 (completed Nov 1) |
 | 10 | Frontend tests and CI | Done | 9/9 | Nov 6 |
 | 11 | First deployment | Nearly done | 6/8 | Nov 7 (deployed Nov 1) |
-| 12 | Failure cases | Partial | 5/8 | Nov 8 |
+| 12 | Failure cases | Done | 8/8 | Nov 8 (completed Nov 3) |
 | 13 | Product polish | Done | 8/8 | Nov 9 (completed Nov 1) |
 | 14 | Documentation and release | Partial | 4/6 | Nov 10 |
 
@@ -266,7 +266,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 8: Saved shortlist
 
-**Status:** Nearly done (6/7), target Nov 4\
+**Status:** Done (7/7), target Nov 4, completed Nov 3\
 **Blueprint:** Persist saved issues in localStorage; avoid accounts/database unless truly necessary.
 
 #### CP8.1 Persistence
@@ -278,7 +278,7 @@ From the blueprint. Ticked only when true on the deployed product.
 
 - [x] Saved list with remove, working from the snapshot
 - [x] Cross-tab sync
-- [ ] "Refresh status" re-checks whether saved issues are still open and shows when
+- [x] "Refresh status" re-checks whether saved issues are still open and shows when (three at a time through the dossier route; closed, deleted and not-found issues are flagged, transferred ones follow their new address, and a rate limit or an unreachable API stops it with the reason; checked in a browser at 1280px and 375px against real GitHub issues)
 - [x] Header count and card buttons reflect saved state after a refresh
 
 #### CP8.3 Tests
@@ -352,25 +352,25 @@ From the blueprint. Ticked only when true on the deployed product.
 
 ### Day 12: Failure cases
 
-**Status:** Partial (5/8), target Nov 8\
+**Status:** Done (8/8), target Nov 8, completed Nov 3\
 **Blueprint:** Test closed/deleted issues, malformed input, timeouts, rate limits, empty results and API downtime. (Blueprint Day 11.)
 
 #### CP12.1 GitHub failures
 
 - [x] Rate-limit state shows when to retry (API message tested; the frontend shows the API's message)
 - [x] Timeouts and upstream 5xx produce clear messages (504 for timeouts, 502 for errors and unreadable responses)
-- [ ] Empty results state
+- [x] Empty results state (the API's notice is shown when a search finds nothing; tested in `home.test.tsx`)
 
 #### CP12.2 Bad input and stale data
 
 - [x] Malformed or oversized input rejected cleanly, with 422s handled in the UI (422 for bad parameters, 413 for bodies over 4 MB, 429 for too many requests; the UI shows the API's message)
-- [ ] Closed and deleted issues handled in the dossier and shortlist *(dossier done; the shortlist shows the state when saved until "Refresh status" exists)*
+- [x] Closed and deleted issues handled in the dossier and shortlist (the dossier warns; the shortlist flags them after "Refresh status")
 - [x] Malformed API responses handled (Zod in the frontend, `GitHubResponseError` in the API)
 
 #### CP12.3 Downtime
 
 - [x] Friendly message instead of "Failed to fetch" (every API call; mentions that free hosting may be waking up)
-- [ ] A test for every failure path above
+- [x] A test for every failure path above (API: `test_issues_route_errors.py`, `test_security.py`, `test_dossier_route.py`; web: `home.test.tsx`, `issue-dossier.test.tsx`, `saved-list.test.tsx`, `check-saved.test.ts`, `schemas.test.ts`)
 
 ### Day 13: Product polish
 

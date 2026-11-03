@@ -49,13 +49,13 @@ Responsibilities:
 - Allow users to save issues to a local shortlist.
 - Communicate with the backend through HTTP requests.
 
-The shortlist and the contributor profile are saved in browser storage (localStorage) rather than a database. The shortlist keeps a validated snapshot of each issue (title, repository, number, link, state and when it was saved), stays in step across tabs, and falls back to memory when the browser blocks storage.
+The shortlist and the contributor profile are saved in browser storage (localStorage) rather than a database. The shortlist keeps a validated snapshot of each issue (title, repository, number, link, state and when it was saved), stays in step across tabs, and falls back to memory when the browser blocks storage. "Refresh status" re-checks each saved issue through the dossier route, three at a time, and stores GitHub's current state with the time it was checked: closed, deleted (410) and not found (404) are flagged, and a transferred issue moves to its new address. It stops early, saying why, if the API is unreachable or a rate limit is hit.
 
 Each live issue opens a dossier at `/issues/[owner]/[repo]/[number]`. The page validates the address before calling the API, renders the issue text as plain text, and only links to `https://github.com/` addresses. Its fit score comes from `POST /rank` with the profile stored in the browser, so the profile never appears in a URL.
 
 Every API response is validated with Zod before the UI uses it; a single malformed issue is dropped instead of breaking the page.
 
-Code layout: pages in `src/app` (the home page keeps the search state; the dossier route reads its parameters inside Suspense, as Cache Components requires), presentational pieces in `src/components` (header, footer, issue card, score breakdown, profile panel, shortlist, loading placeholders), and logic in `src/lib` (API client and schemas, card shaping, pagination, saved-issue storage). While a search or dossier loads, the page shows placeholders shaped like the content and a spinner, tells screen readers it is searching, and after five seconds explains that the free API may be waking up.
+Code layout: pages in `src/app` (the home page keeps the search state; the dossier route reads its parameters inside Suspense, as Cache Components requires), presentational pieces in `src/components` (header, footer, issue card, score breakdown, profile panel, shortlist, loading placeholders), and logic in `src/lib` (API client and schemas, card shaping, pagination, saved-issue storage and re-checking). While a search or dossier loads, the page shows placeholders shaped like the content and a spinner, tells screen readers it is searching, and after five seconds explains that the free API may be waking up.
 
 ## 4. Backend
 
@@ -148,5 +148,5 @@ The project prioritizes free tiers and should not require a paid AI provider for
 - At most 100 issues are loaded and ranked per search.
 - Task type is inferred from labels, which are inconsistent between repositories.
 - The dossier's checklist is generic: it is not checked against each repository.
-- The shortlist is local to one browser, not synchronised across devices, and shows each issue's state as it was when saved.
+- The shortlist is local to one browser and not synchronised across devices. It shows each issue's state as of the last "Refresh status" (or when it was saved), not live.
 - Rate limits and caches live in memory: they reset when the API restarts, and free hosting restarts it after it sleeps.
